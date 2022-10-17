@@ -36,5 +36,24 @@
     různé kusy kódu) -> model bude mít __více užitečných informací__
     - [blog](https://blog.embold.io/code-representation-for-machine-learning-code-as-graph/) o CPG
     - [paper](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6956589) o CPG
-    - [repo](https://github.com/Fraunhofer-AISEC/cpg) pro extrakci CPG z C/C++/Java (experimentálně pro Python, Golang, TypeScript)
-      - má podporu i pro 🔴LLVM IR🔴❗ (zřejmě půjde napojit na Infer clang)
+    - [repo](https://github.com/joernio/joern) __[nové]__ pro extrakci CPG zejména z LLVM IR (ale i z jiných zdrojů)
+    - [repo](https://github.com/Fraunhofer-AISEC/cpg) __[staré]__ pro extrakci CPG z C/C++/Java (experimentálně pro Python, Golang, TypeScript)
+      - má podporu i pro [LLVM IR](https://llvm.org/docs/LangRef.html) (zřejmě půjde napojit na Infer clang)
+
+#### Extrakce grafu
+  - běží až na LLVM IR -> makra jsou už rozbalená
+  - také se jedná o udržovanější repo (proto vybírám tento přístup)
+
+
+#### Extrakce grafu -- staré
+  - nebere v potaz překladové příkazy -> tudíž nerozbaluje makra
+  - build CPG knihovny jako CLI toolu (cca 3m):
+   1. ```cd code-extraction/```
+   2. ```git clone https://github.com/Fraunhofer-AISEC/cpg.git```
+   3. ```cd cpg/cpg-console/```
+   4. ```../gradlew installDist```
+  - [instalace Neo4j](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-neo4j-on-ubuntu-20-04)
+  - vygenerování grafu z ```code-extraction/example/main.c```:
+   1. ```./build/install/cpg-console/bin/cpg-console```
+   2. ```:tr ../../example/main.c``` (při úspěchu by měl program vypsat ```03:08:33,948 INFO  MeasurementHolder TranslationManager: Translation into full graph done in 366 ms```)
+   3. ```:export neo4j```
