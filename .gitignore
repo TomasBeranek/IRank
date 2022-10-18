@@ -1,2 +1,8 @@
 code-extraction/cpg/
+code-extraction/joern/
+code-extraction/llvm2cpg/
 code-extraction/example/a.out
+code-extraction/example/main.o
+code-extraction/example/main.bc
+code-extraction/example/main.ll
+code-extraction/example/main.cpg.bin.zip
