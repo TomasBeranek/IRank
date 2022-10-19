@@ -97,3 +97,4 @@
  2. [studie](https://mediatum.ub.tum.de/doc/1659728/document.pdf) o chování statických analyzátorů nad syntetickými a reálnými benchamrky
  3. [studie](https://ieeexplore.ieee.org/abstract/document/9462962?casa_token=LZ2bQiYy1IgAAAAA:QrOOvx79MsJV0u9Vd4C9Dv4UGiSaFxfn-EDr0pWVH-wBhzW29b-s6DGS4cKJ9PPbYcjrpTGl3g) -- shallow vs deep learning pro detekci chyb
  4. [studie](https://dl.acm.org/doi/abs/10.1145/3338906.3338941) o perfektním labelování
+ 5. zkusit najít článek o porovnání úspěšnosti modelů na syntetických datasetech a reálných softwarech
