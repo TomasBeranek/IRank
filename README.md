@@ -90,3 +90,10 @@
   4. Joern + llvm2cpg + -fembed-bitcode -g -grecord-command-line -fno-inline-functions -fno-builtin
     - -g aby bylo možné zpětně namapovat LLVM IR/BC na zdrojový kód
     - zbytek je doporučeno přímo nástrojem llvm2cpg
+
+
+### Zmínit v textu
+ 1. [paper](https://ieeexplore.ieee.org/abstract/document/9376145?casa_token=AbkX5cmm18kAAAAA:oUjTofjHfN6VOcwFv1PoDWTm8Vr_rfqmoKwuwBNrFtYGMztIYH2HfhGG0rYTlgUVg7fZbkwL-A) o GNN nad Simplified CPG
+ 2. [studie](https://mediatum.ub.tum.de/doc/1659728/document.pdf) o chování statických analyzátorů nad syntetickými a reálnými benchamrky
+ 3. [studie](https://ieeexplore.ieee.org/abstract/document/9462962?casa_token=LZ2bQiYy1IgAAAAA:QrOOvx79MsJV0u9Vd4C9Dv4UGiSaFxfn-EDr0pWVH-wBhzW29b-s6DGS4cKJ9PPbYcjrpTGl3g) -- shallow vs deep learning pro detekci chyb
+ 4. [studie](https://dl.acm.org/doi/abs/10.1145/3338906.3338941) o perfektním labelování
