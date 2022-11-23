@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "add_one.h"
 
 int f(int a) {
-  return a + 1;
+  return add_one(a);
 }
 
 int g(int b) {
