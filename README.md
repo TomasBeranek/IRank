@@ -124,6 +124,25 @@
     - zbytek je doporučeno přímo nástrojem llvm2cpg
 
 
+#### Program slicing -- pomocí DG
+  - DG je [nástroj](https://github.com/mchalupa/dg) pro analýzu kódu a program slicing
+  - je k němu i [paper](https://www.fi.muni.cz/~xchalup4/dg_atva20_preprint.pdf)
+  - návod na program slicing [zde](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md)
+  - ```llvm-slicer``` vyžaduje, aby právě jeden z ```.bc``` souborů měl ```main``` --> 🔴to je problém🔴 (ale možná je to pořeba pouze při dopředném slicingu)
+  - nefunguje dobře na C++ podle [toho](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md#using-slicer-on-c-bitcode)
+  - instalace DG pomocí bínárky pro Ubuntu 18.04 je zastaralé -- více jak 2 roky
+  - je k dispozici i [návod](https://github.com/mchalupa/dg/blob/master/doc/compiling.md) na překlad:
+    1. ```sudo apt install git cmake make llvm zlib1g-dev clang g++ python3```
+    2. ```cd code-extraction/```
+    3. ```git clone https://github.com/mchalupa/dg```
+    4. ```cd dg```
+    5. ```mkdir build```
+    6. ```cd build/```
+    7. ```cmake ..```
+    8. ```make -j4```
+    9. ```make check``` -- optional pro spuštění testů
+
+
 ### Zmínit v textu
  1. [paper](https://ieeexplore.ieee.org/abstract/document/9376145?casa_token=AbkX5cmm18kAAAAA:oUjTofjHfN6VOcwFv1PoDWTm8Vr_rfqmoKwuwBNrFtYGMztIYH2HfhGG0rYTlgUVg7fZbkwL-A) o GNN nad Simplified CPG
  2. [studie](https://mediatum.ub.tum.de/doc/1659728/document.pdf) o chování statických analyzátorů nad syntetickými a reálnými benchamrky
