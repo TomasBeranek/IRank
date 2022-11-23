@@ -55,9 +55,41 @@
     1. stáhnout binary release
     2. ```unzip unzip llvm2cpg-0.8.0-LLVM-11.0-ubuntu-20.04.zip```
     3. ```mv llvm2cpg-0.8.0-LLVM-11.0-ubuntu-20.04/ llvm2cpg```
+    4. ```sudo ln -s $PWD/llvm2cpg/llvm2cpg /usr/bin/llvm2cpg```
+  - instalace [neo4j](https://linuxhint.com/install-neo4j-ubuntu/), něco převzato i z [návodu](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-neo4j-on-ubuntu-20-04)
+    1. ```sudo apt update```
+    2. ```sudo apt install apt-transport-https ca-certificates curl software-properties-common```
+    3. ```sudo curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -``` -- nepoužívat
+    4. ```sudo add-apt-repository “deb https://debian.neo4j.com stable 4.1”``` -- nepoužívat
+    5. ```curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key |sudo gpg --dearmor -o /usr/share/keyrings/neo4j.gpg```
+    6. ```echo "deb [signed-by=/usr/share/keyrings/neo4j.gpg] https://debian.neo4j.com stable 4.1" | sudo tee -a /etc/apt/sources.list.d/neo4j.list```
+    7. ```sudo apt update```
+    8. ```sudo apt install neo4j```
+    9. ```sudo systemctl status neo4j.service``` -- ověření statusu
+    10. ```sudo systemctl stop neo4j.service``` -- pro zastavení
+    11. ```sudo systemctl start neo4j.service``` -- pro start
+    12. v prohlížeči na adrese [localhost:7474](localhost:7474) se přihlásit:
+     - username: ```neo4j```
+     - password: ```neo4j```
+    13. změnit heslo např. ```123```
+  - extrakce LLVM IR (při překladu) a vygenerování CPG
+    1. ```clang -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -c main.c```
+    2. ``` llvm2cpg `find ./ -name "*.bc"` --output=./main.cpg.bin.zip ```
+  - načtení CPG do Joern a následně do neo4j
+    1. ```joern```
+    2. ```workspace.reset```
+    3. ```importCpg("./main.cpg.bin.zip")```
+    4. ```save```
+    5. ```exit```
+    6. ```joern-export --repr all --format neo4jcsv workspace/main.cpg.bin.zip/cpg.bin```
+    7. ```sudo cp /home/tomas/Documents/diplomka/code-extraction/example/out/*_data.csv /var/lib/neo4j/import/```
+    8. ```find /home/tomas/Documents/diplomka/code-extraction/example/out -name 'nodes_*_cypher.csv' -exec /bin/cypher-shell -u neo4j -p 123 --file {} \;```
+    9. ```find /home/tomas/Documents/diplomka/code-extraction/example/out -name 'edges_*_cypher.csv' -exec /bin/cypher-shell -u neo4j -p 123 --file {} \;```
+    10. ```MATCH (n) RETURN n``` -- zobrazení v prohlížeči
+    11. ```DETACH DELETE``` -- smazaní celé DB
+    12. ```sudo rm /var/lib/neo4j/import/*``` -- vyčištění importu
 
-
-    - pokud CPG jednotlivých souborů nepůjde spojit, tak by možná šlo využít [WLLVM](https://github.com/travitch/whole-program-llvm)
+  - pokud CPG jednotlivých souborů nepůjde spojit, tak by možná šlo využít [WLLVM](https://github.com/travitch/whole-program-llvm)
 
 #### Extrakce grafu -- staré
   - nebere v potaz překladové příkazy -> tudíž nerozbaluje makra
