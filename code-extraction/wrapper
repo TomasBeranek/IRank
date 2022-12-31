@@ -8,6 +8,7 @@ infer_dir="/tmp/infer-out"
 skip_capture=false
 lock_dir="/tmp/infer.lockdir"
 pid_file="${lock_dir}/PID"
+bitcode_files_list="${infer_dir}/old_bc_files.txt"
 
 function lock {
   mkdir "${lock_dir}" > /dev/null 2>&1 && echo $$ > ${pid_file}
@@ -99,6 +100,8 @@ then
       # logging
       >&2 echo ""
       >&2 echo "NOTE: INFER: ${compiler}-wrapper: running capture phase"
+
+      # capture compiled source files
       if infer capture --reactive -o ${infer_dir} --force-integration cc -- ${compiler} "$@" 1>&2
       then
         >&2 echo "NOTE: INFER: ${compiler}-wrapper: successfully captured: \"${compiler} $@\""
@@ -107,7 +110,40 @@ then
       fi
       >&2 echo ""
 
-      # the script terminates in the unlock function
+      # if this has not already happened, save the .bc files already present on the system to determine which have been newly created
+      if [ ! -e ${bitcode_files_list} ]
+      then
+        >&2 echo "NOTE: LLVM: ${compiler}-wrapper: saving already present bitcode files"
+        find / -type f -name "*.bc" 2> /dev/null > ${bitcode_files_list}
+        >&2 echo "NOTE: LLVM: ${compiler}-wrapper: already present bitcode files have been saved"
+        >&2 echo ""
+      fi
+
+      # generate llvm bitcode from compiled source files
+      >&2 echo "NOTE: LLVM: ${compiler}-wrapper: generating bitcode"
+
+      # first we need to remove the -o option so that the command generates .bc files instead
+      original_args="$@"
+      skip_next=false
+      for arg do
+        shift
+        if [ "${skip_next}" = true ]
+        then
+          skip_next=false
+          continue
+        fi
+        # we have found '-o' option -- skip it and the next one
+        [ "${arg}" = "-o" ] && skip_next=true && continue
+        set -- "$@" "${arg}"
+      done
+
+      if clang-original -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin "$@" 1>&2
+      then
+        >&2 echo "NOTE: LLVM: ${compiler}-wrapper: successfully generated bitcode for command: \"${compiler} ${original_args}\""
+      else
+        >&2 echo "WARNING: LLVM: ${compiler}-wrapper: failed to generate bitcode for command: \"${compiler} ${original_args}\""
+      fi
+
       unlock
       break
     #else
