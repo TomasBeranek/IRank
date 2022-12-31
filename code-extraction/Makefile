@@ -45,3 +45,12 @@ $(ORIGINAL_COMPILERS_PATHS):
 	fi
 
 install-pipeline: install-wrappers
+
+experiment: clean-experiment
+	@cd example && make
+	@>&2 echo 'TBD'
+
+# Delete leftovers from previous runs
+clean-experiment:
+	@cd example && make clean
+	@rm -rf /tmp/infer-out
