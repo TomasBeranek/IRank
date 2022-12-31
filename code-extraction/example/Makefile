@@ -11,7 +11,7 @@ all: install
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-install: clean $(OBJ)
+install: $(OBJ)
 	$(CC) -o $(BIN) $^ $(CFLAGS)
 
 clean:
