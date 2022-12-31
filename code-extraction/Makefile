@@ -30,7 +30,9 @@ $(COMPILERS_PATHS):
 			sudo sed -i 's/COMPILER_NAME/$(subst /usr/bin/,,$@)/g' $@; \
 			>&2 echo 'NOTE: $@ wrapper has been successfully installed!'; \
 		else \
-			>&2 echo 'NOTE: $@ wrapper already exists!'; \
+			sudo cp ./wrapper $@; \
+			sudo sed -i 's/COMPILER_NAME/$(subst /usr/bin/,,$@)/g' $@; \
+			>&2 echo 'NOTE: $@ wrapper has been successfully reinstalled!'; \
 		fi; \
 	fi
 
