@@ -128,7 +128,7 @@
   - DG je [nástroj](https://github.com/mchalupa/dg) pro analýzu kódu a program slicing
   - je k němu i [paper](https://www.fi.muni.cz/~xchalup4/dg_atva20_preprint.pdf)
   - návod na program slicing [zde](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md)
-  - ```llvm-slicer``` vyžaduje, aby právě jeden z ```.bc``` souborů měl ```main``` --> 🔴to je problém🔴 (ale možná je to pořeba pouze při dopředném slicingu)
+  - ```llvm-slicer``` vyžaduje, aby právě jeden z ```.bc``` souborů měl ```main``` --> 🔴to je problém🔴
   - nefunguje dobře na C++ podle [toho](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md#using-slicer-on-c-bitcode)
   - instalace DG pomocí bínárky pro Ubuntu 18.04 je zastaralé -- více jak 2 roky
   - je k dispozici i [návod](https://github.com/mchalupa/dg/blob/master/doc/compiling.md) na překlad:
@@ -141,6 +141,13 @@
     7. ```cmake ..```
     8. ```make -j4```
     9. ```make check``` -- optional pro spuštění testů
+    10. ```sudo ln -s /home/tomas/Documents/diplomka/code-extraction/dg/build/tools/llvm-slicer /usr/bin/llvm-slicer```
+  - program slicing (už je nutno mít vytvořené ```.bc``` soubory)
+    1. ```llvm-link add_one.bc main.bc -o bitcode.bc```
+    2. ```llvm-slicer -c 21:x bitcode.bc``` -- slicing podle proměnné ```x``` na řádku ```21```, vytvoří se soubor ```bitcode.sliced```
+    3. ```llvm2cpg bitcode.sliced --output=./main.cpg.bin.zip```
+  - 🔴DG opravdu nefunguje bez ```main``` fce🔴 --> nelze analyzovat knihovny
+
 
 
 ### Zmínit v textu
