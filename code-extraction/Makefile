@@ -48,7 +48,7 @@ install-pipeline: install-wrappers
 
 experiment: clean-experiment
 	@cd example && make
-	@>&2 echo 'TBD'
+	./analyze_phase
 
 # Delete leftovers from previous runs
 clean-experiment:

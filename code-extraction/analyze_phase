@@ -1,0 +1,7 @@
+#!/bin/bash
+
+INFER_FLAGS='--bufferoverrun --pulse'
+INFER_OUT_DIR='/tmp/infer-out'
+
+# run infer's analysis phase
+infer analyze --keep-going ${INFER_FLAGS} -o ${INFER_OUT_DIR}
