@@ -1,4 +1,5 @@
 code-extraction/cpg/
+code-extraction/dg/
 code-extraction/joern/
 code-extraction/llvm2cpg/
 code-extraction/example/a.out
