@@ -1,2 +1,2 @@
 clean:
-	rm -f main.bc main.ll main.o a.out
+	rm -rf *.ll *.o a.out bitcode.* *.bc infer-out/ out/ workspace/
