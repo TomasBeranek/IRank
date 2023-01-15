@@ -53,4 +53,4 @@ experiment: clean-experiment
 # Delete leftovers from previous runs
 clean-experiment:
 	@cd example && make clean
-	@rm -rf /tmp/infer-out
+	@rm -rf /tmp/infer-out /tmp/infer.lockdir
