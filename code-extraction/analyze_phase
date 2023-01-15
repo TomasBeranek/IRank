@@ -1,7 +1,20 @@
 #!/bin/bash
 
-INFER_FLAGS='--bufferoverrun --pulse'
-INFER_OUT_DIR='/tmp/infer-out'
+infer_flags='--bufferoverrun --pulse'
+infer_dir="/tmp/infer-out"
+old_bitcode_files_list="${infer_dir}/old_bc_files.txt"
+new_bitcode_files_list="${infer_dir}/new_bc_files.txt"
+added_bitcode_files_list="${infer_dir}/added_bc_files.txt"
+bc_combined="${infer_dir}/combined.bc"
 
-# run infer's analysis phase
-infer analyze --keep-going ${INFER_FLAGS} -o ${INFER_OUT_DIR}
+# run infer's analysis phase to generate report.json
+infer analyze --keep-going ${infer_flags} -o ${infer_dir}
+
+# find all .bc files on the system and save them
+find / -type f -name "*.bc" 2> /dev/null > ${new_bitcode_files_list}
+
+# determine which files have been newly added and save them
+grep -Fxvf ${old_bitcode_files_list} ${new_bitcode_files_list} > ${added_bitcode_files_list}
+
+# link all .bc files into a single one
+llvm-link $(< ${added_bitcode_files_list}) -o ${bc_combined}
