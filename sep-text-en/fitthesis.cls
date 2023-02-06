@@ -15,7 +15,7 @@
 \newif\ifcover \let\ifcover\iffalse
 \newif\ifCOPEN \let\ifCOPEN\iffalse
 \newif\ifCBOPEN \let\ifCBOPEN\iffalse
-\newif\ifODSAZ \let\ifODSAZ\iffalse
+\newif\ifODSAZ \let\ifODSAZ\iftrue
 
 \newif\ifPrint \let\ifPrint\iffalse
 \newif\ifBarLogo \let\ifBarLogo\iffalse
@@ -1286,6 +1286,7 @@ Management}{\@fit@EN}%
 
 \lstset{
   basicstyle=\ttfamily,
+  backgroundcolor=\color{yellow!10},
   columns=fullflexible,
   showstringspaces=false,
   commentstyle=\color{gray}\upshape,
@@ -1350,8 +1351,25 @@ Management}{\@fit@EN}%
   basicstyle=\ttfamily,
   captionpos=b,
   numbers=left,
-  frame=single,
+  frame=trBL,
   morekeywords={UINT8, UINT16, UINT32, INT8, INT16, INT32, Post, Properties, Protocol, AsciiString, String, StringTerm, BLOB, FormatString, this},
+}
+
+\lstdefinestyle{infer-format}{
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=true,
+  breakatwhitespace=true,
+  escapeinside={<@}{@>},
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings},
+  basicstyle=\ttfamily,
+  captionpos=b,
+  numbers=left,
+  frame=trBL,
+  keepspaces=true,
 }
 
 %END Jan Pluskal (ipluskal) listings
