@@ -7,6 +7,12 @@ new_bitcode_files_list="${infer_dir}/new_bc_files.txt"
 added_bitcode_files_list="${infer_dir}/added_bc_files.txt"
 bc_combined="${infer_dir}/combined.bc"
 
+# colors
+OK='\033[0;92m'
+WARNING='\033[0;93m'
+ERROR='\033[0;31m'
+ENDC='\033[0m'
+
 # run infer's analysis phase to generate report.json
 infer analyze --keep-going ${infer_flags} -o ${infer_dir}
 
@@ -18,3 +24,48 @@ grep -Fxvf ${old_bitcode_files_list} ${new_bitcode_files_list} > ${added_bitcode
 
 # link all .bc files into a single one
 llvm-link $(< ${added_bitcode_files_list}) -o ${bc_combined}
+
+# make copy of report.json
+cp ${infer_dir}/report.json ${infer_dir}/report-copy.json
+
+bug_id=0
+
+# for each bug report
+while :
+do
+  # extract slicing criteria for current bug and remove it from report-copy.json
+	python3 slicing_criteria_extraction.py ${infer_dir}/report-copy.json
+  rc=$?
+
+  # if slicing_criteria_extraction.py exited with return code 0, it means that
+  # it successfully processed current bug
+  if [ ${rc} -eq 0 ]
+  then
+    printf "NOTE: analyze_phase: bug #${bug_id} has been successfully processed!\n"
+  fi
+
+  # if slicing_criteria_extraction.py exited with return code 1, it means that
+  # it encountered an internal error
+  if [ ${rc} -eq 1 ]
+  then
+    printf "${WARNING}WARNING${ENDC}: analyze_phase: skipping bug #${bug_id} because of internal error!\n"
+  fi
+
+  # if slicing_criteria_extraction.py exited with return code 5, it means that
+  # it tried to process an unsupported bug type
+  if [ ${rc} -eq 5 ]
+  then
+    printf "${WARNING}WARNING${ENDC}: analyze_phase: skipping bug #${bug_id} because of unsupported type!\n"
+  fi
+
+  # if slicing_criteria_extraction.py exited with return code 6, it means that
+  # it processed all the bugs
+  if [ ${rc} -eq 6 ]
+  then
+    printf "NOTE: analyze_phase: all the bugs have been processed!\n"
+    break
+  fi
+  
+
+  bug_id=$((bug_id+1))
+done
