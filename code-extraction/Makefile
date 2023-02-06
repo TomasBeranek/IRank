@@ -7,6 +7,7 @@
 # ***************************************************************************
 
 # TODO https://www.gnu.org/software/make/manual/html_node/Standard-Targets.html
+# TODO Comment each target
 
 COMPILERS = 8cc 9cc ack c++ ccomp chibicc clang cproc g++ gcc icc icpc lacc lcc openCC opencc pcc scc sdcc tcc vc x86_64-redhat-linux-c++ x86_64-redhat-linux-g++ x86_64-redhat-linux-gcc x86_64-redhat-linux-gcc-10
 COMPILERS_PATHS = $(addprefix /usr/bin/, $(COMPILERS))
@@ -46,7 +47,10 @@ $(ORIGINAL_COMPILERS_PATHS):
 
 install-pipeline: install-wrappers
 
-experiment: clean-experiment
+# Install/uninstall wrappers before/after each experiment, so that wrappers aren't present on the system all the time
+experiment: clean-experiment install-wrappers experiment-run uninstall-wrappers
+
+experiment-run:
 	@cd example && make
 	./analyze_phase
 
