@@ -82,12 +82,15 @@
     4. ```save```
     5. ```exit```
     6. ```joern-export --repr all --format neo4jcsv workspace/main.cpg.bin.zip/cpg.bin```
-    7. ```sudo cp /home/tomas/Documents/diplomka/code-extraction/example/out/*_data.csv /var/lib/neo4j/import/```
-    8. ```find /home/tomas/Documents/diplomka/code-extraction/example/out -name 'nodes_*_cypher.csv' -exec /bin/cypher-shell -u neo4j -p 123 --file {} \;```
-    9. ```find /home/tomas/Documents/diplomka/code-extraction/example/out -name 'edges_*_cypher.csv' -exec /bin/cypher-shell -u neo4j -p 123 --file {} \;```
-    10. ```MATCH (n) RETURN n``` -- zobrazení v prohlížeči
-    11. ```DETACH DELETE``` -- smazaní celé DB
-    12. ```sudo rm /var/lib/neo4j/import/*``` -- vyčištění importu
+    7. ```sudo rm /var/lib/neo4j/import/*``` -- smazání souborů z předchozího běhu
+    8. ```sudo service neo4j status``` -- kontrola, jestli Neo4j běží
+    9. ```sudo systemctl start neo4j.service``` -- pokud neběží, tak zapnout
+    10. ```sudo cp /home/tomas/Documents/diplomka/code-extraction/example/out/*_data.csv /var/lib/neo4j/import/```
+    11. ```find /home/tomas/Documents/diplomka/code-extraction/example/out -name 'nodes_*_cypher.csv' -exec /bin/cypher-shell -u neo4j -p 123 --file {} \;```
+    12. ```find /home/tomas/Documents/diplomka/code-extraction/example/out -name 'edges_*_cypher.csv' -exec /bin/cypher-shell -u neo4j -p 123 --file {} \;```
+    13. ```MATCH (n) RETURN n``` -- zobrazení v prohlížeči
+    14. ```DETACH DELETE``` -- smazaní celé DB
+    15. ```sudo rm /var/lib/neo4j/import/*``` -- vyčištění importu
 
   - pokud CPG jednotlivých souborů nepůjde spojit, tak by možná šlo využít [WLLVM](https://github.com/travitch/whole-program-llvm)
 
@@ -103,7 +106,6 @@
    1. ```./build/install/cpg-console/bin/cpg-console```
    2. ```:tr ../../example/main.c``` (při úspěchu by měl program vypsat ```03:08:33,948 INFO  MeasurementHolder TranslationManager: Translation into full graph done in 366 ms```)
    3. ```:export neo4j```
-
 
 #### Verze extrakce grafů
   1. CPG knihovna
@@ -148,7 +150,16 @@
     3. ```llvm2cpg bitcode.sliced --output=./main.cpg.bin.zip```
   - 🔴DG opravdu nefunguje bez ```main``` fce🔴 --> nelze analyzovat knihovny
 
+#### Experimenty s entry funkcíí
+  - mohou nastat v podstatě 3 případy chyb v kódu:
+  1. scenario1 -- chyba začne v ```main``` a projeví se v ```f```
+  2. scenario2 -- chyba začne v ```f``` a projeví s v ```main```
+  2. scenario3 -- chyba začne v ```main``` a projeví se v ```main```, s tím, že ```f``` mělo nejaký vliv v průběhu
+  - u všech scénářů je nutné považovat jako entry funkci ```main``` (či jinou fci), protože se jedná o nejvyšší funkci ve stromu volání a co je nad ní už nás nezajímá -- pro chybu to není podstatné (chyba nastane podle Inferu ikdyž vše co výše odstraníme)
+  - experimenty ukázaly, že Infer nejvyšší funkci vždy uvede jako součást hlášení v poli ```procedure```
 
+### Možná vylepšení
+ - generovat .bc soubory clangem, který má Infer u sebe --> máme větší jistotu, že model uvidí to samé co Infer
 
 ### Zmínit v textu
  1. [paper](https://ieeexplore.ieee.org/abstract/document/9376145?casa_token=AbkX5cmm18kAAAAA:oUjTofjHfN6VOcwFv1PoDWTm8Vr_rfqmoKwuwBNrFtYGMztIYH2HfhGG0rYTlgUVg7fZbkwL-A) o GNN nad Simplified CPG
@@ -156,3 +167,4 @@
  3. [studie](https://ieeexplore.ieee.org/abstract/document/9462962?casa_token=LZ2bQiYy1IgAAAAA:QrOOvx79MsJV0u9Vd4C9Dv4UGiSaFxfn-EDr0pWVH-wBhzW29b-s6DGS4cKJ9PPbYcjrpTGl3g) -- shallow vs deep learning pro detekci chyb
  4. [studie](https://dl.acm.org/doi/abs/10.1145/3338906.3338941) o perfektním labelování
  5. zkusit najít článek o porovnání úspěšnosti modelů na syntetických datasetech a reálných softwarech
+ 6. experiment potvrzující, že lze extrahovat entry funkci pro všechny možné případy extrahovat z Infer výstupu stejně -- viz. experimenty v ```entry-function-experiments/```

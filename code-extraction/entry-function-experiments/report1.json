@@ -1,0 +1,67 @@
+[
+    {
+        "bug_type": "NULL_DEREFERENCE",
+        "qualifier": "pointer `p` last assigned on line 22 could be null and is dereferenced by call to `f()` at line 28, column 3.",
+        "severity": "ERROR",
+        "line": 28,
+        "column": 3,
+        "procedure": "main",
+        "procedure_start_line": 15,
+        "file": "scenario1.c",
+        "bug_trace": [
+            {
+                "level": 0,
+                "filename": "scenario1.c",
+                "line_number": 15,
+                "column_number": 1,
+                "description": "start of procedure main()"
+            },
+            {
+                "level": 0,
+                "filename": "scenario1.c",
+                "line_number": 21,
+                "column_number": 7,
+                "description": "Taking true branch"
+            },
+            {
+                "level": 0,
+                "filename": "scenario1.c",
+                "line_number": 22,
+                "column_number": 5,
+                "description": ""
+            },
+            {
+                "level": 0,
+                "filename": "scenario1.c",
+                "line_number": 28,
+                "column_number": 3,
+                "description": ""
+            },
+            {
+                "level": 1,
+                "filename": "scenario1.c",
+                "line_number": 5,
+                "column_number": 1,
+                "description": "start of procedure f()"
+            },
+            {
+                "level": 1,
+                "filename": "scenario1.c",
+                "line_number": 7,
+                "column_number": 3,
+                "description": ""
+            },
+            {
+                "level": 1,
+                "filename": "scenario1.c",
+                "line_number": 9,
+                "column_number": 3,
+                "description": ""
+            }
+        ],
+        "key": "scenario1.c|main|NULL_DEREFERENCE",
+        "node_key": "ef39b5eaac01c15bbb4cdb6a84673fa5",
+        "hash": "ea2480ee9afda89f4fe1fe80dd1ad9ab",
+        "bug_type_hum": "Null Dereference"
+    }
+]

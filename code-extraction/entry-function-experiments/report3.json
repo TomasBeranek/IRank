@@ -1,0 +1,88 @@
+[
+    {
+        "bug_type": "NULL_DEREFERENCE",
+        "qualifier": "pointer `p` last assigned on line 19 could be null and is dereferenced at line 30, column 5.",
+        "severity": "ERROR",
+        "line": 30,
+        "column": 5,
+        "procedure": "main",
+        "procedure_start_line": 16,
+        "file": "scenario3.c",
+        "bug_trace": [
+            {
+                "level": 0,
+                "filename": "scenario3.c",
+                "line_number": 16,
+                "column_number": 1,
+                "description": "start of procedure main()"
+            },
+            {
+                "level": 0,
+                "filename": "scenario3.c",
+                "line_number": 18,
+                "column_number": 3,
+                "description": ""
+            },
+            {
+                "level": 0,
+                "filename": "scenario3.c",
+                "line_number": 19,
+                "column_number": 3,
+                "description": ""
+            },
+            {
+                "level": 0,
+                "filename": "scenario3.c",
+                "line_number": 23,
+                "column_number": 3,
+                "description": ""
+            },
+            {
+                "level": 1,
+                "filename": "scenario3.c",
+                "line_number": 5,
+                "column_number": 1,
+                "description": "start of procedure f()"
+            },
+            {
+                "level": 1,
+                "filename": "scenario3.c",
+                "line_number": 8,
+                "column_number": 7,
+                "description": "Taking true branch"
+            },
+            {
+                "level": 1,
+                "filename": "scenario3.c",
+                "line_number": 9,
+                "column_number": 5,
+                "description": ""
+            },
+            {
+                "level": 1,
+                "filename": "scenario3.c",
+                "line_number": 14,
+                "column_number": 1,
+                "description": "return from a call to f"
+            },
+            {
+                "level": 0,
+                "filename": "scenario3.c",
+                "line_number": 26,
+                "column_number": 7,
+                "description": "Taking false branch"
+            },
+            {
+                "level": 0,
+                "filename": "scenario3.c",
+                "line_number": 30,
+                "column_number": 5,
+                "description": ""
+            }
+        ],
+        "key": "scenario3.c|main|NULL_DEREFERENCE",
+        "node_key": "043c0766603f9712711453e31724d31f",
+        "hash": "3ca61eaca957b3dc8bc20cde8bd5c7f0",
+        "bug_type_hum": "Null Dereference"
+    }
+]

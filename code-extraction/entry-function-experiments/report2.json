@@ -1,0 +1,81 @@
+[
+    {
+        "bug_type": "NULL_DEREFERENCE",
+        "qualifier": "pointer `a` last assigned on line 23 could be null and is dereferenced at line 28, column 3.",
+        "severity": "ERROR",
+        "line": 28,
+        "column": 3,
+        "procedure": "main",
+        "procedure_start_line": 20,
+        "file": "scenario2.c",
+        "bug_trace": [
+            {
+                "level": 0,
+                "filename": "scenario2.c",
+                "line_number": 20,
+                "column_number": 1,
+                "description": "start of procedure main()"
+            },
+            {
+                "level": 0,
+                "filename": "scenario2.c",
+                "line_number": 23,
+                "column_number": 3,
+                "description": ""
+            },
+            {
+                "level": 1,
+                "filename": "scenario2.c",
+                "line_number": 4,
+                "column_number": 1,
+                "description": "start of procedure f()"
+            },
+            {
+                "level": 1,
+                "filename": "scenario2.c",
+                "line_number": 10,
+                "column_number": 7,
+                "description": "Taking true branch"
+            },
+            {
+                "level": 1,
+                "filename": "scenario2.c",
+                "line_number": 11,
+                "column_number": 5,
+                "description": ""
+            },
+            {
+                "level": 1,
+                "filename": "scenario2.c",
+                "line_number": 17,
+                "column_number": 3,
+                "description": ""
+            },
+            {
+                "level": 1,
+                "filename": "scenario2.c",
+                "line_number": 18,
+                "column_number": 1,
+                "description": "return from a call to f"
+            },
+            {
+                "level": 0,
+                "filename": "scenario2.c",
+                "line_number": 26,
+                "column_number": 3,
+                "description": ""
+            },
+            {
+                "level": 0,
+                "filename": "scenario2.c",
+                "line_number": 28,
+                "column_number": 3,
+                "description": ""
+            }
+        ],
+        "key": "scenario2.c|main|NULL_DEREFERENCE",
+        "node_key": "0ff413c0a919d343e593bc08e48ac0a4",
+        "hash": "479ed1f3db96eabdf247f4820f04216f",
+        "bug_type_hum": "Null Dereference"
+    }
+]
