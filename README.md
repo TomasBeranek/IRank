@@ -160,6 +160,21 @@
 
 ### Možná vylepšení
  - generovat .bc soubory clangem, který má Infer u sebe --> máme větší jistotu, že model uvidí to samé co Infer
+ - udělat optimalizaci LLVM bitcode před llvm2cpg nebo ještě před LLVM-slicer -- mohlo by změnšit výstupní CPG
+ - prořezávání pouze podle čísla řádku? -- může ušetřit spoustu problémů
+
+
+### TODO
+ - testy pro slicing criteria -- alespoň chování při prázdném, prázdném JSON ("[]") a plném soubory s reporty z Inferu
+ - nějakým způsobem zakomponovat název chyby (nejdřív přeložit pomocí word2vec) do vstupu GNN -- node label?
+ - oštřit, když pipeline najde .bc soubor, který ale neubsahuje bitcode je to nějaký jiný random formát
+ - GNN6-GANZ -- někde získali BGNN4VD
+- problém s absencí Infer reportu u negativních vzorků museli také nějak ASI řešit u C-bert/D2A článku 🔴podívat se🔴
+
+### Interesting
+ - spuštění na LLVM-sliceru na combined LLVM bitcode může být pomalé, jelikož je daný bitcode velký (celý projekt), nicméně se to možná samo vyřeší díky specifikaci entry funkce, která to výrazně omezí
+ - čistý Joern --> CPG o 998 uzlech, pomocí pipeline --> CPG o 103 uzlech -- otestovat a kdyžtak zmínit v textu
+
 
 ### Zmínit v textu
  1. [paper](https://ieeexplore.ieee.org/abstract/document/9376145?casa_token=AbkX5cmm18kAAAAA:oUjTofjHfN6VOcwFv1PoDWTm8Vr_rfqmoKwuwBNrFtYGMztIYH2HfhGG0rYTlgUVg7fZbkwL-A) o GNN nad Simplified CPG
@@ -168,3 +183,5 @@
  4. [studie](https://dl.acm.org/doi/abs/10.1145/3338906.3338941) o perfektním labelování
  5. zkusit najít článek o porovnání úspěšnosti modelů na syntetických datasetech a reálných softwarech
  6. experiment potvrzující, že lze extrahovat entry funkci pro všechny možné případy extrahovat z Infer výstupu stejně -- viz. experimenty v ```entry-function-experiments/```
+ 7. uvést konkrétní příklad, kdy Infer detekuje chybu v podmíněném překladu (se 2 .h soubory) a Joern to nedokáže korektně namodelovat
+ 8. proč modely natrénované na syntetických datasetech nefungují na reálných programech? jednou z možností je podmíněný překlad
