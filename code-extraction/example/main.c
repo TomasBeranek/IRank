@@ -11,7 +11,8 @@ int g(int b) {
 }
 
 /* An unnecessarily complicated program which returns 0, if no args were passed
-   otherwise it returns the number of args passed (program name included). */
+   otherwise it returns the number of args passed (program name included). But
+   when some args are passed NULL_DEREFERENCE happens in add_one function. */
 int main(int argc, char const *argv[]) {
   int x = argc - 1;
   int y;
