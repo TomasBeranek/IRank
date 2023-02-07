@@ -148,7 +148,9 @@
     1. ```llvm-link add_one.bc main.bc -o bitcode.bc```
     2. ```llvm-slicer -c 21:x bitcode.bc``` -- slicing podle proměnné ```x``` na řádku ```21```, vytvoří se soubor ```bitcode.sliced```
     3. ```llvm2cpg bitcode.sliced --output=./main.cpg.bin.zip```
-  - 🔴DG opravdu nefunguje bez ```main``` fce🔴 --> nelze analyzovat knihovny
+  - 🔴lze si zobrazit graf v .dot🔴
+  - pokud chci specifikovat i soubor, kde byla proměnná použita lze to pomocí ```-sc add_one.c##7#&p```, je to zmíněno [zde](https://github.com/mchalupa/dg/issues/350)
+
 
 #### Experimenty s entry funkcíí
   - mohou nastat v podstatě 3 případy chyb v kódu:
@@ -169,7 +171,8 @@
  - nějakým způsobem zakomponovat název chyby (nejdřív přeložit pomocí word2vec) do vstupu GNN -- node label?
  - oštřit, když pipeline najde .bc soubor, který ale neubsahuje bitcode je to nějaký jiný random formát
  - GNN6-GANZ -- někde získali BGNN4VD
-- problém s absencí Infer reportu u negativních vzorků museli také nějak ASI řešit u C-bert/D2A článku 🔴podívat se🔴
+ - problém s absencí Infer reportu u negativních vzorků museli také nějak ASI řešit u C-bert/D2A článku 🔴podívat se🔴
+ - prozkoumat jak funguje LLVM-slicer -- podívat se vizuálně co odstraňuje (pomocí .dot formátu -- vše je zdokumentované [zde](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md#slicing-criteria)) a **zdokumentovat výsledky**
 
 ### Interesting
  - spuštění na LLVM-sliceru na combined LLVM bitcode může být pomalé, jelikož je daný bitcode velký (celý projekt), nicméně se to možná samo vyřeší díky specifikaci entry funkce, která to výrazně omezí
@@ -185,3 +188,4 @@
  6. experiment potvrzující, že lze extrahovat entry funkci pro všechny možné případy extrahovat z Infer výstupu stejně -- viz. experimenty v ```entry-function-experiments/```
  7. uvést konkrétní příklad, kdy Infer detekuje chybu v podmíněném překladu (se 2 .h soubory) a Joern to nedokáže korektně namodelovat
  8. proč modely natrénované na syntetických datasetech nefungují na reálných programech? jednou z možností je podmíněný překlad
+ 9. ```-g``` při generování LLVM IR, je nutné pro použití criterií v potřebném formátu pro program slicing, více v [readme](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md#slicing-criteria)
