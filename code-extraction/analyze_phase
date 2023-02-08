@@ -8,6 +8,7 @@ added_bitcode_files_list="${infer_dir}/added_bc_files.txt"
 bc_combined="${infer_dir}/combined.bc"
 slicing_info_file="${infer_dir}/slicing_info.txt"
 bc_sliced="${infer_dir}/sliced.bc"
+cpg_bin="${infer_dir}/sliced.cpg.bin.zip"
 
 # colors
 OK='\033[0;92m'
@@ -99,6 +100,19 @@ do
 		bug_id=$((bug_id+1))
 		continue
 	fi
+
+	# generate CPG
+	llvm2cpg ${bc_sliced} --output=${cpg_bin} > ${infer_dir}/llvm2cpg_stdout.txt
+
+	# check if llvm2cpg succeeded
+	if grep "No bitcode files found." ${infer_dir}/llvm2cpg_stdout.txt > /dev/null
+	then
+	  # llvm-slicer coudn't match extracted slicing criteria to bitcode
+		printf "${WARNING}WARNING${ENDC}: analyze_phase: skipping bug #${bug_id} because llvm2cpg failed to generate CPG!\n"
+		bug_id=$((bug_id+1))
+		continue
+	fi
+
 
 	# success
 	printf "${OK}SUCCESS${ENDC}: analyze_phase: CPG for bug #${bug_id} was successfully constructed!\n"
