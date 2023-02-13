@@ -52,7 +52,7 @@ experiment: clean-experiment install-wrappers experiment-run uninstall-wrappers
 
 experiment-run:
 	@cd example && make
-	./analyze_phase
+	./construction_phase
 
 # Delete leftovers from previous runs
 clean-experiment:
