@@ -136,10 +136,18 @@ do
 		continue
 	fi
 
+	# export Joern's CPG to CSV
+	joern-export --repr all --format neo4jcsv ${joern_cpg_bin}
 
-	# TODO if joern-export fails it indicates that Joern failed to import given CPG
-	#			 but still created it's (partial = faulty) internal representation
-
+	# check if joern-export succeeded
+	if [ $? -ne 0 ]
+	then
+		# joern-export failed probably due to the faulty ${joern_cpg_bin} which
+		# was caused by joern's importing which failed half-way
+		printf "${WARNING}WARNING${ENDC}: analyze_phase: skipping bug #${bug_id} because joern-export failed to create Neo4j CSV (Joern probably failed to import CPG)!\n"
+		bug_id=$((bug_id+1))
+		continue
+	fi
 
 
 	# success
