@@ -8,7 +8,8 @@
 #   0 -- Ok.
 #   1 -- Internal error.
 #   5 -- Unsupported bug type.
-#   6 -- The file is empty (not considered as an error).
+#   6 -- The file is empty, but in JSON format (not considered as an error).
+#   7 -- The file is not in JSON format or is missing completely.
 
 
 import json
@@ -84,14 +85,14 @@ if __name__ == "__main__":
     if not os.path.exists(report_json_file):
         # The Infer report file is missing
         print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{report_json_file}" doesn\'t exist!', file=sys.stderr)
-        exit(1)
+        exit(7)
 
     with open(report_json_file, "r") as f:
         try:
             reports = json.load(f)
         except json.decoder.JSONDecodeError:
             print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{report_json_file}" in not in JSON format!', file=sys.stderr)
-            exit(1)
+            exit(7)
 
     if not reports:
         # The report is empty, but in JSON format -- we processed all the reports
@@ -103,5 +104,3 @@ if __name__ == "__main__":
 
     slicing_info = extract_slicing_info(reports[0])
     print(f"{slicing_info[0]}\n{slicing_info[1]}\n{slicing_info[2]}\n{slicing_info[3]}")
-
-    exit(0)

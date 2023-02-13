@@ -83,6 +83,14 @@ do
     break
   fi
 
+	# if slicing_criteria_extraction.py exited with return code 7, it means that
+	# it failed to parse JSON file or JSON file is missing
+	if [ ${rc} -eq 7 ]
+	then
+		printf "${ERROR}ERROR${ENDC}: analyze_phase: slicing criteria extraction has encountered an unrecoverable error!\n"
+		exit 1
+	fi
+
 	if ${failed_to_extract_slicing_info}
 	then
 		# for some reason it wasn't possible to generate CPG
