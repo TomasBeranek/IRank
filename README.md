@@ -173,6 +173,8 @@
  - GNN6-GANZ -- někde získali BGNN4VD
  - problém s absencí Infer reportu u negativních vzorků museli také nějak ASI řešit u C-bert/D2A článku 🔴podívat se🔴
  - prozkoumat jak funguje LLVM-slicer -- podívat se vizuálně co odstraňuje (pomocí .dot formátu -- vše je zdokumentované [zde](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md#slicing-criteria)) a **zdokumentovat výsledky**
+ - přidat timestamps do NOTE, WARNING a ERROR výpisů
+ - v prezentaci označit, které části pipeline jsem já vytvořil (stačí hvězdičkou a dole v poznámce vysvětlit)
 
 ### Interesting
  - spuštění na LLVM-sliceru na combined LLVM bitcode může být pomalé, jelikož je daný bitcode velký (celý projekt), nicméně se to možná samo vyřeší díky specifikaci entry funkce, která to výrazně omezí
@@ -189,3 +191,4 @@
  7. uvést konkrétní příklad, kdy Infer detekuje chybu v podmíněném překladu (se 2 .h soubory) a Joern to nedokáže korektně namodelovat
  8. proč modely natrénované na syntetických datasetech nefungují na reálných programech? jednou z možností je podmíněný překlad
  9. ```-g``` při generování LLVM IR, je nutné pro použití criterií v potřebném formátu pro program slicing, více v [readme](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md#slicing-criteria)
+ 10. porovnání s chatGPT
