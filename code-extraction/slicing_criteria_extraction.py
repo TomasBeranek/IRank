@@ -33,6 +33,65 @@ def extract_line_from_bug_trace(report):
     return report["bug_trace"][-1]["line_number"]
 
 
+# Numbers of true positives from D2A dataset > 200
+#   INTEGER_OVERFLOW_L5: 10382
+#   BUFFER_OVERRUN_L5: 3115
+#   BUFFER_OVERRUN_L4: 1233
+#   INTEGER_OVERFLOW_U5: 728
+#   BUFFER_OVERRUN_U5: 640
+#   BUFFER_OVERRUN_L3: 460
+#   NULLPTR_DEREFERENCE: 422
+#   INTEGER_OVERFLOW_L2: 369
+#   INFERBO_ALLOC_MAY_BE_BIG: 360
+#   UNINITIALIZED_VALUE: 240
+#   BUFFER_OVERRUN_L2: 222
+#   NULL_DEREFERENCE: 201
+
+
+# def extract_variable_INTEGER_OVERFLOW_L5(report):
+#     return variable_name
+
+
+# def extract_variable_BUFFER_OVERRUN_L5(report):
+#     return variable_name
+
+
+# def extract_variable_BUFFER_OVERRUN_L4(report):
+#     return variable_name
+
+
+# def extract_variable_INTEGER_OVERFLOW_U5(report):
+#     return variable_name
+
+
+# def extract_variable_BUFFER_OVERRUN_U5(report):
+#     return variable_name
+
+
+# def extract_variable_BUFFER_OVERRUN_L3(report):
+#     return variable_name
+
+
+# def extract_variable_NULLPTR_DEREFERENCE(report):
+#     return variable_name
+
+
+# def extract_variable_INTEGER_OVERFLOW_L2(report):
+#     return variable_name
+
+
+# def extract_variable_INFERBO_ALLOC_MAY_BE_BIG(report):
+#     return variable_name
+
+
+# def extract_variable_UNINITIALIZED_VALUE(report):
+#     return variable_name
+
+
+# def extract_variable_BUFFER_OVERRUN_L2(report):
+#     return variable_name
+
+
 def extract_variable_NULL_DEREFERENCE(report):
     # Get part of the qualifier which contains the variable name
     x = re.search(r'pointer `.*` last assigned', report["qualifier"])
