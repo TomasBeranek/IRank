@@ -9,3 +9,6 @@ code-extraction/example/
 !code-extraction/example/main.c
 !code-extraction/example/add_one.c
 !code-extraction/example/Makefile
+
+# D2A
+dataset/d2a/
