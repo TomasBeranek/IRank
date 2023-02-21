@@ -21,6 +21,7 @@ def init_parser():
     parser.add_argument('-d', '--dir', required=True, type=str, help='directory with D2A files')
     parser.add_argument('-b', '--bug-type', required=True, type=str, help='Infer bug type')
     parser.add_argument('-n', required=True, type=int, help='Nth sample [1,2,...]')
+    parser.add_argument('--bug-info-only', required=False, action='store_true', help='print only \'bug_info\'')
 
     return parser
 
@@ -65,6 +66,10 @@ if __name__ == '__main__':
         print(f'Number of {args.bug_type} < {args.n}!', file=sys.stderr)
     except BugTypeNotFound:
         print(f'Bug type {args.bug_type} wasn\'t present!', file=sys.stderr)
+
+    if args.bug_info_only:
+        # Remove everything except bug info and trace
+        sample = {'bug_info': sample['bug_info'], 'trace': sample['trace']}
 
     # Pretty print JSON
     json_formatted = json.dumps(sample, indent=4)
