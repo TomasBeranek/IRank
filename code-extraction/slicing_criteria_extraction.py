@@ -47,6 +47,11 @@ def extract_line_from_bug_trace(report):
 #   BUFFER_OVERRUN_L2: 222
 #   NULL_DEREFERENCE: 201
 
+# IMPORTANT: When it is not possible to get the bug location from the basic
+# information, there is an entry 'adjust_bug_loc' in D2A that points to the bug
+# location (if it can be found e.g. in the bug trace). The correct behaviour
+# has been verified for all supported bugs.
+
 
 # NULLPTR_DEREFERENCE: three types were found:
 #   1) "call to `put_bits()` eventually accesses memory that is the null pointer on line 543 indirectly during the call to `init_put_bits()`."

@@ -25,6 +25,7 @@ def init_parser():
 
     return parser
 
+
 def load_sample(files, N, bug_type):
     cnt = 1
 
@@ -68,8 +69,10 @@ if __name__ == '__main__':
         print(f'Bug type {args.bug_type} wasn\'t present!', file=sys.stderr)
 
     if args.bug_info_only:
-        # Remove everything except bug info and trace
-        sample = {'bug_info': sample['bug_info'], 'trace': sample['trace']}
+        # Remove everything except bug info, trace and adjusted bug location
+        sample = { 'bug_info': sample['bug_info'],
+                   'adjusted_bug_loc': sample['adjusted_bug_loc'],
+                   'trace': sample['trace']}
 
     # Pretty print JSON
     json_formatted = json.dumps(sample, indent=4)
