@@ -3,6 +3,7 @@ import sys
 import json
 import gzip
 import os
+from tqdm import tqdm
 from collections import Counter
 
 
@@ -67,7 +68,7 @@ if __name__ == '__main__':
         stats[name] = { '0': {}, '1': {} }
 
     # Extract data from .pickle.gz files
-    for name in project_names:
+    for name in tqdm(project_names):
         file_0 = f'{d2a_dir}/{name}_labeler_0.pickle.gz'
         file_1 = f'{d2a_dir}/{name}_labeler_1.pickle.gz'
         stats[name]['0'] = load_stats(file_0)
