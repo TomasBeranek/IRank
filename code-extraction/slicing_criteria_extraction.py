@@ -47,6 +47,10 @@ def extract_line_from_bug_trace(report):
 #   BUFFER_OVERRUN_L2: 222
 #   NULL_DEREFERENCE: 201
 
+# Added because their are of similar type
+# BUFFER_OVERRUN_L1: 28
+# INTEGER_OVERFLOW_L1: 22
+
 # IMPORTANT: When it is not possible to get the bug location from the basic
 # information, there is an entry 'adjust_bug_loc' in D2A that points to the bug
 # location (if it can be found e.g. in the bug trace). The correct behaviour
@@ -73,6 +77,7 @@ def extract_line_from_bug_trace(report):
 # trace (description "invalid access occurs here").
 
 
+# INTEGER_OVERFLOW_L1
 # INTEGER_OVERFLOW_L5
 # INTEGER_OVERFLOW_U5
 # INTEGER_OVERFLOW_L2: two types were found:
@@ -127,6 +132,7 @@ def extract_line_from_bug_trace(report):
 # will just slice by array for now and leave room for future improvements
 
 
+# BUFFER_OVERRUN_L1
 # BUFFER_OVERRUN_L5
 # BUFFER_OVERRUN_L4
 # BUFFER_OVERRUN_U5
