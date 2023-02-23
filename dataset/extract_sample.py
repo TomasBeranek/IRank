@@ -70,9 +70,10 @@ if __name__ == '__main__':
 
     if args.bug_info_only:
         # Remove everything except bug info, trace and adjusted bug location
-        sample = { 'bug_info': sample['bug_info'],
-                   'adjusted_bug_loc': sample['adjusted_bug_loc'],
-                   'trace': sample['trace']}
+        sample_new = { 'bug_info': sample['bug_info'],
+                   'adjusted_bug_loc': sample['adjusted_bug_loc']}
+        if 'trace' in sample.keys():
+            sample_new['trace'] = sample['trace']
 
     # Pretty print JSON
     json_formatted = json.dumps(sample, indent=4)
