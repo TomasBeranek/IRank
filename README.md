@@ -192,3 +192,10 @@
  8. proč modely natrénované na syntetických datasetech nefungují na reálných programech? jednou z možností je podmíněný překlad
  9. ```-g``` při generování LLVM IR, je nutné pro použití criterií v potřebném formátu pro program slicing, více v [readme](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md#slicing-criteria)
  10. porovnání s chatGPT
+ 11. vylepšení oproti řešení modelů z IBM:
+  - IBM nepoužívá program slicing program
+  - nejsem si jist, zda vhodně označují místo výskytu chyby
+ 12. možné důvody proč to nefunguje
+  - Infer občas chybně hlásí lokaci chyby -> D2A může být špatně označeno -> špatně se prořezává -> modelu chybí informace
+  - u některých chyb Infer nehlásí bug trace a protože D2A s bug trace pracuje --> extrahuje z ní funkce, které jsou potřebné pro chybu, tak jelikož já závisím na tom samém, tak je možné, že za chybu mohou funkce, které nebyly v bug trace --> nebyly v D2A --> nebyly přeloženy --> nebyly z nich extrahovány CPG --> model nezná jejich kód (ikdyž by mohli být v data dependency grafu, kdyby byly překládány)
+ 13. extrakce slicing kriterií z různých typů chyb -- informace jsou uvedeny v slicing_criteria_extraction.py
