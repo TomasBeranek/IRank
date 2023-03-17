@@ -75,6 +75,8 @@ if __name__ == '__main__':
         if 'trace' in sample.keys():
             sample_new['trace'] = sample['trace']
 
+        sample = sample_new
+
     # Pretty print JSON
     json_formatted = json.dumps(sample, indent=4)
     print(json_formatted)
