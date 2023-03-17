@@ -5,10 +5,8 @@
 # in the file.
 
 # Meaning of error codes:
-#   0 -- Ok.
+#   0 -- Ok. The file might be empty, but in JSON format (not considered as an error).
 #   1 -- Internal error.
-#   5 -- Unsupported bug type.
-#   6 -- The file is empty, but in JSON format (not considered as an error).
 #   7 -- The file is not in JSON format or is missing completely.
 
 
@@ -16,6 +14,9 @@ import json
 import sys
 import os
 import re
+import argparse
+import gzip
+import pickle
 
 
 # Colors for command line
@@ -25,12 +26,50 @@ ERROR = '\033[91m'
 ENDC = '\033[0m'
 
 
-def extract_file_from_bug_trace(report):
-    return report["bug_trace"][-1]["filename"]
+def init_parser():
+    parser = argparse.ArgumentParser(description='Extract slicing criteria from Infer\'s output for LLVM slicer (DG) tool. The output is written to stdout in CSV format "status,bug_id,slicing_criteria". If a bug has an unsupported type, then the bug will be skipped (nothing is written to stdout).')
+
+    parser.add_argument('file', metavar='FILE', type=str, help='file with reported bugs')
+    parser.add_argument('--d2a', required=False, action='store_true', help='input file is in D2A format')
+    parser.add_argument('--debug', required=False, metavar='N', type=int, help='print up to N reports in JSON format of each found bug format type (each bug type can be further subdivided by its format)')
+
+    return parser
 
 
-def extract_line_from_bug_trace(report):
-    return report["bug_trace"][-1]["line_number"]
+def location_from_bug_trace(report):
+    return report['bug_trace'][-1]['filename'], report['bug_trace'][-1]['line_number']
+
+
+# Debug option - a number of reports to print (of each type)
+DEBUG = 0
+DEBUG_TYPES = {}
+
+def init_debug():
+    global DEBUG_TYPES
+    bug_format_types = ['NULLPTR_DEREFERENCE',
+                        'INTEGER_OVERFLOW_TYPE_1',
+                        'INTEGER_OVERFLOW_TYPE_2',
+                        'INFERBO_ALLOC_MAY_BE_BIG',
+                        'UNINITIALIZED_VALUE_TYPE_1',
+                        'UNINITIALIZED_VALUE_TYPE_2',
+                        'BUFFER_OVERRUN_TYPE_1',
+                        'BUFFER_OVERRUN_TYPE_2',
+                        'NULL_DEREFERENCE_TYPE_1',
+                        'NULL_DEREFERENCE_TYPE_2']
+
+    # Initialize all format types to 0
+    DEBUG_TYPES = dict(zip(bug_format_types, [0]*len(bug_format_types)))
+
+
+def print_debug_report(report, bug_format_type):
+    global DEBUG_TYPES
+
+    if DEBUG and DEBUG_TYPES[bug_format_type] < DEBUG:
+        # Pretty print JSON
+        json_formatted = json.dumps(report, indent=4)
+        print(f'FORMAT TYPE: {bug_format_type}:', file=sys.stderr)
+        print(json_formatted, file=sys.stderr)
+        DEBUG_TYPES[bug_format_type] += 1
 
 
 # Numbers of true positives from D2A dataset > 200
@@ -75,12 +114,23 @@ def extract_line_from_bug_trace(report):
 # information (similar case to NULL_DEREFERENCE). However, in all three cases
 # it is possible to get the NULL dereference line from the last step of the bug
 # trace (description "invalid access occurs here").
+def extract_NULLPTR_DEREFERENCE(report, id):
+    if 'invalid access occurs here' != report['bug_trace'][-1]['description']:
+        # Unexpected format of bug report --> try to slice by basic file/line
+        report_msg = report['bug_trace'][-1]['description']
+        print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "NULLPTR_DEREFERENCE" bug trace qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
+        return 1, report['file'], report['line'], ''
+    else:
+        file, line = location_from_bug_trace(report)
+        print_debug_report(report, 'NULLPTR_DEREFERENCE')
+        return 0, file, line, ''
 
 
-# INTEGER_OVERFLOW_L1
-# INTEGER_OVERFLOW_L5
-# INTEGER_OVERFLOW_U5
-# INTEGER_OVERFLOW_L2: two types were found:
+INTEGER_OVERFLOW = [ 'INTEGER_OVERFLOW_L1',
+                     'INTEGER_OVERFLOW_L5',
+                     'INTEGER_OVERFLOW_U5',
+                     'INTEGER_OVERFLOW_L2' ]
+# INTEGER_OVERFLOW: two types were found:
 #   1) "([0, 8] - [0, 8]):unsigned32."
 #       e.g. python3 extract_sample.py -d d2a/ -b INTEGER_OVERFLOW_L2 --bug-info-only -n 1
 #           ID: ffmpeg_1542087b54ddf682fb6177f999c6f9f79bd5613f_1
@@ -93,6 +143,28 @@ def extract_line_from_bug_trace(report):
 # only by line. In case 1) the line is extracted from the base information and
 # in case 2) the line is extracted from the last step in the bug trace (e.g.
 # description "Binary operation: ([0, 1] - 1):unsigned32 by call to `avfilter_unref_buffer` ").
+def extract_INTEGER_OVERFLOW(report, id):
+    file = report['file']
+    line = report['line']
+    bug_type = report['bug_type']
+
+    if 'by call to' in report['qualifier']:
+        # Type 2) --> extract location from last step of bug trace
+
+        if 'Binary operation:' not in report['bug_trace'][-1]['description']:
+            # Unexpected format of bug report --> try to slice by basic file/line
+            report_msg = report['bug_trace'][-1]['description']
+            print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "{bug_type}" bug trace qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
+            return 1, file, line, ''
+
+        # Expected format of bug report --> slice by the last step of bug trace
+        file, line = location_from_bug_trace(report)
+        print_debug_report(report, 'INTEGER_OVERFLOW_TYPE_2')
+        return 0, file, line, ''
+    else:
+        # Type 1) --> extract location from basic info
+        print_debug_report(report, 'INTEGER_OVERFLOW_TYPE_1')
+        return 0, file, line, ''
 
 
 # INFERBO_ALLOC_MAY_BE_BIG: only one type found:
@@ -107,13 +179,24 @@ def extract_line_from_bug_trace(report):
 # can be used to determine the exact location of the allocation. However, it is
 # no longer possible to find out what variable or combination of variables may
 # take on non-valid values. If we restrict ourselves to e.g. only realloc(ptr, size),
-# then it would be possible to prune according to the 2nd parameter, which is
+# then it would be possible to slice according to the 2nd parameter, which is
 # always size (Infer is looking for an error here). However, the allocation
 # function can be of any shape in general, and we don't know which parameter is
-# the size of the allocation. Therefore, it will only be pruned by that line --
+# the size of the allocation. Therefore, it will only be sliced by that line --
 # plus the allocation function is generally not large, so it doesn't add as much
-# unnecessary information. The Entry function will take from the basic information
+# unnecessary information. The entry function is taken from the basic information
 # as with other errors.
+def extract_INFERBO_ALLOC_MAY_BE_BIG(report, id):
+
+    if 'Allocation:' not in report['bug_trace'][-1]['description']:
+        # Unexpected format of bug report --> try to slice by basic file/line
+        report_msg = report['bug_trace'][-1]['description']
+        print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "INFERBO_ALLOC_MAY_BE_BIG" bug trace qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
+        return 1, report['file'], report['line'], ''
+    else:
+        file, line = location_from_bug_trace(report)
+        print_debug_report(report, 'INFERBO_ALLOC_MAY_BE_BIG')
+        return 0, file, line, ''
 
 
 # UNINITIALIZED_VALUE: two types were found:
@@ -130,14 +213,40 @@ def extract_line_from_bug_trace(report):
 # by line (the information would be included), but since it isn't typically the
 # case that a particular item is not initialized, but rather the whole array, I
 # will just slice by array for now and leave room for future improvements
+def extract_UNINITIALIZED_VALUE(report, id):
+    file = report['file']
+    line = report['line']
+    report_msg = report['qualifier']
+
+    # Get part of the message which contains the variable name
+    x = re.search(r'The value read from .* was never initialized.', report['qualifier'])
+
+    # If the given part wasn't found
+    if not x:
+        print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "UNINITIALIZED_VALUE" qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
+        return 1, file, line, ''
+
+    # Extract variable name
+    variable = x.group().split(' ')[4]
+
+    if r'[_]' in variable:
+        # Type 2) --> variable == 'variable_name[_]' --> we want only variable_name
+        variable = variable.split('[')[0]
+        print_debug_report(report, 'UNINITIALIZED_VALUE_TYPE_2')
+        return 0, file, line, variable
+    else:
+        # Type 1)
+        print_debug_report(report, 'UNINITIALIZED_VALUE_TYPE_1')
+        return 0, file, line, variable
 
 
-# BUFFER_OVERRUN_L1
-# BUFFER_OVERRUN_L5
-# BUFFER_OVERRUN_L4
-# BUFFER_OVERRUN_U5
-# BUFFER_OVERRUN_L3
-# BUFFER_OVERRUN_L2: two types were found (see NULL_DEREFERENCE):
+BUFFER_OVERRUN = [ 'BUFFER_OVERRUN_L1',
+                   'BUFFER_OVERRUN_L5',
+                   'BUFFER_OVERRUN_L4',
+                   'BUFFER_OVERRUN_U5',
+                   'BUFFER_OVERRUN_L3',
+                   'BUFFER_OVERRUN_L2' ]
+# BUFFER_OVERRUN: two types were found (see NULL_DEREFERENCE):
 #   1) "Offset: [0, 15] Size: 4."
 #       e.g. python3 extract_sample.py -d d2a/ -b BUFFER_OVERRUN_L2 --bug-info-only -n 2
 #           ID: ffmpeg_61d490455ade68a02dfdcfdb172ba3ded2fe0f9d_1
@@ -158,6 +267,27 @@ def extract_line_from_bug_trace(report):
 # For this reason, these types of errors can only be sliced by the line that
 # can be extracted from the last step of bug trace (e.g. description
 # "Array access: Offset: [1, 4] Size: 4 by call to `filter_mb_mbaff_edgecv` ").
+def extract_BUFFER_OVERRUN(report, id):
+    file = report['file']
+    line = report['line']
+    bug_type = report['bug_type']
+
+    if 'by call to' in report['qualifier']:
+        # Type 2) --> extract location from last step of bug trace
+        if 'Array access:' not in report['bug_trace'][-1]['description']:
+            # Unexpected format of bug report --> try to slice by basic file/line
+            report_msg = report['bug_trace'][-1]['description']
+            print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "{bug_type}" bug trace qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
+            return 1, file, line, ''
+
+        # Expected format of bug report --> slice by the last step of bug trace
+        file, line = location_from_bug_trace(report)
+        print_debug_report(report, 'BUFFER_OVERRUN_TYPE_2')
+        return 0, file, line, ''
+    else:
+        # Type 1) --> extract location from basic info
+        print_debug_report(report, 'BUFFER_OVERRUN_TYPE_1')
+        return 0, file, line, ''
 
 
 # NULL_DEREFERENCE: two types were found:
@@ -184,74 +314,163 @@ def extract_line_from_bug_trace(report):
 # which the function that dereferences the variable is called. In this way, all
 # functions in the call tree that could dereference the variable should be
 # included in the final CPG.
-def extract_variable_NULL_DEREFERENCE(report):
-    # Get part of the qualifier which contains the variable name
-    x = re.search(r'pointer `.*` last assigned', report["qualifier"])
+def extract_NULL_DEREFERENCE(report, id):
+    file = report['file']
+    line = report['line']
+    bug_type = report['bug_type']
+    report_msg = report['qualifier']
+
+    # If type 2) --> return '' --> slice only by line
+    if 'by call to' in report_msg:
+        print_debug_report(report, 'NULL_DEREFERENCE_TYPE_2')
+        return 0, file, line, ''
+
+    # Get part of the message which contains the variable name
+    x = re.search(r'pointer `.*` last assigned', report_msg)
 
     # If the given part wasn't found
     if not x:
-        print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: unrecognized "NULL_DEREFERENCE" qualifier format: "{report["qualifier"]}"!', file=sys.stderr)
-        exit(1)
+        print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "{bug_type}" qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
+        return 1, file, line, ''
 
     # The variable name is enclosed in `variable_name`
     x = x.group().split('`')
 
     if len(x) != 3:
-        print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: unrecognized "NULL_DEREFERENCE" qualifier format: "{report["qualifier"]}"!', file=sys.stderr)
-        exit(1)
+        print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "{bug_type}" qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
+        return 1, file, line, ''
 
-    variable_name = x[1]
+    print_debug_report(report, 'NULL_DEREFERENCE_TYPE_1')
+    return 0, file, line, x[1]
 
-    return variable_name
 
-
-def extract_variable_info(report):
+# Variable, line and file are information about the location of the error
+# and need to be extracted for each bug type individually
+def extract_slicing_info(report, d2a, id):
     bug_type = report["bug_type"]
 
-    if bug_type == "NULL_DEREFERENCE":
-        info_file = extract_file_from_bug_trace(report)
-        info_line = extract_line_from_bug_trace(report)
-        info_variable = extract_variable_NULL_DEREFERENCE(report)
-        return info_file, info_line, info_variable
+    if bug_type == 'NULL_DEREFERENCE':
+        # File and line is taken from basic info. Although in some cases it might
+        # be more precise to take it from bug trace e.g. expepriments/report1.json
+        # but since we can't determine from which step --> it can't be done.
+        return extract_NULL_DEREFERENCE(report, id)
+    elif bug_type in BUFFER_OVERRUN:
+        return extract_BUFFER_OVERRUN(report, id)
+    elif bug_type == 'UNINITIALIZED_VALUE':
+        return extract_UNINITIALIZED_VALUE(report, id)
+    elif bug_type == 'INFERBO_ALLOC_MAY_BE_BIG':
+        return extract_INFERBO_ALLOC_MAY_BE_BIG(report, id)
+    elif bug_type in INTEGER_OVERFLOW:
+        return extract_INTEGER_OVERFLOW(report, id)
+    elif bug_type == 'NULLPTR_DEREFERENCE':
+        return extract_NULLPTR_DEREFERENCE(report, id)
     else:
         # Unsupported bug type
-        print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unsupported bug type "{bug_type}".', file=sys.stderr)
-        exit(5)
+        print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unsupported bug type "{bug_type}" of bug #{id}.', file=sys.stderr)
+        return 5, None, None, None
 
 
-def extract_slicing_info(report):
-    # Entry function can be extracted in the same way for all bug types
-    info_entry_function = report["procedure"]
+def transform_d2a_sample(report_d2a):
+    report = report_d2a['bug_info']
+    report['id'] = report_d2a['id']
+    report['bug_type'] = report_d2a['bug_type']
+    # We need only last step of bug trace
+    report['bug_trace'] = [report_d2a['trace'][-1]]
+    report['bug_trace'][-1]['filename'] = report['bug_trace'][-1]['file']
+    # Extract line from location
+    report['bug_trace'][-1]['line_number'] = report['bug_trace'][-1]['loc'].split(':')[0]
+    report['adjusted_bug_loc'] = report_d2a['adjusted_bug_loc']
 
-    # Variable, line and file are information about the location of the error
-    # Variable, line and file need to be extracted for each bug type individually
-    info_file, info_line, info_variable = extract_variable_info(report)
-
-    return info_entry_function, info_file, info_line, info_variable
-
+    return report
 
 if __name__ == "__main__":
-    report_json_file = sys.argv[1]
+    parser = init_parser()
+    args = parser.parse_args()
 
-    if not os.path.exists(report_json_file):
+    if not os.path.exists(args.file):
         # The Infer report file is missing
         print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{report_json_file}" doesn\'t exist!', file=sys.stderr)
         exit(7)
 
-    with open(report_json_file, "r") as f:
-        try:
-            reports = json.load(f)
-        except json.decoder.JSONDecodeError:
-            print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{report_json_file}" in not in JSON format!', file=sys.stderr)
-            exit(7)
+    if args.debug and args.debug > 0:
+        DEBUG = args.debug
+        init_debug()
+
+    if args.d2a:
+        # Input file is in D2A format
+        reports = []
+        with gzip.open(args.file, mode = 'rb') as fp:
+            while True:
+                try:
+                    item = pickle.load(fp)
+                except EOFError:
+                    break
+
+                reports.append(transform_d2a_sample(item))
+    else:
+        # Input file is in Infer format
+        with open(args.file, "r") as f:
+            try:
+                reports = json.load(f)
+            except json.decoder.JSONDecodeError:
+                print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{report_json_file}" in not in JSON format!', file=sys.stderr)
+                exit(7)
+
+    # Print output header
+    print(f'status,bug_id,slicing_criteria')
 
     if not reports:
-        # The report is empty, but in JSON format -- we processed all the reports
-        exit(6)
+        # The report is empty, but in JSON format
+        exit(0)
 
-    # Save the rest of the reports back to the original file
-    with open(report_json_file, "w") as f:
-        json.dump(reports[1:], f)
+    infer_bug_id = 0
+    for report in reports:
+        if args.d2a:
+            bug_id = report['id']
+        else:
+            bug_id = infer_bug_id
 
-    slicing_info = extract_slicing_info(reports[0])
-    print(f"{slicing_info[0]}\n{slicing_info[1]}\n{slicing_info[2]}\n{slicing_info[3]}")
+        bug_type = report['bug_type']
+
+        # Entry function can be extracted in the same way for all the bug types
+        entry = report['procedure']
+
+        status, file, line, variable = extract_slicing_info(report, args.d2a, bug_id)
+
+        # Extract only file name from possible relative path
+        if file:
+            file = os.path.basename(file)
+
+        if status == 0:
+            # 0 means everything is OK
+            if variable:
+                # Slicing by variable
+                print(f'{status},{bug_id},--entry={entry} --sc="{file}##{line}#&{variable}"')
+            else:
+                # Slicing by line only
+                print(f'{status},{bug_id},--entry={entry} --sc="{file}##{line}#"')
+        elif status == 5:
+            # 5 means an unsupported bug type --> don't print anything
+            # print(f'{status},{bug_id},{bug_type}')
+            pass
+        else:
+            # Status should be 1 which means internal error -- the script tries
+            # to at least extract entry, file and line
+            print(f'{status},{bug_id},--entry={entry} --sc="{file}##{line}#"')
+
+        # 'adjusted_bug_loc' should be now the same as extracted bug location
+        # Extracting slicing criteria works identically as in D2A -- this is needed for real-world programs
+        # if report['adjusted_bug_loc']:
+        #     if os.path.basename(report['adjusted_bug_loc']['file']) == file and report['adjusted_bug_loc']['line'] == int(line):
+        #          print(f'{OK}OK{ENDC}', file=sys.stderr)
+        #     else:
+        #          print(f'{ERROR}ERROR{ENDC}', file=sys.stderr)
+        #          exit(1)
+        # else:
+        #     if os.path.basename(report['file']) == file and report['line'] == int(line):
+        #          print(f'{OK}OK{ENDC}', file=sys.stderr)
+        #     else:
+        #          print(f'{ERROR}ERROR{ENDC}', file=sys.stderr)
+        #          exit(1)
+
+        infer_bug_id += 1

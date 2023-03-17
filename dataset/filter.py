@@ -60,7 +60,7 @@ def filter_file(file, new_file):
             sample.pop('sample_type')
             sample.pop('versions')
             sample['commit'].pop('changes')
-            sample.pop('trace')
+            # sample.pop('trace')
              # TODO: this might be useful for further optimiziation -- compile only
              # functions listed here + possible conditional compilation
              # NOTE: only compilation of these function can't be done because
