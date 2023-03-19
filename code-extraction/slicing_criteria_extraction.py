@@ -417,7 +417,7 @@ if __name__ == "__main__":
                 exit(7)
 
     # Print output header
-    print(f'status,bug_id,slicing_criteria')
+    # print(f'status,bug_id,entry_function,file,line,variable')
 
     if not reports:
         # The report is empty, but in JSON format
@@ -445,10 +445,10 @@ if __name__ == "__main__":
             # 0 means everything is OK
             if variable:
                 # Slicing by variable
-                print(f'{status},{bug_id},--entry={entry} --sc="{file}##{line}#&{variable}"')
+                print(f'{status},{bug_id},{entry},{file},{line},&{variable}')
             else:
                 # Slicing by line only
-                print(f'{status},{bug_id},--entry={entry} --sc="{file}##{line}#"')
+                print(f'{status},{bug_id},{entry},{file},{line},')
         elif status == 5:
             # 5 means an unsupported bug type --> don't print anything
             # print(f'{status},{bug_id},{bug_type}')
@@ -456,7 +456,7 @@ if __name__ == "__main__":
         else:
             # Status should be 1 which means internal error -- the script tries
             # to at least extract entry, file and line
-            print(f'{status},{bug_id},--entry={entry} --sc="{file}##{line}#"')
+            print(f'{status},{bug_id},{entry},{file},{line},')
 
         # 'adjusted_bug_loc' should be now the same as extracted bug location
         # Extracting slicing criteria works identically as in D2A -- this is needed for real-world programs

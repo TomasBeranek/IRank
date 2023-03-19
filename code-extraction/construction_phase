@@ -9,7 +9,7 @@ old_bitcode_files_list="${infer_dir}/old_bc_files.txt"
 new_bitcode_files_list="${infer_dir}/new_bc_files.txt"
 added_bitcode_files_list="${infer_dir}/added_bc_files.txt"
 bc_combined="${infer_dir}/combined.bc"
-slicing_info_file="${infer_dir}/slicing_info.txt"
+slicing_info_file="${infer_dir}/slicing_info.csv"
 bc_sliced="${infer_dir}/sliced.bc"
 cpg_bin="${infer_dir}/sliced.cpg.bin.zip"
 joern_script="${script_dir}/joern_script"
@@ -37,84 +37,32 @@ grep -Fxvf ${old_bitcode_files_list} ${new_bitcode_files_list} > ${added_bitcode
 # link all .bc files into a single one
 llvm-link $(< ${added_bitcode_files_list}) -o ${bc_combined}
 
-# make copy of report.json
-cp ${infer_dir}/report.json ${infer_dir}/report-copy.json
+# extract slicing criteria for all the bugs
+python3 ${criteria_extraction_script} ${infer_dir}/report.json > ${slicing_info_file}
+rc=$?
 
-# ID of current bug, corresponding to the order in the original report.json
-bug_id=0
+# if slicing_criteria_extraction.py exited with return code 0, it means that
+# it successfully processed all the bugs (some may have been skipped) and created
+# slicing_info.csv file
+if [ ${rc} -eq 0 ]
+then
+	printf "NOTE: construction_phase: slicing criteria has been successfully extracted!\n"
+else
+	printf "${ERROR}ERROR${ENDC}: construction_phase: slicing_criteria_extraction.py has encountered an unrecoverable error!\n"
+	exit 1
+fi
 
-# for each bug report
-while :
-do
-	failed_to_extract_slicing_info=false
-
-  # extract slicing criteria for current bug and remove it from report-copy.json
-	python3 ${criteria_extraction_script} ${infer_dir}/report-copy.json > ${slicing_info_file}
-  rc=$?
-
-  # if slicing_criteria_extraction.py exited with return code 0, it means that
-  # it successfully processed current bug
-  if [ ${rc} -eq 0 ]
-  then
-    printf "NOTE: construction_phase: slicing criteria has been successfully extracted from bug #${bug_id}!\n"
-  fi
-
-  # if slicing_criteria_extraction.py exited with return code 1, it means that
-  # it encountered an internal error
-  if [ ${rc} -eq 1 ]
-  then
-    printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because of internal error!\n"
-		failed_to_extract_slicing_info=true
-  fi
-
-  # if slicing_criteria_extraction.py exited with return code 5, it means that
-  # it tried to process an unsupported bug type
-  if [ ${rc} -eq 5 ]
-  then
-    printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because of unsupported type!\n"
-		failed_to_extract_slicing_info=true
-  fi
-
-  # if slicing_criteria_extraction.py exited with return code 6, it means that
-  # it processed all the bugs
-  if [ ${rc} -eq 6 ]
-  then
-    printf "${OK}SUCCESS${ENDC}: construction_phase: all the bugs have been processed!\n"
-    break
-  fi
-
-	# if slicing_criteria_extraction.py exited with return code 7, it means that
-	# it failed to parse JSON file or JSON file is missing
-	if [ ${rc} -eq 7 ]
-	then
-		printf "${ERROR}ERROR${ENDC}: construction_phase: slicing criteria extraction has encountered an unrecoverable error!\n"
-		exit 1
-	fi
-
-	if ${failed_to_extract_slicing_info}
-	then
-		# for some reason it wasn't possible to generate CPG
-		# TODO mark this information to report.json
-		bug_id=$((bug_id+1))
-		continue
-	fi
-
-	# if the code got here, then slicing criteria extraction succeeded
-	# load slicing criteria from temporary file
-	entry_function=$(head -1 ${slicing_info_file} | tail -1)
-	slicing_file=$(head -2 ${slicing_info_file} | tail -1)
-	slicing_line=$(head -3 ${slicing_info_file} | tail -1)
-	slicing_variable=$(head -4 ${slicing_info_file} | tail -1)
-
+# for each bug report (slicing criteria record)
+while IFS=, read rc bug_id entry_function file line variable; do
 	# slice the combined LLVM bitcode according to extracted slicing criteria
-	llvm-slicer --entry=${entry_function} --sc="${slicing_file}##${slicing_line}#&${slicing_variable}" -o=${bc_sliced} ${bc_combined} 2> ${infer_dir}/llvm_slicer_stderr.txt
+	# variables already contain required '&' sign
+	llvm-slicer --entry=${entry_function} --sc="${file}##${line}#${variable}" -o=${bc_sliced} ${bc_combined} 2> ${infer_dir}/llvm_slicer_stderr.txt
 
 	# check if llvm-slicer succeeded
 	if grep "No reachable slicing criteria:" ${infer_dir}/llvm_slicer_stderr.txt > /dev/null
 	then
 	  # llvm-slicer coudn't match extracted slicing criteria to bitcode
-		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because llvm-slicer couldn't match the extracted slicing criteria \"${slicing_file}##${slicing_line}#&${slicing_variable}\"!\n"
-		bug_id=$((bug_id+1))
+		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because llvm-slicer couldn't match the extracted slicing criteria '${slicing_criteria}'!\n"
 		continue
 	fi
 
@@ -126,7 +74,6 @@ do
 	then
 	  # llvm-slicer coudn't match extracted slicing criteria to bitcode
 		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because llvm2cpg failed to generate CPG!\n"
-		bug_id=$((bug_id+1))
 		continue
 	fi
 
@@ -140,7 +87,6 @@ do
 		# joern failed to import CPG generated by llvm2cpg e.g. the CPG file is missing
 		# but when it is there, the cpg.bin is still created (although it may be faulty)
 		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because Joern failed to create internal representation of given CPG!\n"
-		bug_id=$((bug_id+1))
 		continue
 	fi
 
@@ -153,13 +99,17 @@ do
 		# joern-export failed probably due to the faulty ${joern_cpg_bin} which
 		# was caused by joern's importing which failed half-way
 		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because joern-export failed to create Neo4j CSV (Joern probably failed to import CPG)!\n"
-		bug_id=$((bug_id+1))
 		continue
 	fi
+
+	# TODO: save CSV files with CPGs for each bug into it's own ${bug_id} directory
+	#				in ${output_dir}
 
 
 	# success
 	printf "${OK}SUCCESS${ENDC}: construction_phase: CPG for bug #${bug_id} was successfully constructed!\n"
 
-	bug_id=$((bug_id+1))
-done
+done < ${slicing_info_file}
+
+# TODO: for each subdirectory in ${output_dir} load CSV files into python objects
+#				and filter out only useful information and save the object to .pickle.gz
