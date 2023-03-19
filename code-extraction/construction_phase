@@ -3,6 +3,8 @@
 script=$(readlink -f "$0")
 script_dir=$(dirname "$script")
 
+output_dir="/home/tomas/Documents/diplomka/D2A-CPG"
+
 infer_flags='--bufferoverrun --pulse'
 infer_dir="/tmp/infer-out"
 old_bitcode_files_list="${infer_dir}/old_bc_files.txt"
@@ -51,6 +53,9 @@ else
 	printf "${ERROR}ERROR${ENDC}: construction_phase: slicing_criteria_extraction.py has encountered an unrecoverable error!\n"
 	exit 1
 fi
+
+# prepare output directory
+mkdir ${output_dir} 2> /dev/null
 
 # for each bug report (slicing criteria record)
 while IFS=, read rc bug_id entry_function file line variable; do
@@ -102,8 +107,42 @@ while IFS=, read rc bug_id entry_function file line variable; do
 		continue
 	fi
 
-	# TODO: save CSV files with CPGs for each bug into it's own ${bug_id} directory
-	#				in ${output_dir}
+	# create bug-specific directory
+	mkdir ${output_dir}/${bug_id} 2> /dev/null
+
+	# move all the bug-specific CSV files into it's directory
+	# AST
+	mv ${infer_dir}/out/edges_AST_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/edges_CONDITION_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_AST_NODE_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_BLOCK_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_CALL_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_CALL_REPR_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_CONTROL_STRUCTURE_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_EXPRESSION_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_FIELD_IDENTIFIER_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_IDENTIFIER_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_JUMP_LABEL_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_JUMP_TARGET_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_LITERAL_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_LOCAL_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_METHOD_REF_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_MODIFIER_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_RETURN_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_TYPE_REF_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_UNKNOWN_* ${output_dir}/${bug_id} 2> /dev/null
+
+	# CallGraph - might be useful
+	mv ${infer_dir}/out/edges_ARGUMENT_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/edges_CALL_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/edges_RECEIVER_* ${output_dir}/${bug_id} 2> /dev/null
+
+	# CFG
+	mv ${infer_dir}/out/edges_CFG_* ${output_dir}/${bug_id} 2> /dev/null
+	mv ${infer_dir}/out/nodes_CFG_NODE_* ${output_dir}/${bug_id} 2> /dev/null # just in case
+
+	# PDG
+	mv ${infer_dir}/out/edges_CDG_* ${output_dir}/${bug_id} 2> /dev/null
 
 
 	# success
