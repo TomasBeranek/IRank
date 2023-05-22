@@ -18,6 +18,7 @@ dataset/d2a/
 dataset/d2a-filtered/
 dataset/testing/
 dataset/projects/
+dataset/slicing-info/
 
 # Default output dir
 D2A-CPG/
