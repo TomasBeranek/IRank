@@ -10,6 +10,14 @@ code-extraction/example/
 !code-extraction/example/add_one.c
 !code-extraction/example/Makefile
 
+# Pipeline
+code-extraction/testing/
+
 # D2A
 dataset/d2a/
 dataset/d2a-filtered/
+dataset/testing/
+dataset/projects/
+
+# Default output dir
+D2A-CPG/

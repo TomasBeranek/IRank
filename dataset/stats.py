@@ -3,6 +3,7 @@ import sys
 import json
 import gzip
 import os
+import argparse
 from tqdm import tqdm
 from collections import Counter
 
@@ -10,6 +11,14 @@ from collections import Counter
 negative_samples = 0
 positive_samples = 0
 total_samples = 0
+
+
+def init_parser():
+    parser = argparse.ArgumentParser(description='Print statistics about D2A files in given directory.')
+
+    parser.add_argument('-d', '--dir', required=True, type=str, help='directory with D2A files')
+
+    return parser
 
 
 def load_stats(file):
@@ -52,8 +61,11 @@ def load_stats(file):
 
 
 if __name__ == '__main__':
+    parser = init_parser()
+    args = parser.parse_args()
+
     # Get D2A files
-    d2a_dir = os.path.abspath(sys.argv[1])
+    d2a_dir = os.path.abspath(args.dir)
     files = os.listdir(d2a_dir)
 
     # Take only positive samples files, since we are only interested in project names
