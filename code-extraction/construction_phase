@@ -48,7 +48,7 @@ rc=$?
 # slicing_info.csv file
 if [ ${rc} -eq 0 ]
 then
-	printf "NOTE: construction_phase: slicing criteria has been successfully extracted!\n"
+	printf "${OK}SUCCESS${ENDC}: construction_phase: slicing criteria has been successfully extracted!\n"
 else
 	printf "${ERROR}ERROR${ENDC}: construction_phase: slicing_criteria_extraction.py has encountered an unrecoverable error!\n"
 	exit 1
@@ -77,7 +77,7 @@ while IFS=, read rc bug_id entry_function file line variable; do
 	# check if llvm2cpg succeeded
 	if grep "No bitcode files found." ${infer_dir}/llvm2cpg_stdout.txt > /dev/null
 	then
-	  # llvm-slicer coudn't match extracted slicing criteria to bitcode
+	  # llvm-slicer coudn't match extracted slicing criteria to bitcode (this is not copy-paste error)
 		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because llvm2cpg failed to generate CPG!\n"
 		continue
 	fi
