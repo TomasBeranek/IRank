@@ -383,13 +383,14 @@ def transform_d2a_sample(report_d2a):
 
     return report
 
+
 if __name__ == "__main__":
     parser = init_parser()
     args = parser.parse_args()
 
     if not os.path.exists(args.file):
         # The Infer report file is missing
-        print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{report_json_file}" doesn\'t exist!', file=sys.stderr)
+        print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{args.file}" doesn\'t exist!', file=sys.stderr)
         exit(7)
 
     if args.debug and args.debug > 0:
