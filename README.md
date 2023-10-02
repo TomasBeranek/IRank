@@ -157,17 +157,11 @@
 
 ##### HTTPD
  - je nutné nahradit ```<$sys$>``` u překladových příkazů
- - v ```httpd/INSTALL``` uvadějí, že hlavní (a možna jedinou) závislostí je APACHE, čemuž by i odpovídal formát překladových příkazů ```<$sys$>/apr-1```
- - instalace APACHE na Ubuntu
- 1. ```sudo apt install subversion``` -- získání ```svn```
- 2. ```svn co http://svn.apache.org/repos/asf/apr/apr/trunk srclib/apr``` a ```svn co http://svn.apache.org/repos/asf/apr/apr-util/trunk srclib/apr-util``` -- při apr-util to píše, že to bylo mergnuto do apr
- 3. ```mv httpd/srclib httpd-dependencies/``` -- potřebuji pouze složku ```srclib/apr/include``` a v ní uložené header files, aby bylo možné soubory přeložit. Při ruční kontrole je vidět, že soubory potřebují pouze např. apr_hash.h, apr.h, ..., které jsou právě v srclib/apr/include, tuto služko je nunté přesunout, protože defaultně si svn uloží do aktuálního repozitáře, nicméně já ji vždy potřebuji promazat při každém sample z D2A, takže je nutné si ji uložit jinam
- 4. ```cd httpd/srclib && ./buildconf``` -- vygenerování configure souboru
- 5. ```./configure``` -- vygenerování make
- 6. ```make``` -- poté by měly být vygenerovány soubory jako např. apr.h, které je potřeba includovat - do teď to byly pouze šablony, ze kterých se to generuje podle konkrétního systému
- 5. v překladových příkazech je nutné nahradit ```<$sys$>``` za ```/dataset/projects/httpd-dependencies/srclib/apr```
- 6. stále je problém s ```fatal error: 'ap_config_auto.h' file not found``` - jedná se o automaticky generovaný header file, který lze vygenerovat pomocí pomocí ```./buildconf``` (v top-level dir repa), které vygeneruje ```configure``` skript, který po spuštění ```./configure``` vygeneruje ```ap_config_auto.h```, aby bylo možné ```buildconf``` spustit je nutné stáhnout do složky ```srclib/``` knihovny ```apr``` a ```apr-util``` z https://apr.apache.org/download.cgi (fungující verze jsou ```apr-1.7.4``` a ```apr-util-1.6.3``) 
- 7. nicméně tento soubor je závislá na šabloně ```ap_config_auto.h.in``` a vždy, když se tato šablona změní v nějakém commitu oproti předchozímu, tak je nutno tento soubor přegenerovat
+ - v ```httpd/INSTALL``` uvadějí, že hlavní (a možna jedinou) závislostí je APACHE, čemuž by i odpovídal formát překladových příkazů ```<$sys$>/include/apr-1```
+ - ziskání zdrojových souborů APACHE na Ubuntu
+ 1. je nutné stáhnout do složky ```<$repo$>srclib/``` knihovny ```apr``` a ```apr-util``` z https://apr.apache.org/download.cgi (fungující verze jsou ```apr-1.7.4``` a ```apr-util-1.6.3``` a přejmenovat je na ```apr``` a ```apr-util```
+ 2. jak knihovny, tak samotný projekt obsahuje ```.h.in``` šablony, ze kterých je nutno vygenerovat ```.h``` soubory - je nutno spustit ```<$repo$>/buildconf``` (vygeneruje ```configure```), poté ```<$repo$>/configure``` (vygeneruje ```.h``` soubory v repu i rekurzivně v knihovnách)
+ 3. nicméně soubor ```ap_config_auto.h``` je závislý na šabloně ```ap_config_auto.h.in``` a vždy, když se tato šablona změní v nějakém commitu oproti předchozímu, tak je nutno tento soubor přegenerovat
 
 
 #### Experimenty s entry funkcíí
