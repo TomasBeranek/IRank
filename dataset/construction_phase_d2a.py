@@ -6,6 +6,7 @@ import pickle
 import json
 import sys
 import shutil
+from tqdm import tqdm
 
 
 # colors
@@ -112,7 +113,7 @@ def run_compile_commands(compiler_args_dict):
                 compiler_args = [arg for arg in compiler_args if '<$sys$>' not in arg]
 
                 # Add paths to external libraries instead of their first original occurence in args
-                compiler_args = compiler_args[:idx] + ['-Isrclib/apr/include', '-Isrclib/apr-util/include', '-Isrclib/pcre'] + compiler_args[idx:]
+                compiler_args = compiler_args[:idx] + ['-Isrclib/apr/include', '-Isrclib/apr-util/include'] + compiler_args[idx:]
 
         # Add args to generate bitcode
         compile_command = ['clang', '-emit-llvm', '-g', '-grecord-command-line', '-fno-inline-functions', '-fno-builtin'] + compiler_args + ['-c', file]
@@ -120,7 +121,11 @@ def run_compile_commands(compiler_args_dict):
         # Run the compilation command
         completed_process = subprocess.run(compile_command)
 
-        return completed_process.returncode
+        # Check for failure
+        if completed_process.returncode != 0:
+            print(" ".join(compile_command))
+            print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: source files of bug '{id}' failed to compile!", file=sys.stderr)
+            exit(1)
 
 
 def files_updated(tracked_files, hash, prev_hash):
@@ -169,10 +174,10 @@ if __name__ == '__main__':
 
     # Iterate over hashes and switch repository to given commits
     prev_hash = None
-    for hash in hashes:
+    for hash in tqdm(hashes):
         # We want to restore all files to 'HASH' commit and delete any leftovers from previous compilation
         subprocess.run(['git', 'reset', '--hard', hash])
-        subprocess.run(['git', 'clean', '-df'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(['git', 'clean', '-dfx'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         if args.project == 'httpd':
             # We need copy back external libs and generated .h files (unless the template changed)
@@ -194,6 +199,11 @@ if __name__ == '__main__':
             except FileExistsError:
                 # The pcre/ was present in the repo
                 pass
+
+            # In commit ff7722bc9a 'util_pcre.c' requires PCRE Version 6.7 or later,
+            # but supplied version in this repo is lower (5.0) and compilation fails.
+            # So we force the compilation to use the manually installed PCRE.
+            # shutil.rmtree('srclib/pcre')
 
             # Header files from .h.in templates
             if files_updated(tracked_files, hash, prev_hash):
@@ -256,17 +266,19 @@ if __name__ == '__main__':
             if args.project == 'httpd':
                 # We don't want to delete srclib/ (external libs) and generated .h files (they are up2date now)
                 subprocess.run(['git', 'clean', '-df', '--exclude=srclib/', '--exclude=include/'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                # This needs to copied back to server/, because it was deleted by previous command
+                shutil.copy('include/test_char.h', 'server/')
 
             # Check for existing .bc files (we dont want those)
             old_bc_files = find_bitcode_files()
 
             # Create .bc files
-            result = run_compile_commands(val['compiler_args'])
+            run_compile_commands(val['compiler_args'])
 
             new_bc_files = find_bitcode_files()
             added_bc_files = new_bc_files - old_bc_files
 
-            if result == 0 and len(added_bc_files):
+            if len(added_bc_files):
                 print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: source files of bug '{id}' were successfully compiled!", file=sys.stderr)
             else:
                 print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: source files of bug '{id}' failed to compile!", file=sys.stderr)

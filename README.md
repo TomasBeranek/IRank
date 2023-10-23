@@ -188,6 +188,7 @@
  - prozkoumat jak funguje LLVM-slicer -- podívat se vizuálně co odstraňuje (pomocí .dot formátu -- vše je zdokumentované [zde](https://github.com/mchalupa/dg/blob/master/doc/llvm-slicer.md#slicing-criteria)) a **zdokumentovat výsledky**
  - přidat timestamps do NOTE, WARNING a ERROR výpisů
  - v prezentaci označit, které části pipeline jsem já vytvořil (stačí hvězdičkou a dole v poznámce vysvětlit)
+ - jak přidat více label = 0 vzorků? - vzít i verzi kódu "after" - po daném commitu mohl být kód změněn, ale label je stále 0
 
 ### Interesting
  - spuštění na LLVM-sliceru na combined LLVM bitcode může být pomalé, jelikož je daný bitcode velký (celý projekt), nicméně se to možná samo vyřeší díky specifikaci entry funkce, která to výrazně omezí
