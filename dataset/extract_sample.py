@@ -18,15 +18,16 @@ class NotEnoughSamples(Exception):
 def init_parser():
     parser = argparse.ArgumentParser(description='Extract Nth sample of given bug type from D2A dataset.')
 
-    parser.add_argument('-d', '--dir', required=True, type=str, help='directory with D2A files')
-    parser.add_argument('-b', '--bug-type', required=True, type=str, help='Infer bug type')
-    parser.add_argument('-n', required=True, type=int, help='Nth sample [1,2,...]')
+    parser.add_argument('-d', '--dir', type=str, help='directory with D2A files')
+    parser.add_argument('-b', '--bug-type', type=str, help='Infer bug type')
+    parser.add_argument('-n', type=int, help='Nth sample [1,2,...]')
+    parser.add_argument('-i', type=str, help='ID of the sample')
     parser.add_argument('--bug-info-only', required=False, action='store_true', help='print only \'bug_info\'')
 
     return parser
 
 
-def load_sample(files, N, bug_type):
+def load_sample(files, N, bug_type, id):
     cnt = 1
 
     for file in files:
@@ -37,11 +38,15 @@ def load_sample(files, N, bug_type):
                 except EOFError:
                     break
 
-                if item['bug_type'] == bug_type:
-                    if cnt == N:
+                if id:
+                    if id == item['id']:
                         return item
-                    else:
-                        cnt += 1
+                else:
+                    if item['bug_type'] == bug_type:
+                        if cnt == N:
+                            return item
+                        else:
+                            cnt += 1
 
     if cnt > 1:
         raise NotEnoughSamples()
@@ -62,7 +67,7 @@ if __name__ == '__main__':
 
     # Extract data from .pickle.gz files
     try:
-        sample = load_sample(files, args.n, args.bug_type)
+        sample = load_sample(files, args.n, args.bug_type, args.i)
     except NotEnoughSamples:
         print(f'Number of {args.bug_type} < {args.n}!', file=sys.stderr)
     except BugTypeNotFound:
