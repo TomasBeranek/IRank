@@ -162,6 +162,7 @@
  1. je nutné stáhnout do složky ```<$repo$>srclib/``` knihovny ```apr``` a ```apr-util``` z https://apr.apache.org/download.cgi (fungující verze jsou ```apr-1.7.4``` a ```apr-util-1.6.3``` a přejmenovat je na ```apr``` a ```apr-util```
  2. jak knihovny, tak samotný projekt obsahuje ```.h.in``` šablony, ze kterých je nutno vygenerovat ```.h``` soubory - je nutno spustit ```<$repo$>/buildconf``` (vygeneruje ```configure```), poté ```<$repo$>/configure``` (vygeneruje ```.h``` soubory v repu i rekurzivně v knihovnách)
  3. nicméně soubor ```ap_config_auto.h``` je závislý na šabloně ```ap_config_auto.h.in``` a vždy, když se tato šablona změní v nějakém commitu oproti předchozímu, tak je nutno tento soubor přegenerovat
+ 4. dále je nutné nainstalovat pcre/pcre2 (některé z prnvích historických commitů již knihovnu obsahují, ale novější commity ne), pro instalaci ```sudo apt-get install libpcre3 libpcre3-dev``` (snad bude pcre3 zpětně kompatibilní), když je to nainstalováno manuálně, tak ./configure využije tuto verzi a nevyhodí error
 
 
 #### Experimenty s entry funkcíí

@@ -110,7 +110,7 @@ def run_compile_commands(compiler_args_dict):
                 compiler_args = [arg for arg in compiler_args if '<$sys$>' not in arg]
 
                 # Add paths to external libraries instead of their first original occurence in args
-                compiler_args = compiler_args[:idx] + ['-Isrclib/apr/include', '-Isrclib/apr-util/include'] + compiler_args[idx:]
+                compiler_args = compiler_args[:idx] + ['-Isrclib/apr/include', '-Isrclib/apr-util/include', '-Isrclib/pcre'] + compiler_args[idx:]
 
         # Add args to generate bitcode
         compile_command = ['clang', '-emit-llvm', '-g', '-grecord-command-line', '-fno-inline-functions', '-fno-builtin'] + compiler_args + ['-c', file]
@@ -180,23 +180,28 @@ if __name__ == '__main__':
             # Copy back external libs
             shutil.copytree('../httpd-dependencies/srclib/apr', 'srclib/apr')
             shutil.copytree('../httpd-dependencies/srclib/apr-util', 'srclib/apr-util')
+            # This is from the newest version of HTTPD
+            try:
+                # We need to copy this, because sometimes it is missing
+                shutil.copytree('../httpd-dependencies/srclib/pcre', 'srclib/pcre')
+            except FileExistsError:
+                # The pcre/ was present in the repo
+                pass
 
             # Header files from .h.in templates
             if files_updated(tracked_files, hash, prev_hash):
                 # Generate new header files
                 completed_process = subprocess.run(['./buildconf'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 if completed_process.returncode != 0:
-                    print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: command './buildconf' failed!", file=sys.stderr)
                     print(completed_process.stdout.decode('utf-8'))
                     print(completed_process.stderr.decode('utf-8'))
-                    exit(1)
+                    print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: command './buildconf' failed!", file=sys.stderr)
 
                 completed_process = subprocess.run(['./configure'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 if completed_process.returncode != 0:
-                    print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: command './configure' failed!", file=sys.stderr)
                     print(completed_process.stdout.decode('utf-8'))
                     print(completed_process.stderr.decode('utf-8'))
-                    exit(1)
+                    print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: command './configure' failed!", file=sys.stderr)
 
                 # Save generated files
                 os.makedirs('/tmp/d2a_pipeline', exist_ok=True)
