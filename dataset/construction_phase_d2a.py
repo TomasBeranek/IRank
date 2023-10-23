@@ -52,8 +52,9 @@ def get_d2a_hashes(file):
                 sample = pickle.load(f)
             except EOFError:
                 break
-            commit_url = sample['commit']['url']
-            commit_hash = commit_url.split('/')[-1]
+
+            # We need to take the 'before' version of each commit
+            commit_hash = sample['versions']['before']
 
             if commit_hash not in hashes:
                 # First sample with this hash

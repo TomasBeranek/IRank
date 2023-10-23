@@ -58,7 +58,6 @@ def filter_file(file, new_file):
             sample.pop('label_source')
             sample.pop('bug_loc_trace_index')
             sample.pop('sample_type')
-            sample.pop('versions')
             sample['commit'].pop('changes')
             # sample.pop('trace')
              # TODO: this might be useful for further optimiziation -- compile only
