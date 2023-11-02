@@ -164,6 +164,13 @@
  3. nicméně soubor ```ap_config_auto.h``` je závislý na šabloně ```ap_config_auto.h.in``` a vždy, když se tato šablona změní v nějakém commitu oproti předchozímu, tak je nutno tento soubor přegenerovat
  4. dále je nutné nainstalovat pcre/pcre2 (některé z prnvích historických commitů již knihovnu obsahují, ale novější commity ne), pro instalaci ```sudo apt-get install libpcre3 libpcre3-dev``` (snad bude pcre3 zpětně kompatibilní), když je to nainstalováno manuálně, tak ./configure využije tuto verzi a nevyhodí error
 
+##### NGINX
+ - stačí pouze spustit ```./auto/configure``` pro vygenerování headerů
+
+##### LIBTIFF
+ - nutno nainstalovat OpenGL pomocí ```sudo apt install libgl-dev```, aby byl přítomen soubor ```GL/gl.h```
+ - následně ještě GLUT pomocí ```sudo apt install freeglut3-dev```, pro soubor ```GL/glut.h```
+ - poté ```./autogen.sh``` a poté ```./configure```
 
 #### Experimenty s entry funkcíí
   - mohou nastat v podstatě 3 případy chyb v kódu:
