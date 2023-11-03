@@ -172,7 +172,13 @@
  - následně ještě GLUT pomocí ```sudo apt install freeglut3-dev```, pro soubor ```GL/glut.h```
  - poté ```./autogen.sh``` a poté ```./configure```
 
-#### Experimenty s entry funkcíí
+##### FFMPEG
+ - nutno nainstalovat nasm pomocí ```sudo apt install nasm```
+ - a yasm (potřeba pro nějaké commity např. 99d7a3e862ec0d15903f99f6b94d152ca1834f0f) pomocí ```sudo apt install yasm```
+ - dále je potřeba nainstalovat SDL knihovny (kvůli SDL.h) pomocí ```sudo apt install libsdl2-dev```
+ - poté ```./configure``` vygeneruje zejména ```config.h```
+
+#### Experimenty s entry funkcí
   - mohou nastat v podstatě 3 případy chyb v kódu:
   1. scenario1 -- chyba začne v ```main``` a projeví se v ```f```
   2. scenario2 -- chyba začne v ```f``` a projeví s v ```main```
