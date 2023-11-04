@@ -178,6 +178,10 @@
  - dále je potřeba nainstalovat SDL knihovny (kvůli SDL.h) pomocí ```sudo apt install libsdl2-dev```
  - poté ```./configure``` vygeneruje zejména ```config.h```
 
+##### LIBAV
+ - obsahuje řadu stejných souborů jako FFMPEG (tůzné knihovny pro zpracování videa/audia/obrázků)4
+ - pro vytvoření ```config.h``` stačí ```./configure```
+
 #### Experimenty s entry funkcí
   - mohou nastat v podstatě 3 případy chyb v kódu:
   1. scenario1 -- chyba začne v ```main``` a projeví se v ```f```
