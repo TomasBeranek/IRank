@@ -182,6 +182,10 @@
  - obsahuje řadu stejných souborů jako FFMPEG (tůzné knihovny pro zpracování videa/audia/obrázků)4
  - pro vytvoření ```config.h``` stačí ```./configure```
 
+##### OPENSSL
+ - Configure vyžaduje verzi Perlu 5.28.0 (aktuální 5.30.0 selže ve starších verzích ```2ac68bd6f1```), je možné využít perlbrew a spustit shell s 5.28.0 následovně ```perlbrew use perl-5.28.0``` (poté klasicky spustit pipeline)
+ - pro vytvoření ```include/openssl/configuraion.h``` stačí ```./Configure gcc``` (v nových stačí pouze ./Configure, ale staré vyžadují specifikaci překladače, naštěstí nové jsou zpětně kompatibilní)
+
 #### Experimenty s entry funkcí
   - mohou nastat v podstatě 3 případy chyb v kódu:
   1. scenario1 -- chyba začne v ```main``` a projeví se v ```f```
@@ -230,3 +234,4 @@
   - Infer občas chybně hlásí lokaci chyby -> D2A může být špatně označeno -> špatně se prořezává -> modelu chybí informace
   - u některých chyb Infer nehlásí bug trace a protože D2A s bug trace pracuje --> extrahuje z ní funkce, které jsou potřebné pro chybu, tak jelikož já závisím na tom samém, tak je možné, že za chybu mohou funkce, které nebyly v bug trace --> nebyly v D2A --> nebyly přeloženy --> nebyly z nich extrahovány CPG --> model nezná jejich kód (ikdyž by mohli být v data dependency grafu, kdyby byly překládány)
  13. extrakce slicing kriterií z různých typů chyb -- informace jsou uvedeny v slicing_criteria_extraction.py
+ 14. generování .bc souborů z .h souborů
