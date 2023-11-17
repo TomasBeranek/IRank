@@ -138,6 +138,10 @@ def run_compile_commands(compiler_args_dict):
 
                 # Add paths to external libraries instead of their first original occurence in args
                 compiler_args = compiler_args[:idx] + ['-Isrclib/apr/include', '-Isrclib/apr-util/include'] + compiler_args[idx:]
+
+            # Add paths to headers since in some D2A samples they seem to be missing
+            if "-Iinclude" not in compiler_args:
+                compiler_args.append("-Iinclude")
         elif args.project == 'nginx':
             # Add paths to headers since in some D2A samples they seem to be missing
             if "-Isrc/core" not in compiler_args:
@@ -315,7 +319,11 @@ if __name__ == '__main__':
 
                 # The 'chartables.c' is generated using 'srclib/pcre/dftables.c'
                 subprocess.run(['gcc', 'srclib/pcre/dftables.c', '-o', 'dftables'])
-                subprocess.run(['./dftables', 'include/chartables.c'])
+                subprocess.run(['./dftables', 'include/chartables.c'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if not os.path.exists('include/chartables.c'):
+                    # In newer versions the './dftables' print the dftables.c file
+                    # to stdout instead of saving it directly to the file
+                    subprocess.run('./dftables > include/chartables.c', shell=True)
                 shutil.copy('include/chartables.c', '/tmp/d2a_pipeline/')
             else:
                 shutil.copy('/tmp/d2a_pipeline/test_char.h', 'include/')
