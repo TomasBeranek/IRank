@@ -89,13 +89,12 @@ def get_d2a_hashes(file, output_dir):
     return hashes
 
 
-# Returns all .bc files in current dir
+# Returns all .bc files in current dir (non-recursively) - see dataset/experiments/speedtest/
 def find_bitcode_files():
     matches = set()
-    for root, _, files in os.walk('.'):
-        for file in files:
-            if file.endswith('.bc'):
-                matches.add(os.path.join(root, file))
+    for file in os.listdir():
+        if file.endswith('.bc'):
+            matches.add(file)
     return matches
 
 
