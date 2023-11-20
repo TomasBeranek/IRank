@@ -276,6 +276,8 @@ if __name__ == '__main__':
             #         1) any of the templates changed
             #         2) buildconf changed
 
+            buildconf_done = False
+
             # Copy back external libs
             shutil.copytree('../httpd-dependencies/srclib/apr', 'srclib/apr')
             shutil.copytree('../httpd-dependencies/srclib/apr-util', 'srclib/apr-util')
@@ -284,8 +286,20 @@ if __name__ == '__main__':
                 # We need to copy this, because sometimes it is missing
                 shutil.copytree('../httpd-dependencies/srclib/pcre', 'srclib/pcre')
             except FileExistsError:
-                # The pcre/ was present in the repo
-                pass
+                # The pcre/ was present in the repo, but we need to run srclib/pcre/configure to generate srclib/pcre/config.h (its very fast),
+                # but first we need to run ./buildconf to generate srclib/pcre/configure (also relatively fast)
+                completed_process = subprocess.run(['./buildconf'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if completed_process.returncode != 0:
+                    print(completed_process.stdout.decode('utf-8'))
+                    print(completed_process.stderr.decode('utf-8'))
+                    print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: command './buildconf' failed!", file=sys.stderr)
+                buildconf_done = True
+
+                completed_process = subprocess.run('cd srclib/pcre/ && ./configure && cd ../../', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if completed_process.returncode != 0:
+                    print(completed_process.stdout.decode('utf-8'))
+                    print(completed_process.stderr.decode('utf-8'))
+                    print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: command './configure' for PCRE failed!", file=sys.stderr)
 
             # In commit ff7722bc9a 'util_pcre.c' requires PCRE Version 6.7 or later,
             # but supplied version in this repo is lower (5.0) and compilation fails.
@@ -295,11 +309,12 @@ if __name__ == '__main__':
             # Header files from .h.in templates
             if files_updated(HTTPD_TRACKED_FILES, hash, prev_hash):
                 # Generate new header files
-                completed_process = subprocess.run(['./buildconf'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                if completed_process.returncode != 0:
-                    print(completed_process.stdout.decode('utf-8'))
-                    print(completed_process.stderr.decode('utf-8'))
-                    print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: command './buildconf' failed!", file=sys.stderr)
+                if not buildconf_done:
+                    completed_process = subprocess.run(['./buildconf'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    if completed_process.returncode != 0:
+                        print(completed_process.stdout.decode('utf-8'))
+                        print(completed_process.stderr.decode('utf-8'))
+                        print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: command './buildconf' failed!", file=sys.stderr)
 
                 completed_process = subprocess.run(['./configure'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 if completed_process.returncode != 0:
