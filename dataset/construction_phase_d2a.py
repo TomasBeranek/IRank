@@ -195,7 +195,7 @@ def save_bitcode(id, bc_files, output_dir):
     # Run llvm-link to create a single bitcode file
     completed_process = subprocess.run(['llvm-link'] + list(bc_files) + ['-o', os.path.join(output_dir, f'{id}.bc')])
     if completed_process.returncode != 0:
-        print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: failed to link bitcode files for smaple {id}!", file=sys.stderr)
+        print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: failed to link bitcode files for sample {id}!", file=sys.stderr)
         exit(1)
 
 
@@ -217,6 +217,20 @@ def create_symlink(src_id, target_id, output_dir):
     symlink_name = os.path.join(output_dir, f'{src_id}.bc')
     target_path = f'{target_id}.bc' # This path is relative
     os.symlink(target_path, symlink_name)
+
+
+def only_headers(src_files):
+    for file in src_files:
+        if not file.endswith('.h'):
+            return False
+    return True
+
+
+def contains_unsupported_file_type(src_files):
+    for file in src_files:
+        if file.endswith('.y') or file.endswith('.l'):
+            return True
+    return False
 
 
 if __name__ == '__main__':
@@ -434,6 +448,18 @@ if __name__ == '__main__':
             # DEBUG: print source file names
             for file in src_files:
                 print(f'\t{file}')
+
+            # Skip samples which are composed of only header files (httpd: 8b2ec33ac5)
+            if only_headers(src_files):
+                print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: skipping bug '{id}', because it is composed of only .h files, which is not supported!", file=sys.stderr)
+                failed_samples += 1
+                continue
+
+            # Skip samples which are composed of unsupported file types e.g. '.y' or '.l' (httpd: 8b2ec33ac5)
+            if contains_unsupported_file_type(src_files):
+                print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: skipping bug '{id}', because it contains unsupported file types (e.g. '.y' or '.l')!", file=sys.stderr)
+                failed_samples += 1
+                continue
 
             # Check if there was a sample in current commit with the same source files,
             # if there was - don't compile the files again instead use symlink to the previous bitcode
