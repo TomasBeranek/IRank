@@ -110,10 +110,22 @@ def find_first_sys_idx(compiler_args):
     return idx
 
 
+def has_duplicates(list):
+    return len(list) != len(set(list))
+
+
 def run_compile_commands(compiler_args_dict):
     global failed_samples
 
     compilation_failed = False
+    rename_bitcode_files = False
+    unique_file_name = 0 # Use simple incrementing index as new file name
+
+    # If we have some duplicates we need to rename output bitcode files so
+    # they are not overwritten
+    file_names = [os.path.basename(f) for f in compiler_args_dict.keys()]
+    if has_duplicates(file_names):
+        rename_bitcode_files = True
 
     # For each file we generate a single .bc file
     for file, compiler_args in compiler_args_dict.items():
@@ -169,6 +181,12 @@ def run_compile_commands(compiler_args_dict):
             print(completed_process.stderr.decode('utf-8'))
             print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: source files of bug '{id}' failed to compile!", file=sys.stderr)
             compilation_failed = True
+        else:
+            if rename_bitcode_files:
+                # If compilation succeded - rename the bitcode file
+                original_name = os.path.basename(file).split('.')[0] + '.bc' # From .c/.h to .bc
+                subprocess.run(f'mv {original_name} {unique_file_name}.bc', shell=True)
+                unique_file_name += 1
 
     if compilation_failed:
         failed_samples += 1
@@ -465,7 +483,10 @@ if __name__ == '__main__':
     if failed_samples:
         print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: {failed_samples} samples out of {failed_samples + success_samples} failed to compile!", file=sys.stderr)
     else:
-        print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: all {success_samples} samples successfully compiled!", file=sys.stderr)
+        if success_samples:
+            print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: all {success_samples} samples successfully compiled!", file=sys.stderr)
+        else:
+            print(f"{NOTE}NOTE{ENDC}: construction_phase_d2a.py: no samples compiled!", file=sys.stderr)
 
     # git checkout branchname       - to lastest commit in given branch
     # git checkout hash             - to given commit

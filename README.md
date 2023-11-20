@@ -236,3 +236,4 @@
  13. extrakce slicing kriterií z různých typů chyb -- informace jsou uvedeny v slicing_criteria_extraction.py
  14. generování .bc souborů z .h souborů (viz. experiment) - dva typy 1) .h je pouze includnut 2) orezava se podle .h
  15. redukce velikosti datasetu pomoci symlinku (podivat se, kolik to usetrilo ```ls -lh | awk '{ sum += $5 } END { print "Total size: " sum }'``` - bez dereference symlinku, ```ls -lhL | awk '{ sum += $5 } END { print "Total size: " sum }'``` s dereferenci symlinku)
+ 16. při generování .bc souborů nutno ošetřit krajní připady jako např. při chybě httpd_17e63e9b25d3a852c6363cca0ae5e0d9bbdf028a_1, kde mají 2 překládané soubory stejný název - server/util.c a modules/dav/main/util.c
