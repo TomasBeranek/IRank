@@ -117,9 +117,6 @@ def run_compile_commands(compiler_args_dict):
 
     # For each file we generate a single .bc file
     for file, compiler_args in compiler_args_dict.items():
-        # DEBUG info:
-        print(f'\t{file}')
-
         # Set current repo path to compiler args
         compiler_args = compiler_args.replace('<$repo$>', os.path.abspath(os.getcwd()))
 
@@ -197,6 +194,12 @@ def files_updated(tracked_files, hash, prev_hash):
     completed_process = subprocess.run(['git', 'diff', '--quiet', hash, prev_hash, '--'] + tracked_files)
 
     return completed_process.returncode != 0
+
+
+def create_symlink(src_id, target_id, output_dir):
+    symlink_name = os.path.join(output_dir, f'{src_id}.bc')
+    target_path = f'{target_id}.bc' # This path is relative
+    os.symlink(target_path, symlink_name)
 
 
 if __name__ == '__main__':
@@ -387,10 +390,26 @@ if __name__ == '__main__':
             if hash == 'fb81ac5e6be4041e59df9362cd63880b21e2cafc':
                 subprocess.run(r"sed -i '206s/\]/\\/' crypto/bn/bn_lcl.h", shell=True)
 
+        # Reset dict which saves already compiled samples in current commit
+        already_compiled = dict()
+
         # Iterate over samples in each commit
         # (multiple samples could have been found in a single commit)
         for id, val in d2a_hashes[hash].items():
-            # OPTIMIZE: if the files are the same as in the last sample, no need to run the compilation (it happens very often)
+            src_files = val['compiler_args'].keys()
+            src_files_key = tuple(sorted(src_files)) # Needs to be a tuple so it can be used as a key
+
+            # DEBUG: print source file names
+            for file in src_files:
+                print(f'\t{file}')
+
+            # Check if there was a sample in current commit with the same source files,
+            # if there was - don't compile the files again instead use symlink to the previous bitcode
+            if src_files_key in already_compiled:
+                create_symlink(id, already_compiled[src_files_key], args.output_dir)
+                print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: symlink for bug '{id}' was successfully created!", file=sys.stderr)
+                success_samples += 1
+                continue
 
             if args.project == 'httpd':
                 # We don't want to delete srclib/ (external libs) and generated .h files (they are up2date now)
@@ -424,7 +443,7 @@ if __name__ == '__main__':
             added_bc_files = new_bc_files - old_bc_files
 
             # Get number of .c in current sample
-            src_file_cnt = len([f for f in val['compiler_args'].keys() if f.endswith('.c')])
+            src_file_cnt = len([f for f in src_files if f.endswith('.c')])
 
             # Check if we have .bc file for each compilation command
             if len(added_bc_files) == src_file_cnt:
@@ -432,6 +451,10 @@ if __name__ == '__main__':
                 save_bitcode(id, added_bc_files, args.output_dir)
                 print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: source files of bug '{id}' were successfully compiled!", file=sys.stderr)
                 success_samples += 1
+
+                # Safe info about already compiled sample
+                if src_files_key not in already_compiled:
+                    already_compiled[src_files_key] = id
             else:
                 # Some .bc files may have been generated, but since some are missing we CAN'T use this sample
                 print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: compilation of bug '{id}' failed to generate all .bc files!", file=sys.stderr)

@@ -234,4 +234,5 @@
   - Infer občas chybně hlásí lokaci chyby -> D2A může být špatně označeno -> špatně se prořezává -> modelu chybí informace
   - u některých chyb Infer nehlásí bug trace a protože D2A s bug trace pracuje --> extrahuje z ní funkce, které jsou potřebné pro chybu, tak jelikož já závisím na tom samém, tak je možné, že za chybu mohou funkce, které nebyly v bug trace --> nebyly v D2A --> nebyly přeloženy --> nebyly z nich extrahovány CPG --> model nezná jejich kód (ikdyž by mohli být v data dependency grafu, kdyby byly překládány)
  13. extrakce slicing kriterií z různých typů chyb -- informace jsou uvedeny v slicing_criteria_extraction.py
- 14. generování .bc souborů z .h souborů
+ 14. generování .bc souborů z .h souborů (viz. experiment) - dva typy 1) .h je pouze includnut 2) orezava se podle .h
+ 15. redukce velikosti datasetu pomoci symlinku (podivat se, kolik to usetrilo ```ls -lh | awk '{ sum += $5 } END { print "Total size: " sum }'``` - bez dereference symlinku, ```ls -lhL | awk '{ sum += $5 } END { print "Total size: " sum }'``` s dereferenci symlinku)
