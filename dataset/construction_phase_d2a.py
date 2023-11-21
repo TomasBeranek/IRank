@@ -31,7 +31,6 @@ LIBTIFF_TRACKED_FILES = ['config/config.h.in',
                          'libtiff/tif_config.h.in']
 
 # Number of samples for which compilation command failed/succeded
-failed_samples = 0
 success_samples = 0
 
 
@@ -58,10 +57,13 @@ def get_git_commit_hashes(repository_path):
 
 
 def get_d2a_hashes(file, output_dir):
+    global success_samples
+
     # Extract IDs of already proccessed samples
     files = [f for f in os.listdir(output_dir) if os.path.isfile(os.path.join(output_dir, f))]
     already_created_samples_IDs = set([f.split('.')[0] for f in files])
 
+    samples_cnt = 0
     hashes = dict()
     with gzip.open(file, mode = 'rb') as f:
         while True:
@@ -70,8 +72,12 @@ def get_d2a_hashes(file, output_dir):
             except EOFError:
                 break
 
+            # We want count ALL the samples (even already proccessed ones)
+            samples_cnt += 1
+
             # If there is already bitcode file for this sample - skip it
             if sample['id'] in already_created_samples_IDs:
+                success_samples += 1 # Already compiled samples are considered success
                 print(f"{NOTE}NOTE{ENDC}: construction_phase_d2a.py: Skipping sample '{sample['id']}' because bitcode already exists.", file=sys.stderr)
                 continue
 
@@ -86,7 +92,7 @@ def get_d2a_hashes(file, output_dir):
             hashes[commit_hash][sample['id']] = {'label': sample['label'],
                                                  'compiler_args': sample['compiler_args'] }
 
-    return hashes
+    return hashes, samples_cnt
 
 
 # Returns all .bc files in current dir (non-recursively) - see dataset/experiments/speedtest/
@@ -114,9 +120,6 @@ def has_duplicates(list):
 
 
 def run_compile_commands(compiler_args_dict):
-    global failed_samples
-
-    compilation_failed = False
     rename_bitcode_files = False
     unique_file_name = 0 # Use simple incrementing index as new file name
 
@@ -128,6 +131,11 @@ def run_compile_commands(compiler_args_dict):
 
     # For each file we generate a single .bc file
     for file, compiler_args in compiler_args_dict.items():
+        # We don't want to compile headers, since they SHOULD already be included
+        # in .c files + they don't generate bitcode anyway
+        if file.endswith('.h'):
+            continue
+
         # Set current repo path to compiler args
         compiler_args = compiler_args.replace('<$repo$>', os.path.abspath(os.getcwd()))
 
@@ -179,7 +187,6 @@ def run_compile_commands(compiler_args_dict):
             print(completed_process.stdout.decode('utf-8'))
             print(completed_process.stderr.decode('utf-8'))
             print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: source files of bug '{id}' failed to compile!", file=sys.stderr)
-            compilation_failed = True
         else:
             if rename_bitcode_files:
                 # If compilation succeded - rename the bitcode file
@@ -187,16 +194,11 @@ def run_compile_commands(compiler_args_dict):
                 subprocess.run(f'mv {original_name} {unique_file_name}.bc', shell=True)
                 unique_file_name += 1
 
-    if compilation_failed:
-        failed_samples += 1
-
 
 def save_bitcode(id, bc_files, output_dir):
     # Run llvm-link to create a single bitcode file
     completed_process = subprocess.run(['llvm-link'] + list(bc_files) + ['-o', os.path.join(output_dir, f'{id}.bc')])
-    if completed_process.returncode != 0:
-        print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: failed to link bitcode files for sample {id}!", file=sys.stderr)
-        exit(1)
+    return completed_process.returncode
 
 
 def files_updated(tracked_files, hash, prev_hash):
@@ -249,7 +251,7 @@ if __name__ == '__main__':
     hashes = get_git_commit_hashes(args.repository)
 
     # Get set of hashes present in D2A dataset
-    d2a_hashes = get_d2a_hashes(args.file, args.output_dir)
+    d2a_hashes, total_samples = get_d2a_hashes(args.file, args.output_dir)
 
     # Remove hashes (commits) in which we are not interested in (not in D2A)
     hashes = [hash for hash in hashes if hash in d2a_hashes.keys()]
@@ -452,18 +454,17 @@ if __name__ == '__main__':
             # Skip samples which are composed of only header files (httpd: 8b2ec33ac5)
             if only_headers(src_files):
                 print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: skipping bug '{id}', because it is composed of only .h files, which is not supported!", file=sys.stderr)
-                failed_samples += 1
                 continue
 
             # Skip samples which are composed of unsupported file types e.g. '.y' or '.l' (httpd: 8b2ec33ac5)
             if contains_unsupported_file_type(src_files):
                 print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: skipping bug '{id}', because it contains unsupported file types (e.g. '.y' or '.l')!", file=sys.stderr)
-                failed_samples += 1
                 continue
 
             # Check if there was a sample in current commit with the same source files,
             # if there was - don't compile the files again instead use symlink to the previous bitcode
             if src_files_key in already_compiled:
+                # If the symlink creation fails it throws an exception, so we don't need to check for error
                 create_symlink(id, already_compiled[src_files_key], args.output_dir)
                 print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: symlink for bug '{id}' was successfully created!", file=sys.stderr)
                 success_samples += 1
@@ -506,22 +507,31 @@ if __name__ == '__main__':
             # Check if we have .bc file for each compilation command
             if len(added_bc_files) == src_file_cnt:
                 # Save all the created bitcode files into a single one
-                save_bitcode(id, added_bc_files, args.output_dir)
-                print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: source files of bug '{id}' were successfully compiled!", file=sys.stderr)
-                success_samples += 1
+                rc = save_bitcode(id, added_bc_files, args.output_dir)
 
-                # Safe info about already compiled sample
-                if src_files_key not in already_compiled:
-                    already_compiled[src_files_key] = id
+                if completed_process.returncode != 0:
+                    # llvm-link failed (this is VERY rare, but sometimes unfixable so we skip the sample for now)
+                    print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: failed to link bitcode files for sample {id}!", file=sys.stderr)
+                    # exit(1)
+                else:
+                    print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: source files of bug '{id}' were successfully compiled!", file=sys.stderr)
+                    success_samples += 1
+
+                    # Save info about already compiled sample
+                    if src_files_key not in already_compiled:
+                        already_compiled[src_files_key] = id
             else:
                 # Some .bc files may have been generated, but since some are missing we CAN'T use this sample
                 print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: compilation of bug '{id}' failed to generate all .bc files!", file=sys.stderr)
 
         prev_hash = hash
 
+    # Get final statistics
+    failed_samples = total_samples - success_samples
+
     # Print final statistics
     if failed_samples:
-        print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: {failed_samples} samples out of {failed_samples + success_samples} failed to compile!", file=sys.stderr)
+        print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: {failed_samples} samples out of {total_samples} failed to compile!", file=sys.stderr)
     else:
         if success_samples:
             print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: all {success_samples} samples successfully compiled!", file=sys.stderr)
