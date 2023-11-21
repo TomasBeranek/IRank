@@ -5,7 +5,7 @@ code-extraction/joern/
 code-extraction/llvm2cpg/
 
 # Example
-code-extraction/example/
+code-extraction/example/*
 !code-extraction/example/main.c
 !code-extraction/example/add_one.c
 !code-extraction/example/Makefile
@@ -23,3 +23,9 @@ dataset/d2a-bitcode
 
 # Default output dir
 D2A-CPG/
+
+# Experiments
+dataset/experiments/include-headers-to-bitcode/*
+!dataset/experiments/include-headers-to-bitcode/file.c
+!dataset/experiments/include-headers-to-bitcode/header.h
+!dataset/experiments/include-headers-to-bitcode/Makefile
