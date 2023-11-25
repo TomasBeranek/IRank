@@ -179,7 +179,11 @@ def run_compile_commands(compiler_args_dict):
         compile_command = ['clang', '-emit-llvm', '-g', '-grecord-command-line', '-fno-inline-functions', '-fno-builtin'] + compiler_args + ['-c', file]
 
         # Run the compilation command
-        completed_process = subprocess.run(compile_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if args.project == 'openssl':
+            # In openssl's case we need to use shell, because it has spaces in args
+            completed_process = subprocess.run(' '.join(compile_command), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        else:
+            completed_process = subprocess.run(compile_command, shell=use_shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # Check for failure
         if completed_process.returncode != 0:
@@ -433,6 +437,9 @@ if __name__ == '__main__':
 
             # Generate progs.h
             subprocess.run('make apps/progs.h', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # Generate date.h
+            subprocess.run('cd crypto && make date.h && cd ..', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             # We need to resolve typo in nb_lcl.h file in this commit, so that compilation will succeed
             if hash == 'fb81ac5e6be4041e59df9362cd63880b21e2cafc':
