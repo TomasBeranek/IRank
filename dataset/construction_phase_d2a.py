@@ -453,6 +453,9 @@ if __name__ == '__main__':
             # Generate date.h
             subprocess.run('cd crypto && make date.h && cd ..', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+            # Generate obj_dat.h (we can't use make because we need to explicitly specify perl as interpreter)
+            subprocess.run('cd crypto/objects/ && perl obj_dat.pl < objects.h > obj_dat.h && cd ../..', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
             # We need to resolve typo in nb_lcl.h file in this commit, so that compilation will succeed
             if hash == 'fb81ac5e6be4041e59df9362cd63880b21e2cafc':
                 subprocess.run(r"sed -i '206s/\]/\\/' crypto/bn/bn_lcl.h", shell=True)
