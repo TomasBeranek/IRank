@@ -428,9 +428,21 @@ if __name__ == '__main__':
             # but they don't need it.
             completed_process = subprocess.run('./Configure gcc', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if completed_process.returncode != 0:
-                print(completed_process.stdout.decode('utf-8'))
-                print(completed_process.stderr.decode('utf-8'))
-                print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: command './Configure gcc' failed!", file=sys.stderr)
+                # First try failed
+                stderr = completed_process.stderr.decode('utf-8')
+                known_error_msg = 'Can\'t use string ("-O3") as a SCALAR ref while "strict refs" in use at ./Configure line 1050.'
+
+                # Determine the type of error
+                if known_error_msg in stderr:
+                    # This error can be resolved by editing ./Configure script
+                    subprocess.run(r"sed -i '1050s/\${\$config{cflags}}/\$config{cflags}/' Configure", shell=True)
+                    completed_process = subprocess.run('./Configure gcc', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+                if completed_process.returncode != 0:
+                    # This error can't be resolved
+                    print(completed_process.stdout.decode('utf-8'))
+                    print(completed_process.stderr.decode('utf-8'))
+                    print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: command './Configure gcc' failed!", file=sys.stderr)
 
             # Generate bn_conf.h
             subprocess.run('make crypto/include/internal/bn_conf.h', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
