@@ -174,6 +174,8 @@ def run_compile_commands(compiler_args_dict):
                 compiler_args.append("-Iinclude")
             if "-Icrypto/include" not in compiler_args:
                 compiler_args.append("-Icrypto/include")
+            if "-Icrypto" not in compiler_args:
+                compiler_args.append("-Icrypto")
 
         # Add args to generate bitcode
         compile_command = ['clang', '-emit-llvm', '-g', '-grecord-command-line', '-fno-inline-functions', '-fno-builtin'] + compiler_args + ['-c', file]
