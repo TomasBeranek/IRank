@@ -185,7 +185,7 @@ def run_compile_commands(compiler_args_dict):
             # In openssl's case we need to use shell, because it has spaces in args
             completed_process = subprocess.run(' '.join(compile_command), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
-            completed_process = subprocess.run(compile_command, shell=use_shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            completed_process = subprocess.run(compile_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # Check for failure
         if completed_process.returncode != 0:
