@@ -3,7 +3,7 @@
 script=$(readlink -f "$0")
 script_dir=$(dirname "$script")
 
-output_dir="/home/tomas/Documents/diplomka/D2A-CPG"
+output_dir="$1"
 
 infer_flags='--bufferoverrun --pulse'
 infer_dir="/tmp/infer-out"

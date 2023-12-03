@@ -52,7 +52,7 @@ experiment: clean-experiment install-wrappers experiment-run uninstall-wrappers
 
 experiment-run:
 	@cd example && make
-	./construction_phase
+	./construction_phase /home/tomas/Documents/diplomka/D2A-CPG
 
 # Delete leftovers from previous runs
 clean-experiment:
