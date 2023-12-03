@@ -37,8 +37,14 @@ def init_parser():
 
 
 def location_from_bug_trace(report):
-    return report['bug_trace'][-1]['filename'], report['bug_trace'][-1]['line_number']
+    file = report['bug_trace'][-1]['filename']
+    fun = report['bug_trace'][-1]['func_name']
+    line = report['bug_trace'][-1]['line_number']
+    return file, fun, line
 
+
+def is_header(file):
+    return file.endswith('.h')
 
 # Debug option - a number of reports to print (of each type)
 DEBUG = 0
@@ -119,11 +125,11 @@ def extract_NULLPTR_DEREFERENCE(report, id):
         # Unexpected format of bug report --> try to slice by basic file/line
         report_msg = report['bug_trace'][-1]['description']
         print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "NULLPTR_DEREFERENCE" bug trace qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
-        return 1, report['file'], report['line'], ''
+        return 1, report['file'], report['procedure'], report['line'], ''
     else:
-        file, line = location_from_bug_trace(report)
+        file, fun, line = location_from_bug_trace(report)
         print_debug_report(report, 'NULLPTR_DEREFERENCE')
-        return 0, file, line, ''
+        return 0, file, fun, line, ''
 
 
 INTEGER_OVERFLOW = [ 'INTEGER_OVERFLOW_L1',
@@ -145,6 +151,7 @@ INTEGER_OVERFLOW = [ 'INTEGER_OVERFLOW_L1',
 # description "Binary operation: ([0, 1] - 1):unsigned32 by call to `avfilter_unref_buffer` ").
 def extract_INTEGER_OVERFLOW(report, id):
     file = report['file']
+    fun = report['procedure']
     line = report['line']
     bug_type = report['bug_type']
 
@@ -155,16 +162,16 @@ def extract_INTEGER_OVERFLOW(report, id):
             # Unexpected format of bug report --> try to slice by basic file/line
             report_msg = report['bug_trace'][-1]['description']
             print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "{bug_type}" bug trace qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
-            return 1, file, line, ''
+            return 1, file, fun, line, ''
 
         # Expected format of bug report --> slice by the last step of bug trace
-        file, line = location_from_bug_trace(report)
+        file, fun, line = location_from_bug_trace(report)
         print_debug_report(report, 'INTEGER_OVERFLOW_TYPE_2')
-        return 0, file, line, ''
+        return 0, file, fun, line, ''
     else:
         # Type 1) --> extract location from basic info
         print_debug_report(report, 'INTEGER_OVERFLOW_TYPE_1')
-        return 0, file, line, ''
+        return 0, file, fun, line, ''
 
 
 # INFERBO_ALLOC_MAY_BE_BIG: only one type found:
@@ -192,11 +199,11 @@ def extract_INFERBO_ALLOC_MAY_BE_BIG(report, id):
         # Unexpected format of bug report --> try to slice by basic file/line
         report_msg = report['bug_trace'][-1]['description']
         print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "INFERBO_ALLOC_MAY_BE_BIG" bug trace qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
-        return 1, report['file'], report['line'], ''
+        return 1, report['file'], report['procedure'], report['line'], ''
     else:
-        file, line = location_from_bug_trace(report)
+        file, fun, line = location_from_bug_trace(report)
         print_debug_report(report, 'INFERBO_ALLOC_MAY_BE_BIG')
-        return 0, file, line, ''
+        return 0, file, fun, line, ''
 
 
 # UNINITIALIZED_VALUE: two types were found:
@@ -215,6 +222,7 @@ def extract_INFERBO_ALLOC_MAY_BE_BIG(report, id):
 # will just slice by array for now and leave room for future improvements
 def extract_UNINITIALIZED_VALUE(report, id):
     file = report['file']
+    fun = report['procedure']
     line = report['line']
     report_msg = report['qualifier']
 
@@ -224,7 +232,7 @@ def extract_UNINITIALIZED_VALUE(report, id):
     # If the given part wasn't found
     if not x:
         print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "UNINITIALIZED_VALUE" qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
-        return 1, file, line, ''
+        return 1, file, fun, line, ''
 
     # Extract variable name
     variable = x.group().split(' ')[4]
@@ -233,11 +241,11 @@ def extract_UNINITIALIZED_VALUE(report, id):
         # Type 2) --> variable == 'variable_name[_]' --> we want only variable_name
         variable = variable.split('[')[0]
         print_debug_report(report, 'UNINITIALIZED_VALUE_TYPE_2')
-        return 0, file, line, variable
+        return 0, file, fun, line, variable
     else:
         # Type 1)
         print_debug_report(report, 'UNINITIALIZED_VALUE_TYPE_1')
-        return 0, file, line, variable
+        return 0, file, fun, line, variable
 
 
 BUFFER_OVERRUN = [ 'BUFFER_OVERRUN_L1',
@@ -269,6 +277,7 @@ BUFFER_OVERRUN = [ 'BUFFER_OVERRUN_L1',
 # "Array access: Offset: [1, 4] Size: 4 by call to `filter_mb_mbaff_edgecv` ").
 def extract_BUFFER_OVERRUN(report, id):
     file = report['file']
+    fun = report['procedure']
     line = report['line']
     bug_type = report['bug_type']
 
@@ -278,16 +287,16 @@ def extract_BUFFER_OVERRUN(report, id):
             # Unexpected format of bug report --> try to slice by basic file/line
             report_msg = report['bug_trace'][-1]['description']
             print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "{bug_type}" bug trace qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
-            return 1, file, line, ''
+            return 1, file, fun, line, ''
 
         # Expected format of bug report --> slice by the last step of bug trace
-        file, line = location_from_bug_trace(report)
+        file, fun, line = location_from_bug_trace(report)
         print_debug_report(report, 'BUFFER_OVERRUN_TYPE_2')
-        return 0, file, line, ''
+        return 0, file, fun, line, ''
     else:
         # Type 1) --> extract location from basic info
         print_debug_report(report, 'BUFFER_OVERRUN_TYPE_1')
-        return 0, file, line, ''
+        return 0, file, fun, line, ''
 
 
 # NULL_DEREFERENCE: two types were found:
@@ -316,6 +325,7 @@ def extract_BUFFER_OVERRUN(report, id):
 # included in the final CPG.
 def extract_NULL_DEREFERENCE(report, id):
     file = report['file']
+    fun = report['procedure']
     line = report['line']
     bug_type = report['bug_type']
     report_msg = report['qualifier']
@@ -323,7 +333,7 @@ def extract_NULL_DEREFERENCE(report, id):
     # If type 2) --> return '' --> slice only by line
     if 'by call to' in report_msg:
         print_debug_report(report, 'NULL_DEREFERENCE_TYPE_2')
-        return 0, file, line, ''
+        return 0, file, fun, line, ''
 
     # Get part of the message which contains the variable name
     x = re.search(r'pointer `.*` last assigned', report_msg)
@@ -331,22 +341,22 @@ def extract_NULL_DEREFERENCE(report, id):
     # If the given part wasn't found
     if not x:
         print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "{bug_type}" qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
-        return 1, file, line, ''
+        return 1, file, fun, line, ''
 
     # The variable name is enclosed in `variable_name`
     x = x.group().split('`')
 
     if len(x) != 3:
         print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unrecognized "{bug_type}" qualifier format: "{report_msg}" of bug #{id}! Slicing only by line.', file=sys.stderr)
-        return 1, file, line, ''
+        return 1, file, fun, line, ''
 
     print_debug_report(report, 'NULL_DEREFERENCE_TYPE_1')
-    return 0, file, line, x[1]
+    return 0, file, fun, line, x[1]
 
 
 # Variable, line and file are information about the location of the error
 # and need to be extracted for each bug type individually
-def extract_slicing_info(report, d2a, id):
+def extract_slicing_info(report, id):
     bug_type = report["bug_type"]
 
     if bug_type == 'NULL_DEREFERENCE':
@@ -367,7 +377,7 @@ def extract_slicing_info(report, d2a, id):
     else:
         # Unsupported bug type
         print(f'{WARNING}WARNING{ENDC}: slicing_criteria_extraction.py: unsupported bug type "{bug_type}" of bug #{id}.', file=sys.stderr)
-        return 5, None, None, None
+        return 5, None, None, None, None
 
 
 def transform_d2a_sample(report_d2a):
@@ -436,28 +446,38 @@ if __name__ == "__main__":
         # Entry function can be extracted in the same way for all the bug types
         entry = report['procedure']
 
-        status, file, line, variable = extract_slicing_info(report, args.d2a, bug_id)
+        # Extract bug location from report
+        status, file, fun, line, variable = extract_slicing_info(report, bug_id)
+
+        if status == 5:
+            # 5 means an unsupported bug type --> don't print anything
+            # print(f'{status},{bug_id},{bug_type}')
+            infer_bug_id += 1
+            continue
 
         # Extract only file name from possible relative path
         if file:
             file = os.path.basename(file)
 
+        # If file is header, we have to slice differently - we need function
+        # name instead of file name
+        if is_header(file):
+            file = ''
+        else:
+            fun = ''
+
         if status == 0:
             # 0 means everything is OK
             if variable:
                 # Slicing by variable
-                print(f'{status},{bug_id},{entry},{file},{line},&{variable}')
+                print(f'{status},{bug_id},{entry},{file},{fun},{line},&{variable}')
             else:
                 # Slicing by line only
-                print(f'{status},{bug_id},{entry},{file},{line},')
-        elif status == 5:
-            # 5 means an unsupported bug type --> don't print anything
-            # print(f'{status},{bug_id},{bug_type}')
-            pass
+                print(f'{status},{bug_id},{entry},{file},{fun},{line},')
         else:
             # Status should be 1 which means internal error -- the script tries
             # to at least extract entry, file and line
-            print(f'{status},{bug_id},{entry},{file},{line},')
+            print(f'{status},{bug_id},{entry},{file},{fun},{line},')
 
         # 'adjusted_bug_loc' should be now the same as extracted bug location
         # Extracting slicing criteria works identically as in D2A -- this is needed for real-world programs

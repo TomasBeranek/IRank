@@ -58,10 +58,10 @@ fi
 mkdir ${output_dir} 2> /dev/null
 
 # for each bug report (slicing criteria record)
-while IFS=, read rc bug_id entry_function file line variable; do
+while IFS=, read rc bug_id entry_function file fun line variable; do
 	# slice the combined LLVM bitcode according to extracted slicing criteria
 	# variables already contain required '&' sign
-	llvm-slicer --entry=${entry_function} --sc="${file}##${line}#${variable}" -o=${bc_sliced} ${bc_combined} 2> ${infer_dir}/llvm_slicer_stderr.txt
+	llvm-slicer --entry=${entry_function} --sc="${file}#${fun}#${line}#${variable}" -o=${bc_sliced} ${bc_combined} 2> ${infer_dir}/llvm_slicer_stderr.txt
 
 	# check if llvm-slicer succeeded
 	if grep "No reachable slicing criteria:" ${infer_dir}/llvm_slicer_stderr.txt > /dev/null
