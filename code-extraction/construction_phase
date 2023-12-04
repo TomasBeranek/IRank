@@ -55,7 +55,7 @@ else
 fi
 
 # prepare output directory
-mkdir ${output_dir} 2> /dev/null
+mkdir -p ${output_dir}
 
 # for each bug report (slicing criteria record)
 while IFS=, read rc bug_id entry_function file fun line variable; do
@@ -67,7 +67,7 @@ while IFS=, read rc bug_id entry_function file fun line variable; do
 	if grep "No reachable slicing criteria:" ${infer_dir}/llvm_slicer_stderr.txt > /dev/null
 	then
 	  # llvm-slicer coudn't match extracted slicing criteria to bitcode
-		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because llvm-slicer couldn't match the extracted slicing criteria '${slicing_criteria}'!\n"
+		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug #${bug_id} because llvm-slicer couldn't match the extracted slicing criteria '--entry=${entry_function} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
 		continue
 	fi
 
@@ -108,7 +108,7 @@ while IFS=, read rc bug_id entry_function file fun line variable; do
 	fi
 
 	# create bug-specific directory
-	mkdir ${output_dir}/${bug_id} 2> /dev/null
+	mkdir -p ${output_dir}/${bug_id}
 
 	# move all the bug-specific CSV files into it's directory
 	# AST
