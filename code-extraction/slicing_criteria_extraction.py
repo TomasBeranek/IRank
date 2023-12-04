@@ -455,10 +455,6 @@ if __name__ == "__main__":
             infer_bug_id += 1
             continue
 
-        # Extract only file name from possible relative path
-        if file:
-            file = os.path.basename(file)
-
         # If file is header, we have to slice differently - we need function
         # name instead of file name
         if is_header(file):
