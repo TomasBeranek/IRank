@@ -533,7 +533,7 @@ if __name__ == '__main__':
                 # Save all the created bitcode files into a single one
                 rc = save_bitcode(id, added_bc_files, args.output_dir)
 
-                if completed_process.returncode != 0:
+                if rc != 0:
                     # llvm-link failed (this is VERY rare, but sometimes unfixable so we skip the sample for now)
                     print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: failed to link bitcode files for sample {id}!", file=sys.stderr)
                     # exit(1)
