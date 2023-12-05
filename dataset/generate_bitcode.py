@@ -411,10 +411,14 @@ if __name__ == '__main__':
                 print(completed_process.stdout.decode('utf-8'))
                 print(completed_process.stderr.decode('utf-8'))
                 print(f"{WARNING}WARNING{ENDC}: construction_phase_d2a.py: command './configure' failed!", file=sys.stderr)
-            # Generate code_names.h and version.h (we dont care if these commands fail, since the files are missing in some commits)
+
+            # Generate codec_names.h, version.h (we dont care if these commands fail, since the files are missing in some commits)
+            subprocess.run(['make', 'version.h'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             command_code_names = 'gcc -I. -E libavcodec/avcodec.h | libavcodec/codec_names.sh config.h libavcodec/codec_names.h'
             subprocess.run(command_code_names, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            subprocess.run(['make', 'version.h'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # Another attempt to create codec_names.h
+            command_code_names = 'bash libavcodec/codec_names.sh config.h libavcodec/avcodec.h libavcodec/codec_names.h'
+            subprocess.run(command_code_names, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         elif args.project == 'libav':
             # Generate config.h (this might need to be optimized)
             completed_process = subprocess.run(['./configure'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
