@@ -47,7 +47,15 @@ while IFS=, read rc bug_id entry_function file fun line variable; do
 
 	# slice the combined LLVM bitcode according to extracted slicing criteria
 	# variables already contain required '&' sign
-	llvm-slicer --entry=${entry_function} --sc="${file}#${fun}#${line}#${variable}" -o=${bc_sliced} ${bc_combined} 2> ${tmp_dir}/llvm_slicer_stderr.txt
+	timeout 5s llvm-slicer --entry=${entry_function} --sc="${file}#${fun}#${line}#${variable}" -o=${bc_sliced} ${bc_combined} 2> ${tmp_dir}/llvm_slicer_stderr.txt
+
+	# check if llvm-slicer timed-out, there are 2 reason for that:
+	# 	1) llvm-slicer got stuck
+	#		2) llvm-slicer takes too long - the graph will be too large (we dont want it)
+	if [ $? -eq 124 ]; then
+		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug '${bug_id}' because llvm-slicer timed out for slicing criteria '--entry=${entry_function} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
+		continue
+	fi
 
 	# check if llvm-slicer succeeded
 	if grep "No reachable slicing criteria:" ${tmp_dir}/llvm_slicer_stderr.txt > /dev/null
