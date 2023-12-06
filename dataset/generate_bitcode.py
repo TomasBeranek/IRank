@@ -40,7 +40,7 @@ def init_parser():
     parser.add_argument('-r', '--repository', metavar='DIR', required=True, type=str, help='local copy (git clone) of given repository')
     parser.add_argument('-f', '--file', metavar='FILE', required=True, type=str, help='.pickle.gz file with D2A samples')
     parser.add_argument('-o', '--output-dir', metavar='DIR', required=True, type=str, help='output directory with bitcode files')
-    parser.add_argument('-c', '--commit', metavar='FILE', type=str, help='abbreviated hash of a commit to start with')
+    parser.add_argument('-c', '--commit', metavar='HASH', type=str, help='abbreviated hash of a commit to start with')
     parser.add_argument('--project', choices=['httpd', 'nginx', 'libtiff', 'ffmpeg', 'libav', 'openssl'], required=True, type=str, help="project name")
     # parser.add_argument('--include', required=True, type=str, help="path to 'include/' dir for specified project")
 
@@ -281,6 +281,8 @@ if __name__ == '__main__':
             print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: external libraries '../httpd-dependencies/srclib/apr' or '../httpd-dependencies/srclib/apr-util' for httpd project are missing!", file=sys.stderr)
             exit(1)
 
+    try_codec_names_again = True
+
     # Iterate over hashes and switch repository to given commits
     prev_hash = None
     for hash in tqdm(hashes):
@@ -416,9 +418,14 @@ if __name__ == '__main__':
             subprocess.run(['make', 'version.h'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             command_code_names = 'gcc -I. -E libavcodec/avcodec.h | libavcodec/codec_names.sh config.h libavcodec/codec_names.h'
             subprocess.run(command_code_names, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            # Another attempt to create codec_names.h
-            command_code_names = 'bash libavcodec/codec_names.sh config.h libavcodec/avcodec.h libavcodec/codec_names.h'
-            subprocess.run(command_code_names, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            if hash == '1c26f2da8123fc1b624b86cf5db8ec578f07b9e2':
+                try_codec_names_again = False
+
+            # Another attempt to create codec_names.h - but this command can get stuck at 1c26f2da8123fc1b624b86cf5db8ec578f07b9e2
+            if try_codec_names_again:
+                command_code_names = 'bash libavcodec/codec_names.sh config.h libavcodec/avcodec.h libavcodec/codec_names.h'
+                subprocess.run(command_code_names, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         elif args.project == 'libav':
             # Generate config.h (this might need to be optimized)
             completed_process = subprocess.run(['./configure'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
