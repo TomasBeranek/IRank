@@ -2,6 +2,7 @@ GRAPH_DIR = ../D2A-CPG
 SLICING_INFO_DIR = slicing-info
 BITCODE_DIR = d2a-bitcode
 
+all:
 
 clean-slicing-info:
 	rm -rf slicing-info
