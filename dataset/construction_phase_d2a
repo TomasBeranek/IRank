@@ -29,6 +29,19 @@ while IFS=, read rc bug_id entry_function file fun line variable; do
 	sample_dir="${output_dir}/${bug_id}"
 	((samples_cnt++))
 
+	# skip the sample if its dir already exists
+	if [ -d "$sample_dir" ]; then
+		# skipped samples count as successful samples
+		((success_samples_cnt++))
+
+		# end the script if we have enough samples (failed samples doesnt count)
+		if [ "$success_samples_cnt" -ge "$samples_to_proccess" ]; then
+				break
+		fi
+
+		continue
+	fi
+
 	# recreate tmp dir
 	rm -rf ${tmp_dir} && mkdir -p ${tmp_dir}
 
