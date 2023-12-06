@@ -248,8 +248,10 @@ HTTPD_0 156/11974 (failed/all) ~1,3%
 NGINX_1 1/418 (failed/all) ~0.2%
 NGINX_0 37/17209 (failed/all) ~0.2%
 LIBAV_1 83/4575 (failed/all) ~1.8%
+LIBAV_0 7849/234062 (failed/all) ~3.4%
 LIBTIFF_1 0/534 (failed/all) 0%
 LIBTIFF_0 8/11385 (failed/all) ~0.1%
 OPENSSL_1 332/7913 (failed/all) ~4.2%
 OPENSSL_0 30588/332584 (failed/all) ~9.2%
 FFMPEG_1 150/4772 (failed/all) ~3.1%
+FFMPEG_1 20894/654891 (failed/all) ~3.2%
