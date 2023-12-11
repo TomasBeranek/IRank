@@ -237,7 +237,7 @@
  14. generování .bc souborů z .h souborů (viz. experiment) - dva typy 1) .h je pouze includnut 2) orezava se podle .h
  15. redukce velikosti datasetu pomoci symlinku (podivat se, kolik to usetrilo ```ls -lh | awk '{ sum += $5 } END { print "Total size: " sum }'``` - bez dereference symlinku, ```ls -lhL | awk '{ sum += $5 } END { print "Total size: " sum }'``` s dereferenci symlinku)
  16. při generování .bc souborů nutno ošetřit krajní připady jako např. při chybě httpd_17e63e9b25d3a852c6363cca0ae5e0d9bbdf028a_1, kde mají 2 překládané soubory stejný název - server/util.c a modules/dav/main/util.c
- 17. urychlení hledání .bc souborů (viz. experiment/speed_test) - na openssl zrychlení cca 130x této části kódu v single thread módu (jenom toto hledání přídá jednotky hodin na celém datasetu)
+ 17. urychlení hledání .bc souborů (viz. experiment/speed-test) - na openssl zrychlení cca 130x této části kódu v single thread módu (jenom toto hledání přídá jednotky hodin na celém datasetu)
  18. další krajní případ překladu vzorků - nepodporuji vzorky složeny pouze z .h (httpd: 8b2ec33ac5) souborů, protože z nich nelze vygenerovat .bc soubor - bylo by nutné najít soubour, který je includuje a ten přeložit 1) neznám překladové příkazy pro ty soubory 2) těchto vzorků je poměrně málo
  19. další krajní případ překladu vzorků - nepodporuji vzorky složené s neznámých .l a .y souborů 1) nejsou to typické zdrojové soubory a pochybuji, že si s tím llvm-slicer poradí (httpd: 8b2ec33ac5), opět jsou to pouze jednotky vzorků
  20. deduplikace - ikdyz D2A clanek tvrdi, ze vzorky deduplikovali, tak se tam stale vyskytuje (napric projekty i v ramci jednoho) napr. ['httpd_23ed2445f0d28fe143835e7e74f572199ec205d4_0', 'httpd_f6d485709c150d0b5c80d34c6ac32746892c7b05_0']
