@@ -9,7 +9,7 @@ from tqdm import tqdm
 def init_parser():
     parser = argparse.ArgumentParser(description='Removes duplicit bitcode samples from D2A dataset.')
 
-    parser.add_argument('--d2a-dir', metavar='DIR', required=True, type=str, help='directory with .pickle.gz D2A samples')
+    parser.add_argument('--d2a-dir', metavar='DIR', required=True, type=str, help='directory with .pickle.gz D2A samples (dataset must NOT be filtered by filter.py!)')
     parser.add_argument('--bitcode-dir', metavar='DIR', required=True, type=str, help='directory with generated bitcode')
 
     return parser
@@ -219,7 +219,7 @@ if __name__ == '__main__':
     samples = load_samples(args.d2a_dir, duplicit_ids)
 
     # Remove bitcode of duplicit samples
-    for _, ids in duplicit_hashes.items():
+    for _, ids in tqdm(duplicit_hashes.items()):
         serialized_samples = [json.dumps(samples[id], sort_keys=True) for id in ids]
         # Check if the samples are indeed duplicit (they can have the same hash but still be different)
         if not all_items_are_same(serialized_samples):
