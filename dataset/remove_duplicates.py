@@ -159,12 +159,13 @@ def remove_data_file(file_path):
     # One of the symlinks must now become new data file, since we are removing the original one
     new_data_file = symlinks.pop()
     shutil.move(file_path, new_data_file) # Overwrite chosen symlink with the data file
+    new_data_file_link = new_data_file.split('/')[-1] # Take file name relative to symlink
 
     # Make all the remaining symlinks point to the new data file
     for symlink in symlinks:
         # Recreate the symlink with different target
         os.remove(symlink)
-        os.symlink(new_data_file, symlink)
+        os.symlink(new_data_file_link, symlink)
 
 
 def remove_data_files_by_ids(ids):
