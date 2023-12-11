@@ -29,3 +29,4 @@ dataset/experiments/include-headers-to-bitcode/*
 !dataset/experiments/include-headers-to-bitcode/file.c
 !dataset/experiments/include-headers-to-bitcode/header.h
 !dataset/experiments/include-headers-to-bitcode/Makefile
+dataset/experiments/removing-duplicates/bitcode/*
