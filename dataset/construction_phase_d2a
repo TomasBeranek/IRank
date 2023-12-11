@@ -27,6 +27,14 @@ ENDC='\033[0m'
 while IFS=, read rc bug_id entry_function file fun line variable; do
 	bc_combined="${bitcode_dir}/${bug_id}.bc"
 	sample_dir="${output_dir}/${bug_id}"
+
+	if [ ! -e "$bc_combined" ]; then
+		# samples without bitcode are skipped completely (they don't count as failed
+		# nor successful)
+		printf "${WARNING}WARNING${ENDC}: construction_phase: sample '${bug_id}' doesn't have bitcode!\n"
+		continue
+	fi
+
 	((samples_cnt++))
 
 	# skip the sample if its dir already exists
