@@ -242,17 +242,16 @@
  19. další krajní případ překladu vzorků - nepodporuji vzorky složené s neznámých .l a .y souborů 1) nejsou to typické zdrojové soubory a pochybuji, že si s tím llvm-slicer poradí (httpd: 8b2ec33ac5), opět jsou to pouze jednotky vzorků
  20. deduplikace - ikdyz D2A clanek tvrdi, ze vzorky deduplikovali, tak se tam stale vyskytuje (napric projekty i v ramci jednoho) napr. ['httpd_23ed2445f0d28fe143835e7e74f572199ec205d4_0', 'httpd_f6d485709c150d0b5c80d34c6ac32746892c7b05_0']
 
-
-#### Výsledky construction_phase_d2a.py
+#### Výsledky generate_bitcode.py
 HTTPD_1 0/210 (failed/all) 0%
 HTTPD_0 156/11974 (failed/all) ~1,3%
 NGINX_1 1/418 (failed/all) ~0.2%
 NGINX_0 37/17209 (failed/all) ~0.2%
-LIBAV_1 83/4575 (failed/all) ~1.8%
+LIBAV_1 177/4575 (failed/all) ~3.9%
 LIBAV_0 7849/234062 (failed/all) ~3.4%
 LIBTIFF_1 0/534 (failed/all) 0%
 LIBTIFF_0 8/11385 (failed/all) ~0.1%
 OPENSSL_1 332/7913 (failed/all) ~4.2%
-OPENSSL_0 30588/332584 (failed/all) ~9.2%
-FFMPEG_1 150/4772 (failed/all) ~3.1%
-FFMPEG_1 20894/654891 (failed/all) ~3.2%
+OPENSSL_0 30650/332584 (failed/all) ~9.2%
+FFMPEG_1 151/4772 (failed/all) ~3.2%
+FFMPEG_0 20894/654891 (failed/all) ~3.2%

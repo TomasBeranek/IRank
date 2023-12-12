@@ -30,6 +30,6 @@ graph_httpd_1:
 remove-duplicates:
 	python3 remove_duplicates.py --d2a-dir d2a --bitcode-dir d2a-bitcode
 
-# remove symlinks with non-existent targets
+# remove symlinks with non-existent targets (removed 877 invalid links from original bitcode)
 remove-invalid-symlinks:
 	python3 remove_invalid_symlinks.py d2a-bitcode
