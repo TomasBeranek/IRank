@@ -241,6 +241,7 @@
  18. další krajní případ překladu vzorků - nepodporuji vzorky složeny pouze z .h (httpd: 8b2ec33ac5) souborů, protože z nich nelze vygenerovat .bc soubor - bylo by nutné najít soubour, který je includuje a ten přeložit 1) neznám překladové příkazy pro ty soubory 2) těchto vzorků je poměrně málo
  19. další krajní případ překladu vzorků - nepodporuji vzorky složené s neznámých .l a .y souborů 1) nejsou to typické zdrojové soubory a pochybuji, že si s tím llvm-slicer poradí (httpd: 8b2ec33ac5), opět jsou to pouze jednotky vzorků
  20. deduplikace - ikdyz D2A clanek tvrdi, ze vzorky deduplikovali, tak se tam stale vyskytuje (napric projekty i v ramci jednoho) napr. ['httpd_23ed2445f0d28fe143835e7e74f572199ec205d4_0', 'httpd_f6d485709c150d0b5c80d34c6ac32746892c7b05_0']
+ 21. zminit prevod mezi .bc (LLVM Bitcode) a .ll (LLVM IR) - https://stackoverflow.com/questions/14107743/llvm-and-compiler-nomenclature
 
 #### Výsledky generate_bitcode.py
 HTTPD_1 0/210 (failed/all) 0%
@@ -259,3 +260,6 @@ FFMPEG_0 20894/654891 (failed/all) ~3.2%
 #### Deduplikace
 - duplicitni vzorky byly nazelezny jak v ramci jednoho projektu, tak v ramci ruznych projektu - zejmena libav a ffmpeg
 - odstraneno 131 602 vzorku (vstupem byly vzorky s bitcodem bez chybnych symlinku)
+
+#### Výsledky construction_phase_d2a.py (počet vygenerovaných grafů)
+HTTPD_1 199
