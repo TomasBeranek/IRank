@@ -255,3 +255,7 @@ OPENSSL_1 332/7913 (failed/all) ~4.2%
 OPENSSL_0 30650/332584 (failed/all) ~9.2%
 FFMPEG_1 151/4772 (failed/all) ~3.2%
 FFMPEG_0 20894/654891 (failed/all) ~3.2%
+
+#### Deduplikace
+- duplicitni vzorky byly nazelezny jak v ramci jednoho projektu, tak v ramci ruznych projektu - zejmena libav a ffmpeg
+- odstraneno 131 602 vzorku (vstupem byly vzorky s bitcodem bez chybnych symlinku)

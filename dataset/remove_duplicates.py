@@ -4,7 +4,13 @@ import os
 import pickle
 import json
 import shutil
+import copy
 from tqdm import tqdm
+
+
+# For faster work with symlinks
+symlinks_cache = dict()
+
 
 def init_parser():
     parser = argparse.ArgumentParser(description='Removes duplicit bitcode samples from D2A dataset.')
@@ -64,8 +70,16 @@ def calculate_hashes(dir):
                 if not os.path.exists(bitcode_path):
                     continue
 
-                # Keep only info which needed to recognize functionally same sample
-                # (e.g. ID will be DIFFERENT! - so we can't that)
+                # If bitcode is symlink, cache it
+                if os.path.islink(bitcode_path):
+                    symlink_target = os.readlink(bitcode_path)
+                    if symlink_target in symlinks_cache:
+                        symlinks_cache[symlink_target].append(bitcode_path)
+                    else:
+                        symlinks_cache[symlink_target] = [bitcode_path]
+
+                # Keep only info which is needed to recognize functionally same
+                # sample (e.g. ID will be DIFFERENT! - so we can't take that)
                 sample = dict()
                 sample['label'] = item['label']
                 sample['bug_type'] = item['bug_type']
@@ -125,29 +139,29 @@ def all_items_are_same(x):
     return len(set(x)) == 1
 
 
-def remove_files_by_ids(ids):
+def remove_symlinks_by_ids(ids):
+    global symlinks_cache
+
     for id in ids:
-        file_path = construct_file_path(id)
-        os.remove(file_path)
+        symlink_path = construct_file_path(id)
+        target = os.readlink(symlink_path)
+        os.remove(symlink_path)
+
+        # Update symlinks cache
+        symlinks_cache[target].remove(symlink_path)
 
 
 def find_symlinks_to_file(file_path):
-    abs_file_path = os.path.abspath(file_path)
-    dir = os.path.dirname(file_path)
-    symlinks = []
-
-    # Iterate over all entries in the directory
-    for entry in os.listdir(dir):
-        entry_path = os.path.join(dir, entry)
-
-        # Check if the entry is a symbolic link and if it points to the file
-        if os.path.islink(entry_path) and os.path.abspath(os.path.realpath(entry_path)) == abs_file_path:
-            symlinks.append(entry_path)
-
-    return symlinks
+    symlink_target = file_path.split('/')[-1]
+    if symlink_target in symlinks_cache:
+        return copy.copy(symlinks_cache[symlink_target])
+    else:
+        return []
 
 
 def remove_data_file(file_path):
+    global symlinks_cache
+
     # Get list of symlinks pointing to file_path in format 'dir/subdir/id.bc'
     symlinks = find_symlinks_to_file(file_path)
 
@@ -167,6 +181,16 @@ def remove_data_file(file_path):
         os.remove(symlink)
         os.symlink(new_data_file_link, symlink)
 
+        # Remove old symlink from cache
+        old_symlink_target = file_path.split('/')[-1]
+        symlinks_cache[old_symlink_target].remove(symlink)
+
+        # Add new symlink to cache
+        if new_data_file_link in symlinks_cache:
+            symlinks_cache[new_data_file_link].append(symlink)
+        else:
+            symlinks_cache[new_data_file_link] = [symlink]
+
 
 def remove_data_files_by_ids(ids):
     for id in ids:
@@ -182,7 +206,7 @@ def remove_bitcode(ids):
     if len(data_files_ids) > 1:
         # We have more data files - we will keep one and remove the others, all symlinks will be removed
         symlinks_ids = [id for id in ids if id not in data_files_ids]
-        remove_files_by_ids(symlinks_ids)
+        remove_symlinks_by_ids(symlinks_ids)
 
         # We keep one data file (doesn't matter which one) and remove the others
         data_files_ids.pop()
@@ -190,11 +214,11 @@ def remove_bitcode(ids):
     elif len(data_files_ids) == 1:
         # We have only one data file, others are symlinks - we can safely remove them
         ids.remove(data_files_ids[0])
-        remove_files_by_ids(ids)
+        remove_symlinks_by_ids(ids)
     else:
         # All files are symlinks - we keep one (doesn't matter which one) and remove the others
         ids.pop()
-        remove_files_by_ids(ids)
+        remove_symlinks_by_ids(ids)
 
 
 if __name__ == '__main__':
