@@ -25,8 +25,12 @@ slicing-info: clean-slicing-info
 nginx-1:
 	python3 generate_bitcode.py -f d2a-filtered/nginx_labeler_1.pickle.gz  -r projects/nginx/ nginx_labeler_1.csv
 
-graph_httpd_1:
-	./construction_phase_d2a $(GRAPH_DIR) $(SLICING_INFO_DIR)/httpd_labeler_1.csv $(BITCODE_DIR)/httpd_1
+graph-httpd-1:
+	./construction_phase_d2a $(GRAPH_DIR)/httpd_1 $(SLICING_INFO_DIR)/httpd_labeler_1.csv $(BITCODE_DIR)/httpd_1
+
+graph-httpd-0:
+	./construction_phase_d2a $(GRAPH_DIR)/httpd_0 $(SLICING_INFO_DIR)/httpd_labeler_0.csv $(BITCODE_DIR)/httpd_0
+
 remove-duplicates:
 	python3 remove_duplicates.py --d2a-dir d2a --bitcode-dir d2a-bitcode
 
