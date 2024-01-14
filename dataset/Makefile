@@ -31,6 +31,18 @@ graph-httpd-1:
 graph-httpd-0:
 	./construction_phase_d2a $(GRAPH_DIR)/httpd_0 $(SLICING_INFO_DIR)/httpd_labeler_0.csv $(BITCODE_DIR)/httpd_0
 
+graph-nginx-1:
+	./construction_phase_d2a $(GRAPH_DIR)/nginx_1 $(SLICING_INFO_DIR)/nginx_labeler_1.csv $(BITCODE_DIR)/nginx_1
+
+graph-nginx-0:
+	./construction_phase_d2a $(GRAPH_DIR)/nginx_0 $(SLICING_INFO_DIR)/nginx_labeler_0.csv $(BITCODE_DIR)/nginx_0
+
+graph-libtiff-1:
+	./construction_phase_d2a $(GRAPH_DIR)/libtiff_1 $(SLICING_INFO_DIR)/libtiff_labeler_1.csv $(BITCODE_DIR)/libtiff_1
+
+graph-libtiff-0:
+	./construction_phase_d2a $(GRAPH_DIR)/libtiff_0 $(SLICING_INFO_DIR)/libtiff_labeler_0.csv $(BITCODE_DIR)/libtiff_0 7500
+
 remove-duplicates:
 	python3 remove_duplicates.py --d2a-dir d2a --bitcode-dir d2a-bitcode
 
