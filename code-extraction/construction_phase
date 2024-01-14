@@ -144,6 +144,8 @@ while IFS=, read rc bug_id entry_function file fun line variable; do
 	# PDG
 	mv ${infer_dir}/out/edges_CDG_* ${output_dir}/${bug_id} 2> /dev/null
 
+	# Reaching def - might be useful
+	mv ${infer_dir}/out/edges_REACHING_DEF_* ${output_dir}/${bug_id} 2> /dev/null
 
 	# success
 	printf "${OK}SUCCESS${ENDC}: construction_phase: CPG for bug #${bug_id} was successfully constructed!\n"
