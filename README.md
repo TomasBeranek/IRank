@@ -155,7 +155,7 @@
 #### Generování grafů z datasetů
  - je nutné nainstalovat závislosti pro každý projekt - aby bylo možné spustit překlad požadovaných souborů
  - dale krom výše popsaných nástrojů je nutné nainstalovat nástroj ```parallel``` pomocí ```sudo apt install parallel```
- - je vhodné spustit skript ```construction_phase_d2a``` vícekrát (nebo bez paralelismu), když mnoho vzorků timed out - to se stává právě kvůli paralelismu
+ - je vhodné spustit skript ```construction_phase_d2a``` vícekrát (nebo bez paralelismu), když mnoho vzorků timed out - to se stává právě kvůli paralelismu, také je možné, že informační výpisy ```construction_phase_d2a``` budou kvůli paralelismu přeházeny přes sebe - jedná se pouze o vizuální věc, ale při prvních několika tisících vzorků se to nestalo ani 1x, tudíž nebyla přidána synchronizace - zbytečná práce navíc a také by se to teoreticky mohlo o něco zpomalit (ale když nedochází ke konfliktům, tak spíše ne)
 
 ##### HTTPD
  - je nutné nahradit ```<$sys$>``` u překladových příkazů
@@ -244,6 +244,8 @@
  19. další krajní případ překladu vzorků - nepodporuji vzorky složené s neznámých .l a .y souborů 1) nejsou to typické zdrojové soubory a pochybuji, že si s tím llvm-slicer poradí (httpd: 8b2ec33ac5), opět jsou to pouze jednotky vzorků
  20. deduplikace - ikdyz D2A clanek tvrdi, ze vzorky deduplikovali, tak se tam stale vyskytuje (napric projekty i v ramci jednoho) napr. ['httpd_23ed2445f0d28fe143835e7e74f572199ec205d4_0', 'httpd_f6d485709c150d0b5c80d34c6ac32746892c7b05_0']
  21. zminit prevod mezi .bc (LLVM Bitcode) a .ll (LLVM IR) - https://stackoverflow.com/questions/14107743/llvm-and-compiler-nomenclature
+ 22. GNNs are often used in combination with ranking, ... - presne use case na ktery to budu ja pouzivat  https://blog.tensorflow.org/2021/11/introducing-tensorflow-gnn.html
+ 23. jako duvod proc jsem node-sety udelal pro jednotlive typy uzlu (promenna, contanta, if, ..) uvest: When modeling real-world objects and relations, it is recommended to use separate sets for separate types of real-world objects. z [schema.md](https://github.com/tensorflow/gnn/blob/main/tensorflow_gnn/docs/guide/schema.md)
 
 #### Výsledky generate_bitcode.py
 HTTPD_1 0/210 (failed/all) 0%
