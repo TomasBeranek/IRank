@@ -173,9 +173,24 @@ export -f process_line
 # for each bug report (slicing criteria record)
 head -n ${samples_to_proccess} ${slicing_info_file} | parallel --colsep ',' process_line {1} {2} {3} {4} {5} {6} {7}
 
+# get the real number of processed samples
+all_project_samples_cnt=$(cat ${slicing_info_file} | wc -l)
+
+if [ "${samples_to_proccess}" -lt "${all_project_samples_cnt}" ]; then
+    samples_to_proccess=${samples_to_proccess}
+else
+    samples_to_proccess=${all_project_samples_cnt}
+fi
+
 # get number of successfull/unsuccessfull samples
 success_samples_cnt=$(ls ${output_dir} | wc -l)
 failed_samples_cnt=$((${samples_to_proccess} - ${success_samples_cnt}))
+
+# if there are more already created graphs than ${samples_to_proccess}
+if [ "${success_samples_cnt}" -gt "${samples_to_proccess}" ]; then
+    printf "${WARNING}WARNING${ENDC}: ${script_name}: can't determine the number successfull/unsuccessfull samples, because there are more graphs in output dir than the number of graphs to proccess!\n"
+    exit 0
+fi
 
 # print stats
 printf "${WARNING}WARNING${ENDC}: ${script_name}: ${failed_samples_cnt} samples failed to create graph!\n"
