@@ -1,172 +1,181 @@
 #!/bin/bash
 
 script=$(readlink -f "$0")
-script_dir=$(dirname "$script")
+export script_dir=$(dirname "$script")
 
-output_dir="$1"
+export output_dir="$1"
 slicing_info_file="$2"
-bitcode_dir="$3"
+export bitcode_dir="$3"
 samples_to_proccess="${4:-1000000000}"
-
-# for storing intermediate files
-tmp_dir="/tmp/construction_phase_d2a"
-bc_sliced="${tmp_dir}/sliced.bc"
-cpg_bin="${tmp_dir}/sliced.cpg.bin.zip"
-joern_script="${script_dir}/joern_script_d2a"
-joern_cpg_bin="${tmp_dir}/workspace/sliced.cpg.bin.zip/cpg.bin"
-success_samples_cnt=0
-samples_cnt=0
+export joern_script_template="${script_dir}/joern_script_d2a_template"
 
 # colors
-OK='\033[0;92m'
-WARNING='\033[0;93m'
-ERROR='\033[0;31m'
-ENDC='\033[0m'
+export OK='\033[0;92m'
+export WARNING='\033[0;93m'
+export ERROR='\033[0;31m'
+export ENDC='\033[0m'
 
-# for each bug report (slicing criteria record)
-while IFS=, read rc bug_id entry_function file fun line variable; do
-	bc_combined="${bitcode_dir}/${bug_id}.bc"
-	sample_dir="${output_dir}/${bug_id}"
+# function which process a single line in slicing_info_file (single sample)
+process_line() {
+    rc=$1
+    bug_id=$2
+		entry_function=$3
+		file=$4
+		fun=$5
+		line=$6
+		variable=$7
 
-	if [ ! -e "$bc_combined" ]; then
-		# samples without bitcode are skipped completely (they don't count as failed
-		# nor successful)
-		printf "${WARNING}WARNING${ENDC}: construction_phase: sample '${bug_id}' doesn't have bitcode!\n"
-		continue
-	fi
+		# for storing intermediate files
+		tmp_dir="/tmp/construction_phase_d2a_${$}" # unique dir name (using PID)
+		bc_sliced="${tmp_dir}/sliced.bc"
+		cpg_bin="${tmp_dir}/sliced.cpg.bin.zip"
+		joern_cpg_bin="${tmp_dir}/workspace/sliced.cpg.bin.zip/cpg.bin"
+		joern_script="${tmp_dir}/joern_script_d2a"
+		bc_combined="${bitcode_dir}/${bug_id}.bc"
+		sample_dir="${output_dir}/${bug_id}"
 
-	((samples_cnt++))
-
-	# skip the sample if its dir already exists
-	if [ -d "$sample_dir" ]; then
-		# skipped samples count as successful samples
-		((success_samples_cnt++))
-
-		# end the script if we have enough samples (failed samples doesnt count)
-		if [ "$success_samples_cnt" -ge "$samples_to_proccess" ]; then
-				break
+		if [ ! -e "${bc_combined}" ]; then
+			# samples without bitcode are skipped completely (they don't count as failed
+			# nor successful)
+			printf "${WARNING}WARNING${ENDC}: construction_phase: sample '${bug_id}' doesn't have bitcode!\n"
+			exit 0
 		fi
 
-		continue
-	fi
+		# skip the sample if its dir already exists
+		if [ -d "${sample_dir}" ]; then
+      exit 0
+		fi
 
-	# recreate tmp dir
-	rm -rf ${tmp_dir} && mkdir -p ${tmp_dir}
+		# create tmp dir
+		mkdir -p ${tmp_dir}
 
-	# slice the combined LLVM bitcode according to extracted slicing criteria
-	# variables already contain required '&' sign
-	timeout 5s llvm-slicer --entry=${entry_function} --sc="${file}#${fun}#${line}#${variable}" -o=${bc_sliced} ${bc_combined} 2> ${tmp_dir}/llvm_slicer_stderr.txt
+		# create joern script from its template
+		sed "s/PID/${$}/" "${joern_script_template}" > "${joern_script}"
 
-	# check if llvm-slicer timed-out, there are 2 reason for that:
-	# 	1) llvm-slicer got stuck
-	#		2) llvm-slicer takes too long - the graph will be too large (we dont want it)
-	if [ $? -eq 124 ]; then
-		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug '${bug_id}' because llvm-slicer timed out for slicing criteria '--entry=${entry_function} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
-		continue
-	fi
+		# slice the combined LLVM bitcode according to extracted slicing criteria
+		# variables already contain required '&' sign
+		timeout 5s llvm-slicer --entry=${entry_function} --sc="${file}#${fun}#${line}#${variable}" -o=${bc_sliced} ${bc_combined} > /dev/null 2> ${tmp_dir}/llvm_slicer_stderr.txt
 
-	# check if llvm-slicer succeeded
-	if grep "No reachable slicing criteria:" ${tmp_dir}/llvm_slicer_stderr.txt > /dev/null
-	then
-	  # llvm-slicer coudn't match extracted slicing criteria to bitcode
-		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug '${bug_id}' because llvm-slicer couldn't match the extracted slicing criteria '--entry=${entry_function} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
-		continue
-	fi
+		# check if llvm-slicer timed-out, there are 2 reason for that:
+		# 	1) llvm-slicer got stuck
+		#		2) llvm-slicer takes too long - the graph will be too large (we dont want it)
+		if [ $? -eq 124 ]; then
+			printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug '${bug_id}' because llvm-slicer timed out for slicing criteria '--entry=${entry_function} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
+			rm -rf ${tmp_dir}
+			exit 0
+		fi
 
-	# generate CPG
-	llvm2cpg ${bc_sliced} --output=${cpg_bin} > ${tmp_dir}/llvm2cpg_stdout.txt
+		# check if llvm-slicer succeeded
+		if grep "No reachable slicing criteria:" ${tmp_dir}/llvm_slicer_stderr.txt > /dev/null
+		then
+			# llvm-slicer coudn't match extracted slicing criteria to bitcode
+			printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug '${bug_id}' because llvm-slicer couldn't match the extracted slicing criteria '--entry=${entry_function} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
+			rm -rf ${tmp_dir}
+			exit 0
+		fi
 
-	# check if llvm2cpg succeeded
-	if grep "No bitcode files found." ${tmp_dir}/llvm2cpg_stdout.txt > /dev/null
-	then
-	  # llvm-slicer coudn't match extracted slicing criteria to bitcode (this is not copy-paste error)
-		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug ${bug_id} because llvm2cpg failed to generate CPG!\n"
-		continue
-	fi
+		# generate CPG
+		llvm2cpg ${bc_sliced} --output=${cpg_bin} > ${tmp_dir}/llvm2cpg_stdout.txt
 
-	# we need to switch to tmp, because of joern
-	cd ${tmp_dir}
+		# check if llvm2cpg succeeded
+		if grep "No bitcode files found." ${tmp_dir}/llvm2cpg_stdout.txt > /dev/null
+		then
+			# llvm-slicer coudn't match extracted slicing criteria to bitcode (this is not copy-paste error)
+			printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug ${bug_id} because llvm2cpg failed to generate CPG!\n"
+			rm -rf ${tmp_dir}
+			exit 0
+		fi
 
-	# joern transforms generated CPG to CSV in Neo4j format
-	# joern creates it's workspace in current dir --> tmp dir
-	joern --script ${joern_script}
+		# we need to switch to tmp, because of joern
+		cd ${tmp_dir}
 
-	# check if joern succeeded
-	# joern stores copy of imported CPG as workspace/sliced.cpg.bin.zip/cpg.bin
-	if [ ! -f "${joern_cpg_bin}" ]; then
-		# joern failed to import CPG generated by llvm2cpg e.g. the CPG file is missing
-		# but when it is there, the cpg.bin is still created (although it may be faulty)
-		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug ${bug_id} because Joern failed to create internal representation of given CPG!\n"
-		continue
-	fi
+		# joern transforms generated CPG to CSV in Neo4j format
+		# joern creates it's workspace in current dir --> tmp dir
+		joern --script ${joern_script} > /dev/null 2>&1
 
-	# export Joern's CPG to CSV
-	joern-export --repr all --format neo4jcsv ${joern_cpg_bin}
+		# check if joern succeeded
+		# joern stores copy of imported CPG as workspace/sliced.cpg.bin.zip/cpg.bin
+		if [ ! -f "${joern_cpg_bin}" ]; then
+			# joern failed to import CPG generated by llvm2cpg e.g. the CPG file is missing
+			# but when it is there, the cpg.bin is still created (although it may be faulty)
+			printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug ${bug_id} because Joern failed to create internal representation of given CPG!\n"
+			rm -rf ${tmp_dir}
+			exit 0
+		fi
 
-	# check if joern-export succeeded
-	if [ $? -ne 0 ]
-	then
-		# joern-export failed probably due to the faulty ${joern_cpg_bin} which
-		# was caused by joern's importing which failed half-way
-		printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug ${bug_id} because joern-export failed to create Neo4j CSV (Joern probably failed to import CPG)!\n"
-		continue
-	fi
+		# export Joern's CPG to CSV
+		joern-export --repr all --format neo4jcsv ${joern_cpg_bin} > /dev/null 2>&1
 
-	# switch back to script dir
-	cd ${script_dir}
+		# check if joern-export succeeded
+		if [ $? -ne 0 ]
+		then
+			# joern-export failed probably due to the faulty ${joern_cpg_bin} which
+			# was caused by joern's importing which failed half-way
+			printf "${WARNING}WARNING${ENDC}: construction_phase: skipping bug ${bug_id} because joern-export failed to create Neo4j CSV (Joern probably failed to import CPG)!\n"
+			rm -rf ${tmp_dir}
+			exit 0
+		fi
 
-	# prepare output sample dir (in the first iteration this will also create $(output_dir))
-	mkdir -p ${sample_dir}
+		# switch back to script dir
+		cd ${script_dir}
 
-	# move all the bug-specific CSV files into it's directory
-	# AST
-	mv ${tmp_dir}/out/edges_AST_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/edges_CONDITION_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_AST_NODE_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_BLOCK_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_CALL_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_CALL_REPR_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_CONTROL_STRUCTURE_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_EXPRESSION_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_FIELD_IDENTIFIER_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_IDENTIFIER_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_JUMP_LABEL_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_JUMP_TARGET_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_LITERAL_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_LOCAL_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_METHOD_REF_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_MODIFIER_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_RETURN_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_TYPE_REF_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_UNKNOWN_* ${sample_dir} 2> /dev/null
+		# prepare output sample dir (in the first iteration this will also create $(output_dir))
+		mkdir -p ${sample_dir}
 
-	# CallGraph - might be useful
-	mv ${tmp_dir}/out/edges_ARGUMENT_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/edges_CALL_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/edges_RECEIVER_* ${sample_dir} 2> /dev/null
+		# move all the bug-specific CSV files into it's directory
+		# AST
+		mv ${tmp_dir}/out/edges_AST_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/edges_CONDITION_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_AST_NODE_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_BLOCK_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_CALL_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_CALL_REPR_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_CONTROL_STRUCTURE_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_EXPRESSION_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_FIELD_IDENTIFIER_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_IDENTIFIER_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_JUMP_LABEL_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_JUMP_TARGET_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_LITERAL_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_LOCAL_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_METHOD_REF_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_MODIFIER_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_RETURN_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_TYPE_REF_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_UNKNOWN_* ${sample_dir} 2> /dev/null
 
-	# CFG
-	mv ${tmp_dir}/out/edges_CFG_* ${sample_dir} 2> /dev/null
-	mv ${tmp_dir}/out/nodes_CFG_NODE_* ${sample_dir} 2> /dev/null # just in case
+		# CallGraph - might be useful
+		mv ${tmp_dir}/out/edges_ARGUMENT_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/edges_CALL_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/edges_RECEIVER_* ${sample_dir} 2> /dev/null
 
-	# PDG
-	mv ${tmp_dir}/out/edges_CDG_* ${sample_dir} 2> /dev/null
+		# CFG
+		mv ${tmp_dir}/out/edges_CFG_* ${sample_dir} 2> /dev/null
+		mv ${tmp_dir}/out/nodes_CFG_NODE_* ${sample_dir} 2> /dev/null # just in case
 
+		# PDG
+		mv ${tmp_dir}/out/edges_CDG_* ${sample_dir} 2> /dev/null
 
-	# success
-	printf "${OK}SUCCESS${ENDC}: construction_phase: CPG for bug ${bug_id} was successfully constructed!\n"
-	((success_samples_cnt++))
+		# Reaching def - might be useful
+		mv ${tmp_dir}/out/edges_REACHING_DEF_* ${sample_dir} 2> /dev/null
 
-	# end the script if we have enough samples (failed samples doesnt count)
-	if [ "$success_samples_cnt" -ge "$samples_to_proccess" ]; then
-			break
-	fi
-done < ${slicing_info_file}
+		# remove tmp dir
+		rm -rf ${tmp_dir}
+
+		# success
+		printf "${OK}SUCCESS${ENDC}: construction_phase: CPG for bug ${bug_id} was successfully constructed!\n"
+}
+
+# export function so its visible in newly started subshells in parallel command
+export -f process_line
+
+# for each bug report (slicing criteria record)
+head -n ${samples_to_proccess} ${slicing_info_file} | parallel --colsep ',' process_line {1} {2} {3} {4} {5} {6} {7}
+
+# get number of successfull/unsuccessfull samples
+success_samples_cnt=$(ls ${output_dir} | wc -l)
+failed_samples_cnt=$((${samples_to_proccess} - ${success_samples_cnt}))
 
 # print stats
-failed_samples_cnt=$(($samples_cnt - $success_samples_cnt))
 printf "${WARNING}WARNING${ENDC}: construction_phase: ${failed_samples_cnt} samples failed to create graph!\n"
 printf "${OK}SUCCESS${ENDC}: construction_phase: ${success_samples_cnt} graphs were successfully created!\n"
-
-# TODO: for each subdirectory in ${output_dir} load CSV files into python objects
-#				and filter out only useful information and save the object to .pickle.gz

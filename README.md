@@ -154,6 +154,8 @@
 
 #### Generování grafů z datasetů
  - je nutné nainstalovat závislosti pro každý projekt - aby bylo možné spustit překlad požadovaných souborů
+ - dale krom výše popsaných nástrojů je nutné nainstalovat nástroj ```parallel``` pomocí ```sudo apt install parallel```
+ - je vhodné spustit skript ```construction_phase_d2a``` vícekrát (nebo bez paralelismu), když mnoho vzorků timed out - to se stává právě kvůli paralelismu
 
 ##### HTTPD
  - je nutné nahradit ```<$sys$>``` u překladových příkazů

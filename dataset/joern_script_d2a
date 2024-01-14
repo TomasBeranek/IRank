@@ -1,3 +1,0 @@
-workspace.reset
-importCpg("/tmp/construction_phase_d2a/sliced.cpg.bin.zip")
-save
