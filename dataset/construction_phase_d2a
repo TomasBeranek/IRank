@@ -2,7 +2,7 @@
 
 script=$(readlink -f "$0")
 export script_dir=$(dirname "$script")
-script_name=$(basename "$script")
+export script_name=$(basename "$script")
 
 export output_dir="$1"
 slicing_info_file="$2"
