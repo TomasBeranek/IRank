@@ -8,6 +8,7 @@ export output_dir="$1"
 slicing_info_file="$2"
 export bitcode_dir="$3"
 samples_to_proccess="${4:-1000000000}"
+start_from_sample="${5:-1}"
 export joern_script_template="${script_dir}/joern_script_d2a_template"
 
 # colors
@@ -171,7 +172,7 @@ process_line() {
 export -f process_line
 
 # for each bug report (slicing criteria record)
-head -n ${samples_to_proccess} ${slicing_info_file} | parallel --colsep ',' process_line {1} {2} {3} {4} {5} {6} {7}
+head -n ${samples_to_proccess} ${slicing_info_file} | tail -n +${start_from_sample} | parallel --colsep ',' process_line {1} {2} {3} {4} {5} {6} {7}
 
 # get the real number of processed samples
 all_project_samples_cnt=$(cat ${slicing_info_file} | wc -l)
