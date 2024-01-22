@@ -1,0 +1,14 @@
+LOAD CSV FROM 'file:/nodes_UNKNOWN_data.csv' AS line
+CREATE (:UNKNOWN {
+id: toInteger(line[0]),
+ARGUMENT_INDEX: toInteger(line[2]),
+ARGUMENT_NAME: line[3],
+CODE: line[4],
+COLUMN_NUMBER: line[5],
+CONTAINED_REF: line[6],
+DYNAMIC_TYPE_HINT_FULL_NAME: split(line[7], ";"),
+LINE_NUMBER: line[8],
+ORDER: toInteger(line[9]),
+PARSER_TYPE_NAME: line[10],
+TYPE_FULL_NAME: line[11]
+});
