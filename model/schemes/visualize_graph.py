@@ -4,21 +4,12 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import sys
 import pandas as pd
-from collections import defaultdict
-from pprint import pprint
-
-
-def add_edge(start, end, incoming_edges, outgoing_edges):
-    incoming_edges[end].add(f'{start}->{end}')
-    outgoing_edges[start].add(f'{start}->{end}')
 
 
 def read_csv_files(directory):
     valid_nodes = set()
     node_data = {}
     edge_data = {}
-    incoming_edges = defaultdict(set)
-    outgoing_edges = defaultdict(set)
 
     for filename in os.listdir(directory):
         if filename.endswith('_cypher.csv') or filename.endswith('_header.csv'):
@@ -42,37 +33,18 @@ def read_csv_files(directory):
             node_data[type_name] = df
 
         elif filename.startswith("edges_"):
-            # Only AST for now
-            # if 'AST' not in filename:
-            #     continue
-
             type_name = '_'.join(filename.split("_")[1:-1])
             path = os.path.join(directory, filename)
             edge_data[type_name] = pd.read_csv(path, header=None, names=["start", "end", 'type'])
 
         # Add nodes with attributes
         for node_type, data in node_data.items():
-            for _, row in data.iterrows():
-                valid_nodes.add(row[':ID'])
+            valid_nodes.update(set(data[':ID']))
 
-        all_nodes = set(valid_nodes)
-
-        # Add edges
-        for edge_type, data in edge_data.items():
-            # We are interested in removing AST edges
-            if edge_type == 'AST':
-                for _, row in data.iterrows():
-                    # Some edges will be saved multiple times, but since
-                    # incoming_edges[NODE] is set, it doesn't matter and the code
-                    # is much simpler
-                    add_edge(row['start'], row['end'], incoming_edges, outgoing_edges)
-                    all_nodes.add(row['start'])
-                    all_nodes.add(row['end'])
-
-    return node_data, edge_data, valid_nodes, all_nodes, incoming_edges, outgoing_edges
+    return node_data, edge_data, valid_nodes
 
 
-def create_graph(node_data, edge_data):
+def create_directional_graph(node_data, edge_data):
     G = nx.DiGraph()
 
     # Add nodes with attributes
@@ -80,10 +52,9 @@ def create_graph(node_data, edge_data):
         for _, row in data.iterrows():
             G.add_node(row[':ID'], **row[1:].to_dict(), type=node_type)
 
-    # Add edges
+    # Add edges with types
     for edge_type, data in edge_data.items():
         for _, row in data.iterrows():
-            # if (row['start'] in G.nodes) and (row['end'] in G.nodes):
             G.add_edge(row['start'], row['end'], type=edge_type)
 
     return G
@@ -163,71 +134,58 @@ def remove_edge(edge, incoming_edges, outgoing_edges):
     incoming_edges[end].remove(edge)
 
 
-def remove_leaf(node, all_nodes, incoming_edges, outgoing_edges):
-    edge_to_remove = next(iter(incoming_edges[node]))
-    remove_edge(edge_to_remove, incoming_edges, outgoing_edges)
-    all_nodes.remove(node)
+def remove_leaf(node, G):
+    # This will remove the node and all related edges
+    G.remove_node(node)
 
 
-def remove_inner(node, all_nodes, incoming_edges, outgoing_edges):
-    parent_edge = next(iter(incoming_edges[node]))
-    parent_node = int(parent_edge.split('->')[0])
-    child_nodes = [int(child_edge.split('->')[1]) for child_edge in outgoing_edges[node]]
+def remove_inner(node, G):
+    parent_node = list(G.predecessors(node))[0] # There should be only one
+    child_nodes = list(G.successors(node))
 
-    # Remove all edges related to this node
-    remove_edge(parent_edge, incoming_edges, outgoing_edges)
-    child_edges = outgoing_edges[node].copy() # We donn't want change the set we are iterating on
-    for child_edge in child_edges:
-        remove_edge(child_edge, incoming_edges, outgoing_edges)
+    # Remove the node and all its related edges
+    G.remove_node(node)
 
     # Make new edges from parent to child nodes (bypassing current node)
     for child_node in child_nodes:
-        add_edge(parent_node, child_node, incoming_edges, outgoing_edges)
-
-    all_nodes.remove(node)
+        G.add_edge(parent_node, child_node, type='AST')
 
 
-def is_leaf(node, incoming_edges, outgoing_edges):
-    return len(outgoing_edges[node]) == 0
+def is_leaf(node, G):
+    return G.out_degree(node) == 0
 
 
-def is_root(node, incoming_edges):
-    return len(incoming_edges[node]) == 0
+def is_root(node, G):
+    return G.in_degree(node) == 0
 
 
-def is_inner(node, incoming_edges, outgoing_edges):
-    return (len(incoming_edges[node]) == 1) and (len(outgoing_edges[node]) > 0)
+def is_inner(node, G):
+    return (G.in_degree(node) == 1) and (G.out_degree(node) > 0)
 
 
-def remove_invalid_nodes(node_data, edge_data, valid_nodes, all_nodes, incoming_edges, outgoing_edges):
-    invalid_nodes = all_nodes - valid_nodes
+def remove_invalid_nodes(node_data, edge_data, valid_nodes):
+    # Add only AST edges, since they form a tree and the following alg works for trees only
+    G = create_directional_graph(node_data, {'AST': edge_data['AST']})
+
+    invalid_nodes = set(G.nodes) - valid_nodes
 
     # Keep removing until all invalid nodes are gone
     while invalid_nodes:
         node = invalid_nodes.pop()
 
-        if is_leaf(node, incoming_edges, outgoing_edges):
-            remove_leaf(node, all_nodes, incoming_edges, outgoing_edges)
-        elif is_root(node, incoming_edges):
+        if is_leaf(node, G):
+            remove_leaf(node, G)
+        elif is_root(node, G):
             # Make this node a valid BLOCK node
-            node_data['BLOCK'].loc[len(node_data['BLOCK'])] = {':ID': node, 'ORDER:int': 0}
-        elif is_inner(node, incoming_edges, outgoing_edges):
-            remove_inner(node, all_nodes, incoming_edges, outgoing_edges)
+            G.nodes[node].update({'ORDER:int': 0, 'type': 'BLOCK'})
+        elif is_inner(node, G):
+            remove_inner(node, G)
         else:
             # This shouldn't happen, because it would mean that the AST is not a tree
             print(f'ERROR: visualize_graph.py: current graph has a node which is not root, inner or leaf - which is not possible in a tree!')
             exit(1)
 
     # TODO: Remove leaf BLOCK nodes (and possibly others)
-
-    # Filter out removed edges/nodes from original data
-    all_edges = set()
-    for edges in incoming_edges.values():
-        all_edges.update(edges)
-
-    # Keep only AST edges which weren't removed
-    edges_list = [(int(edge.split('->')[0]), int(edge.split('->')[1]), 'AST') for edge in all_edges]
-    edge_data['AST'] = pd.DataFrame(edges_list, columns=['start', 'end', 'type'])
 
     # TODO: Create nx graph
 
@@ -243,12 +201,12 @@ def remove_invalid_nodes(node_data, edge_data, valid_nodes, all_nodes, incoming_
     # TODO: Check if the graph is a single WCC
 
     # TODO: Print compression of the graph after removal
-    exit()
+
+    return G
 
 
 if __name__ == "__main__":
     directory = sys.argv[1]  # Get directory from the first argument
-    node_data, edge_data, valid_nodes, all_nodes, incoming_edges, outgoing_edges = read_csv_files(directory)
-    remove_invalid_nodes(node_data, edge_data, valid_nodes, all_nodes, incoming_edges, outgoing_edges)
-    G = create_graph(node_data, edge_data)
+    node_data, edge_data, valid_nodes = read_csv_files(directory)
+    G = remove_invalid_nodes(node_data, edge_data, valid_nodes)
     plot_graph(G)
