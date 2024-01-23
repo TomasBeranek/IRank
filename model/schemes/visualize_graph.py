@@ -6,7 +6,7 @@ import sys
 import pandas as pd
 
 
-def read_csv_files(directory):
+def load_sample_data(directory):
     valid_nodes = set()
     node_data = {}
     edge_data = {}
@@ -19,6 +19,7 @@ def read_csv_files(directory):
         if 'REACHING_DEF' in filename:
             continue
 
+        # Load nodes
         if filename.startswith("nodes_"):
             type_name = '_'.join(filename.split("_")[1:-1])
             path_data = os.path.join(directory, filename)
@@ -32,12 +33,14 @@ def read_csv_files(directory):
 
             node_data[type_name] = df
 
+        # Load edges
         elif filename.startswith("edges_"):
             type_name = '_'.join(filename.split("_")[1:-1])
             path = os.path.join(directory, filename)
             edge_data[type_name] = pd.read_csv(path, header=None, names=["start", "end", 'type'])
 
-        # Add nodes with attributes
+        # Valid nodes - nodes that are actually stored in CSV files, any other
+        # node is considered invalid
         for node_type, data in node_data.items():
             valid_nodes.update(set(data[':ID']))
 
@@ -61,9 +64,7 @@ def create_directional_graph(node_data, edge_data):
 
 
 def plot_graph(G):
-    plt.figure(figsize=(12, 8))
-
-    # Define a color mapping
+    # Define a node color mapping
     node_color_map = {
         'BLOCK': 'blue',
         'CALL': 'green',
@@ -77,6 +78,7 @@ def plot_graph(G):
         'default_type': 'grey',
     }
 
+    # Define a edge color mapping
     edge_color_map = {
         'AST': 'red',
         'CALL': 'purple',
@@ -87,9 +89,8 @@ def plot_graph(G):
         'ARGUMENT': 'yellow',
     }
 
-    # Differentiate colors for nodes
+    # Get types of nodes/edges
     node_types = [G.nodes[n].get('type', 'default_type') for n in G.nodes]
-    # # Differentiate colors for edges
     edge_types = [G.edges[e]['type'] for e in G.edges]
 
     # Apply color mapping
@@ -102,8 +103,11 @@ def plot_graph(G):
     # Create legend patches for edges
     edge_legend_patches = [mpatches.Patch(color=color, label=edge_type) for edge_type, color in edge_color_map.items()]
 
-    G_undirected = nx.Graph(G)  # Create an equivalent undirected graph
-    pos = nx.spring_layout(G_undirected)  # Compute layout
+    # Create an equivalent undirected graph (since we want its layout)
+    G_undirected = nx.Graph(G)
+
+    # Compute layout
+    pos = nx.spring_layout(G_undirected)
 
     # Draw nodes with type-based colors
     nx.draw_networkx_nodes(G, pos, node_color=node_colors, alpha=0.8)
@@ -123,15 +127,9 @@ def plot_graph(G):
     # Create the second legend (for edges)
     plt.legend(handles=edge_legend_patches, loc='lower right', title='Edge Types')
 
+    # Show the graph
     plt.title('Graph Visualization')
     plt.show()
-
-
-def remove_edge(edge, incoming_edges, outgoing_edges):
-    start = int(edge.split('->')[0])
-    end   = int(edge.split('->')[1])
-    outgoing_edges[start].remove(edge)
-    incoming_edges[end].remove(edge)
 
 
 def remove_leaf(node, G):
@@ -169,14 +167,14 @@ def remove_all_wcc_nodes(wcc, G):
 
 
 def remove_invalid_nodes(node_data, edge_data, valid_nodes):
+    # Get some stats for compression info
+    wccs_num_before = len(list(nx.weakly_connected_components(G)))
     original_edge_count = 0
     for data in edge_data.values():
         original_edge_count += len(data)
 
     # Add only AST edges, since they form a tree and the following alg works for trees only
     G = create_directional_graph(node_data, {'AST': edge_data.pop('AST')})
-
-    wccs_num_before = len(list(nx.weakly_connected_components(G)))
 
     invalid_nodes = set(G.nodes) - valid_nodes
 
@@ -220,6 +218,7 @@ def remove_invalid_nodes(node_data, edge_data, valid_nodes):
         if is_leaf(node, G) and G.nodes[node]['type'] == 'BLOCK':
             G.remove_node(node)
 
+    # All current nodes are now considered valid
     valid_nodes = set(G.nodes)
 
     # Add rest of the edges 'CFG', 'CALL', ...
@@ -248,7 +247,7 @@ def remove_invalid_nodes(node_data, edge_data, valid_nodes):
 
 
 if __name__ == "__main__":
-    directory = sys.argv[1]  # Get directory from the first argument
-    node_data, edge_data, valid_nodes = read_csv_files(directory)
+    directory = sys.argv[1]
+    node_data, edge_data, valid_nodes = load_sample_data(directory)
     G = remove_invalid_nodes(node_data, edge_data, valid_nodes)
     plot_graph(G)
