@@ -163,9 +163,20 @@ def is_inner(node, G):
     return (G.in_degree(node) == 1) and (G.out_degree(node) > 0)
 
 
+def remove_all_wcc_nodes(wcc, G):
+    for node in wcc:
+        G.remove_node(node)
+
+
 def remove_invalid_nodes(node_data, edge_data, valid_nodes):
+    original_edge_count = 0
+    for data in edge_data.values():
+        original_edge_count += len(data)
+
     # Add only AST edges, since they form a tree and the following alg works for trees only
-    G = create_directional_graph(node_data, {'AST': edge_data['AST']})
+    G = create_directional_graph(node_data, {'AST': edge_data.pop('AST')})
+
+    wccs_num_before = len(list(nx.weakly_connected_components(G)))
 
     invalid_nodes = set(G.nodes) - valid_nodes
 
@@ -185,22 +196,53 @@ def remove_invalid_nodes(node_data, edge_data, valid_nodes):
             print(f'ERROR: visualize_graph.py: current graph has a node which is not root, inner or leaf - which is not possible in a tree!')
             exit(1)
 
-    # TODO: Remove leaf BLOCK nodes (and possibly others)
+    wccs_after = list(nx.weakly_connected_components(G))
+    wccs_num_after = len(wccs_after)
 
-    # TODO: Create nx graph
+    # The number of WCCs shouldn't change after removal of invalid nodes
+    if wccs_num_before != wccs_num_after:
+        print('ERROR: visualize_graph.py: By removing the invalid nodes, the graph was split into multiple WCCs!')
 
-    # TODO: Check if the number of WCC (Weakly Connected Components) is the same
-    # as before the removal of invalid nodes (it should be the same)
+    # Remove WCCs which are composed only from BLOCK nodes
+    for wcc in wccs_after:
+        remove_wcc = True
+        for node in wcc:
+            if G.nodes[node]['type'] != 'BLOCK':
+                remove_wcc = False
+                break
 
-    # TODO: Remove WCCs which are composed only from BLOCK nodes
+        if remove_wcc:
+            remove_all_wcc_nodes(wcc, G)
 
-    # TODO: Add rest of the edges 'CFG', 'CALL', ...
+    # Remove leaf BLOCK nodes (and possibly others)
+    all_nodes_copy = list(G.nodes)
+    for node in all_nodes_copy:
+        if is_leaf(node, G) and G.nodes[node]['type'] == 'BLOCK':
+            G.remove_node(node)
 
-    # TODO: Remove edges of other types which are related to invalid nodes
+    valid_nodes = set(G.nodes)
 
-    # TODO: Check if the graph is a single WCC
+    # Add rest of the edges 'CFG', 'CALL', ...
+    for edge_type, data in edge_data.items():
+        for _, row in data.iterrows():
+            G.add_edge(row['start'], row['end'], type=edge_type)
 
-    # TODO: Print compression of the graph after removal
+    # Newly added edges introduced new invalid nodes
+    all_nodes = set(G.nodes)
+
+    # Remove edges of other types which are related to invalid nodes
+    for node in all_nodes:
+        if node not in valid_nodes:
+            G.remove_node(node)
+
+    # Check if the graph is a single WCC
+    if len(list(nx.weakly_connected_components(G))) != 1:
+        print('ERROR: visualize_graph.py: The graph consists of more than one WCC!')
+
+    # Print compression of the graph after removal
+    after_edge_count = G.number_of_edges()
+    compression_percentage = ((original_edge_count - after_edge_count) / original_edge_count) * 100
+    print(f'Note: visualize_graph.py: Graph compressed by {compression_percentage:.1f}%.')
 
     return G
 
