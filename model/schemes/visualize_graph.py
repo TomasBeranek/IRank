@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import sys
 import pandas as pd
+import concurrent.futures
 
 
 def load_sample_data(directory):
@@ -166,15 +167,15 @@ def remove_all_wcc_nodes(wcc, G):
         G.remove_node(node)
 
 
-def remove_invalid_nodes(node_data, edge_data, valid_nodes):
+def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     # Get some stats for compression info
-    wccs_num_before = len(list(nx.weakly_connected_components(G)))
     original_edge_count = 0
     for data in edge_data.values():
         original_edge_count += len(data)
 
     # Add only AST edges, since they form a tree and the following alg works for trees only
     G = create_directional_graph(node_data, {'AST': edge_data.pop('AST')})
+    wccs_num_before = len(list(nx.weakly_connected_components(G)))
 
     invalid_nodes = set(G.nodes) - valid_nodes
 
@@ -241,13 +242,28 @@ def remove_invalid_nodes(node_data, edge_data, valid_nodes):
     # Print compression of the graph after removal
     after_edge_count = G.number_of_edges()
     compression_percentage = ((original_edge_count - after_edge_count) / original_edge_count) * 100
-    print(f'Note: visualize_graph.py: Graph compressed by {compression_percentage:.1f}%.')
+    print(f'Note: visualize_graph.py: Graph \'{sample_id}\' compressed by {compression_percentage:.1f}%.')
 
     return G
 
 
-if __name__ == "__main__":
-    directory = sys.argv[1]
+def process_sample(directory):
+    sample_id = directory.split('/')[-1]
     node_data, edge_data, valid_nodes = load_sample_data(directory)
-    G = remove_invalid_nodes(node_data, edge_data, valid_nodes)
-    plot_graph(G)
+    remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
+    return
+
+
+if __name__ == "__main__":
+    if sys.stdin.isatty():
+        # Is stdin is empty - run in single-threaded mode (only one graph)
+        directory = sys.argv[1]
+        node_data, edge_data, valid_nodes = load_sample_data(directory)
+        G = remove_invalid_nodes(node_data, edge_data, valid_nodes)
+        plot_graph(G)
+    else:
+        # stdin has data, process each line in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
+            for line in sys.stdin:
+                directory = line.strip()
+                executor.submit(process_sample, directory)
