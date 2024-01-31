@@ -39,7 +39,8 @@ def load_sample_data(directory):
         elif filename.startswith("edges_"):
             type_name = '_'.join(filename.split("_")[1:-1])
             path = os.path.join(directory, filename)
-            edge_data[type_name] = pd.read_csv(path, header=None, names=["start", "end", 'type'])
+            df = pd.read_csv(path, header=None, names=["start", "end", 'type'])
+            edge_data[type_name] = df[['start', 'end']] # Drop edge type - we already know it
 
         # Valid nodes - nodes that are actually stored in CSV files, any other
         # node is considered invalid
@@ -54,13 +55,15 @@ def create_directional_graph(node_data, edge_data):
 
     # Add nodes with attributes
     for node_type, data in node_data.items():
-        for _, row in data.iterrows():
-            G.add_node(row[':ID'], **row[1:].to_dict(), type=node_type)
+        nodes = data.to_dict('records')
+        for node in nodes:
+            G.add_node(node[':ID'], **{k: v for k, v in node.items() if k != ':ID'}, type=node_type)
 
     # Add edges with types
     for edge_type, data in edge_data.items():
-        for _, row in data.iterrows():
-            G.add_edge(row['start'], row['end'], type=edge_type)
+        edges = data.to_dict('records')
+        for edge in edges:
+            G.add_edge(edge['start'], edge['end'], type=edge_type)
 
     return G
 
@@ -225,8 +228,9 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
 
     # Add rest of the edges 'CFG', 'CALL', ...
     for edge_type, data in edge_data.items():
-        for _, row in data.iterrows():
-            G.add_edge(row['start'], row['end'], type=edge_type)
+        edges = data.to_dict('records')
+        for edge in edges:
+            G.add_edge(edge['start'], edge['end'], type=edge_type)
 
     # Newly added edges introduced new invalid nodes
     all_nodes = set(G.nodes)
