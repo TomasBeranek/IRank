@@ -31,5 +31,8 @@ dataset/experiments/include-headers-to-bitcode/*
 !dataset/experiments/include-headers-to-bitcode/Makefile
 dataset/experiments/removing-duplicates/bitcode/*
 
+# Schemes - generated files
+model/schemes/header_cache/
+
 # VS Code
 .vscode/

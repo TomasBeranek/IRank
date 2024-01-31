@@ -7,6 +7,9 @@ import pandas as pd
 import concurrent.futures
 
 
+headers_cache = {}
+
+
 def load_sample_data(directory):
     valid_nodes = set()
     node_data = {}
@@ -24,9 +27,7 @@ def load_sample_data(directory):
         if filename.startswith("nodes_"):
             type_name = '_'.join(filename.split("_")[1:-1])
             path_data = os.path.join(directory, filename)
-            path_header = os.path.join(directory, f"nodes_{type_name}_header.csv")
-            headers = pd.read_csv(path_header, header=None).iloc[0]
-            df = pd.read_csv(path_data, header=None, names=headers)
+            df = pd.read_csv(path_data, header=None, names=headers_cache[type_name])
 
             # Keep only useful features (see model/schemes/latent_nodes/basic_cpg.pbtxt for more info)
             if 'BLOCK' in filename:
@@ -254,15 +255,43 @@ def process_sample(directory):
     return
 
 
+def cache_headers(headers_dir):
+    global headers_cache
+
+    if not os.path.isdir(headers_dir):
+        print(f"Error: visualize_graph.py: Directory with CSV headers doesn't exist! Try running 'make header-cache'.")
+
+    for filename in os.listdir(headers_dir):
+        # Skip everything other than a file (there shouldn't be anything else though)
+        if not os.path.isfile(os.path.join(headers_dir, filename)):
+            continue
+
+        # Skip edge files headers - they all have the same header (START,END,TYPE)
+        if 'nodes' not in filename:
+            continue
+
+        # Load header
+        path_header = os.path.join(headers_dir, filename)
+        header = pd.read_csv(path_header, header=None).iloc[0]
+
+        # Save header
+        header_type = filename[6:-11] # Remove 'nodes_' and '_header.csv'
+        headers_cache[header_type] = header
+
+
 if __name__ == "__main__":
+    # Cache CSV headers
+    cache_headers('header_cache/')
+
     if sys.stdin.isatty():
-        # Is stdin is empty - run in single-threaded mode (only one graph)
+        # If stdin is empty - run in single-threaded mode (only one graph)
         directory = sys.argv[1]
+        sample_id = directory.split('/')[-1]
         node_data, edge_data, valid_nodes = load_sample_data(directory)
-        G = remove_invalid_nodes(node_data, edge_data, valid_nodes)
+        G = remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
         plot_graph(G)
     else:
-        # stdin has data, process each line in parallel
+        # Stdin has data, process each line in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
             for line in sys.stdin:
                 directory = line.strip()
