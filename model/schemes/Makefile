@@ -21,3 +21,7 @@ header-cache:
 	rm -rf $(HEADERS_DIR)
 	mkdir $(HEADERS_DIR)
 	find ../../D2A-CPG/ -type f -name "*_header.csv" | awk -F/ '!seen[$$NF]++ {print}' | while read -r file; do cp "$$file" "$(HEADERS_DIR)"; done
+
+# Use this as: 'time make measure-time'
+measure-time:
+	find ../../D2A-CPG -mindepth 2 -type d | head -n 50 | python3 visualize_graph.py
