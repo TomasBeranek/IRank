@@ -1,7 +1,7 @@
 # The experiment demonstrates the use of the Joern tool in "batch" mode, which
 # eliminates the need to restart/shutdown the tool for each sample. At the same
 # time, there is no need to reset the workspace. The 'save' command in
-# 'joern_script_batch' must follow each CPG load to generate an identical graph
+# 'joern_script_batch' must be present at the end to generate an identical graph
 # as when processing a single CPG. If 'save' is omitted, the output graph is
 # incomplete, even though the documentation says that everything is saved when
 # the script exits (not true).
