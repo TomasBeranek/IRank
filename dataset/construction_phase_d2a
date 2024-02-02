@@ -112,8 +112,8 @@ cpgbin_to_csv() {
       exit 0
     fi
 
-    # remove subdir in workspace - it wont needed in future and we save some space, since we are creating new CPGs on disk
-    rm -rf "${tmp_dir_general}/workspace/${bug_id}.cpg.bin.zip/"
+    # remove cpgbin - it wont needed in future and we save some space, since we are creating new CPGs on disk
+    rm -rf "${tmp_dir_general}/${bug_id}.cpg.bin.zip"
 
     # success
     printf "${OK}SUCCESS${ENDC}: ${script_name}: CPG for bug ${bug_id} was successfully constructed!\n"
@@ -156,24 +156,38 @@ done < ${extracted_samples_file} > ${tmp_csv_file}
 # save it back to the original file
 mv ${tmp_csv_file} ${extracted_samples_file}
 
-# generate joern_script
-while IFS=, read -r rc bug_id rest; do
-  echo "importCpg(\"/tmp/construction_phase_d2a/${bug_id}.cpg.bin.zip\")"
-done < ${extracted_samples_file} > ${joern_script}
-echo "save" >> ${joern_script}
-
 # we need to switch to tmp, because of joern
 cd ${tmp_dir_general}
 
-# joern transforms generated CPG to CSV in Neo4j format
-# joern creates it's workspace in current dir --> tmp dir general
-joern --script ${joern_script} > /dev/null 2>&1
+# split the ${extracted_samples_file} into smaller files of 500 lines each
+mkdir ${tmp_dir_general}/split_files/
+split -l 500 ${extracted_samples_file} ${tmp_dir_general}/split_files/split_file_
 
-# prepare output dir
-mkdir -p ${output_dir} 2> /dev/null
+# iterate over each of the smaller files
+for file in ${tmp_dir_general}/split_files/split_file_*; do
+  if [ ! -e "${file}" ] || [ ! -s "${file}" ]; then
+    continue
+  fi
 
-# run joern-export in parallel
-cat ${extracted_samples_file} | parallel --colsep ',' cpgbin_to_csv {2}
+  # generate joern_script
+  while IFS=, read -r rc bug_id rest; do
+    echo "importCpg(\"/tmp/construction_phase_d2a/${bug_id}.cpg.bin.zip\")"
+  done < ${file} > ${joern_script}
+  echo "save" >> ${joern_script}
+
+  # joern transforms generated CPG to CSV in Neo4j format
+  # joern creates it's workspace in current dir --> tmp dir general
+  joern --script ${joern_script} > /dev/null 2>&1
+
+  # prepare output dir
+  mkdir -p ${output_dir} 2> /dev/null
+
+  # run joern-export in parallel
+  cat ${file} | parallel --colsep ',' cpgbin_to_csv {2}
+
+  # remove workspace - it wont needed in future and we save some space, since we are creating new CPGs on disk
+  rm -rf "${tmp_dir_general}/workspace"
+done
 
 if [ "${samples_to_proccess}" -lt "${all_project_samples_cnt}" ]; then
     samples_to_proccess=${samples_to_proccess}
