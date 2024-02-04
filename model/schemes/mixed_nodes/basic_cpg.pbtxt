@@ -31,12 +31,45 @@
 # Method Layer (https://cpg.joern.io/#schema-ref-method)
 
 
+
+
+# CFG Layer (https://cpg.joern.io/#schema-ref-cfg)
+#   nodes_CFG_NODE_*
+#   edges_CFG_*
+
+# Uzly CFG_NODE jsou base class pro všechny CFG uzly, sám o sobě tak není v grafu přítomen. Hrany CFG jsou základní součástí CPG a jsou tak zahrnuty vev stupu tohoto modelu.
+
+edge_sets {
+  key: "CFG"
+  value {
+    description: "This edge indicates control flow from the source to the destination node."
+    source: "TBD"
+    target: "TBD"
+  }
+}
+
+
 # Dominators Layer (https://cpg.joern.io/#schema-ref-dominators)
 #   edges_DOMINATE_*
 #   edges_POST_DOMINATE_*
 
 # Tato vrstva obsahuje hrany, které tvoří dominator a post-dominator stromy pro všechny metody. Informace týkají se logiky dominátorů jsou převzaty z (https://www.cs.princeton.edu/courses/archive/spr04/cos598C/lectures/02-ControlFlow.pdf). Hrana DOMINATE/POST_DOMINATE propojuje CFG uzly. Hrana DOMINATE z uzlu A do uzlu B značí, že uzel A dominuje hranu B - to znamená, že každá cesta v CFG od počátečního uzlu do B musí obsahovat A. Obdobně hrana POST_DOMINATE z uzlu A do uzlu B značí, že uzel A post-dominuje hranu B - to znamená, že v každá cesta v CFG od uzlu B do exit uzlu musí obsahovat A. Tyto hrany mohou být užitečné pro explicitnější výjádření vztahů uzlů CFG, nicméně se jedná pouze o jednoduchou nádstavbu CFG a tak tyto hrany nebudou v datech základního modelu zahrnuty.
 
+
+# PDG Layer (https://cpg.joern.io/#schema-ref-pdg)
+#   edges_CDG_*
+#   edges_REACHING_DEF_*
+
+# CDG (Control Dependence Graph) hrana je součástí základního CPG, je tak součástí vstupu tohoto modelu. Hrany REACHING_DEF spolu s hranami CDG tvoří Program Dependence Graph (PDG) Layer. Hrana REACHING_DEF značí, že proměnná na zdrojovém uzlu dosáhné cílového uzlu, aniž by byla reassigned on the way. Hrana REACHING_DEF je velmi užitečnou informací, avšak těchto hran je příliš mnoho a mohli by tak model zahltit a velmi vysoce zvýšit výpočetní náročnost trénování. V této verzi tak hrany REACHING_DEF nebudou použity.
+
+edge_sets {
+  key: "CDG"
+  value {
+    description: "A CDG edge expresses that the destination node is control dependent on the source node."
+    source: "TBD"
+    target: "TBD"
+  }
+}
 
 
 # Comment Layer (https://cpg.joern.io/#node-ref-comment)
@@ -83,9 +116,20 @@ TagsAndLocation Layer (https://cpg.joern.io/#schema-ref-tagsandlocation)
 # Tato vrstva přidává uzly reprezentující Java anotace. Jelikož se tato práce zabývá zejména jazykem C, tak žádné uzly těchto typů nejsou přítomny ve vygenerovaných grafech. Tudíž tato vrstva není použita.
 
 
+# Base Layer (https://cpg.joern.io/#schema-ref-base)
+#   nodes_DECLARATION_*
+#   edges_REF_*
 
+# Uzly typu DECLARATION slouží pouze jako base class nad kterou jsou dále definovány uzlu jako např. METHOD, METHOD_PARAMETER_IN, METHOD_PARAMETER_OUT, MEMBER a LOCAL. Uzly DECLARATION se tak samostatně nevyužívají. Hrana REF značí, že její source uzel je identifikátor, který přistupuje k destination uzlu. Příkladem co může hrana spojovat je např. identifikátor proměnné s danou lokální proměnnou nebo identifikátor typu s jeho deklarací, atp. Tato informace je užitečná v případě, když vstupem modelu jsou i identifikátory (což v našem připadě platí). Navíc hran REF není v porovnání s ostatními hranami tolik. Z těchto důvodů bude tato hrana v tomto modelu použita - rozšiřuje tak základní CPG o REF hranu.
 
-
+edge_sets {
+  key: "REF"
+  value {
+    description: "This edge indicates that the source node is an identifier that denotes access to the destination node. For example, an identifier may reference a local variable."
+    source: "TBD"
+    target: "TBD"
+  }
+}
 
 
 
