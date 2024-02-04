@@ -1,0 +1,149 @@
+# Basic CPG graph
+
+# Následují informace o jednotlivých uzlech/hranách/parametrech a zda jsou zahrnuty do tohoto schématu. Pokud nejsou, je zde uveden důvod. Veškeré informace jsou získany z oficiální dokumentace Joern, která byla automaticky vygenerována z kódu - měla by tudíž být strukturně správně. Verze dokumentace 1.1 (https://cpg.joern.io/), verze Joern 1.1.1169 (Joern verze se shoduje s verzí dokumentace).
+
+
+# MetaData Layer (https://cpg.joern.io/#schema-ref-metadata):
+#   nodes_META_DATA_*
+
+# Jedná se o jediný uzel typu META_DATA s ID:1 v každém CPG. Uzel obsahuje meta data týkající se vygenerování CPG. Uzel nebude použit kvůli:
+#   1) veškeré informace jsou jíž známy (např. víme, že generujeme z LLVM),
+#   2) všechny grafy obsahují uzel se stejnými informacemi (všechny grafy byly generovány stejně),
+#   3) tyto informace nebudou modelu nijak užitečné (informace o genreování z jazyku LLVM by byla užitečná v případě, kdy by grafy byly generovány i z jiných jazyků, ale to zatím není plánováno - navíc by zřejmě jiné jazyky byly nejdříve převedeny do LLVM).
+
+
+# FileSystem Layer (https://cpg.joern.io/#schema-ref-filesystem)
+#   nodes_FILE_*
+#   edges_SOURCE_FILE_*
+
+# Uzly typu FILE představují zdrojové soubory nebo přeložené knihovny, ze kterých bylo vygenerováno CPG. Uzly typu NAMESPACE_BLOCK, METHOD, TYPE_DECL, COMMENT, LOCATION jsou výchozími uzly hrany typu SOURCE_FILE, která je spojuje s uzlem typu FILE, předtavujícím zdrojový soubor/knihovny ze které pocházejí. V případě použití D2A pipeline jsou všechny soubory s LLVM sloučeny do jediného pomocí llvm-link, aby z nich mohli později být vygenerovány CPG grafy. Díky to tak všechny uzly typu FILE (všech grafů) obsahují jako zdrojový soubour llvm-link. Informace o původních souborech tak Joern nebyl schopen získat. Tudíž uzly FILE a hrany SOURCE_FILE nejsou použity, protože nepřínášejí žadné nové informace.
+
+
+# Namespace Layer (https://cpg.joern.io/#schema-ref-namespace)
+#   nodes_NAMESPACE_*
+#   nodes_NAMESPACE_BLOCK_*
+
+# Jak již název napovídá tyto uzly představující namespace. Tyto uzly nejsou použity kvůli:
+#   1) jazyk C jako takový nemá namespace (ani LLVM IR),
+#   2) informace o namespace jsou tak doplněny jako '<global>' nebo 'llvm-link_global' - nepřídávají tak žádné užitečné informace.
+
+
+# Method Layer (https://cpg.joern.io/#schema-ref-method)
+
+
+# Dominators Layer (https://cpg.joern.io/#schema-ref-dominators)
+#   edges_DOMINATE_*
+#   edges_POST_DOMINATE_*
+
+# Tato vrstva obsahuje hrany, které tvoří dominator a post-dominator stromy pro všechny metody. Informace týkají se logiky dominátorů jsou převzaty z (https://www.cs.princeton.edu/courses/archive/spr04/cos598C/lectures/02-ControlFlow.pdf). Hrana DOMINATE/POST_DOMINATE propojuje CFG uzly. Hrana DOMINATE z uzlu A do uzlu B značí, že uzel A dominuje hranu B - to znamená, že každá cesta v CFG od počátečního uzlu do B musí obsahovat A. Obdobně hrana POST_DOMINATE z uzlu A do uzlu B značí, že uzel A post-dominuje hranu B - to znamená, že v každá cesta v CFG od uzlu B do exit uzlu musí obsahovat A. Tyto hrany mohou být užitečné pro explicitnější výjádření vztahů uzlů CFG, nicméně se jedná pouze o jednoduchou nádstavbu CFG a tak tyto hrany nebudou v datech základního modelu zahrnuty.
+
+
+
+# Comment Layer (https://cpg.joern.io/#node-ref-comment)
+#   nodes_COMMENT_*
+
+# Tato vrstva reprezentuje komentáře v kódu. Při vytváření LLVM IR, projde zdrojový kód v jazyce C preprocessingem v překladači, který mimo jiné odstraní komentáře. Z tohoto důvodu tak nejsou žádné COMMENT uzly přítomny.
+
+
+# Finding Layer (https://cpg.joern.io/#schema-ref-finding)
+#   nodes_FINDING_*
+#   nodes_KEY_VALUE_PAIR_*
+
+# Tato vrstva umožňuje ukládání výsledků analýz (např. zranitelnosti, složitosti smyček, atp.) k různým uzlům. Joern však v základním nastavení tyto uzly neprodukuje a nejsou tak použity.
+
+
+TagsAndLocation Layer (https://cpg.joern.io/#schema-ref-tagsandlocation)
+#   nodes_LOCATION_*
+#   nodes_TAG_*
+#   nodes_TAG_NODE_PAIR_*
+#   edges_TAGGED_BY_*
+
+# Tato vrstva slouží jako jako podpora pro ukládání lokačních informací k uzlům pří custom analýzách. Narozdíl od Finding Layer se TagsAndLocation Layer používá spíše pro uchovávání meziproduktů analýz. V základních nastavení tyto uzly/hrany Joern neprodukuju - nebudou tak použity.
+
+
+
+# Configuration Layer (https://cpg.joern.io/#schema-ref-configuration)
+#   nodes_CONFIG_FILE_*
+
+# Tato vrstva umožňuje vložení konfiguračních souborů přímo do CPG grafu.Tyto uzly nejsou použity kvůli:
+#   1) v této diplomové práci pracujeme pouze se zdrojovým kódem a tak tyto uzly nejsou potřeba,
+#   2) tyto uzly nejsou v základním nastavení Joern přítomny.
+
+
+
+
+
+# Annotation Layer (https://cpg.joern.io/#schema-ref-annotation)
+#   nodes_ANNOTATION_*
+#   nodes_ANNOTATION_LITERAL_*
+#   nodes_ANNOTATION_PARAMETER_*
+#   nodes_ANNOTATION_PARAMETER_ASSIGN_*
+#   nodes_ARRAY_INITIALIZER_*
+
+# Tato vrstva přidává uzly reprezentující Java anotace. Jelikož se tato práce zabývá zejména jazykem C, tak žádné uzly těchto typů nejsou přítomny ve vygenerovaných grafech. Tudíž tato vrstva není použita.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Ponechame pouze ORDER, ktery je spolecny vsem AST uzlum. TYPE_FULL_NAME nese
+# informaci o typu bloku - jenze v jazyku C bloky nemaji typ, jedna se tak zrejme
+# o typ posledniho statementu - Joern to tak zrejme dela genericky. Např. v jazyce
+# Scala to pak dava smysl, protoze typ bloku == typ polsedniho vyrazu v bloku.
+# Nicmene my pracujeme s C (LLVM IR) a tak budeme tuto informaci ingorovat. Dalsim
+# jedinym uzitecnym sloupcem je ARGUMENT_INDEX, ktery ale souvisi s TYPE_FULL_NAME
+# nasledujicim zpusobem: ARGUMENT_INDEX == 1, pokud blok urcity typ a ARGUMENT_INDEX
+# == 1, pokud blok ma TYPE_FULL_NAME == 'ANY'. Neprinasi nam tudiz zadnou dalsi
+# informaci. Zbyle sloupce maji stale stejnou hodnotu.
+
+
+node_sets {
+  key: "BLOCK"
+  value {
+    description: "This node represents a compound statement. In C it is { code... }."
+
+    features {
+      key: "ORDER"
+      value: {
+        description: "The nodes position among its siblings in AST, where the left most sibling has the position 0."
+        dtype: DT_UINT8
+      }
+    }
+  }
+}
+
+
+nodes_CALL_data.csv
+nodes_CALL_header.csv
+nodes_FIELD_IDENTIFIER_data.csv
+nodes_FIELD_IDENTIFIER_header.csv
+nodes_IDENTIFIER_data.csv
+nodes_IDENTIFIER_header.csv
+nodes_LITERAL_data.csv
+nodes_LITERAL_header.csv
+nodes_LOCAL_data.csv
+nodes_LOCAL_header.csv
+nodes_METHOD_REF_data.csv
+nodes_METHOD_REF_header.csv
+nodes_RETURN_data.csv
+nodes_RETURN_header.csv
+nodes_UNKNOWN_data.csv
+nodes_UNKNOWN_header.csv
+
+edges_AST_data.csv
+edges_AST_header.csv
+edges_CDG_data.csv
+edges_CDG_header.csv
+edges_CFG_data.csv
+edges_CFG_header.csv
+edges_RECEIVER_data.csv
+edges_RECEIVER_header.csv
