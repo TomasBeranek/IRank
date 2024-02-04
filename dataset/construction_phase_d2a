@@ -6,7 +6,7 @@ export script_name=$(basename "$script")
 
 export output_dir=$(realpath "$1")
 slicing_info_file="$2"
-export bitcode_dir="$3"
+export bitcode_dir=$(realpath "$3")
 samples_to_proccess="${4:-1000000000}"
 start_from_sample="${5:-1}"
 export tmp_dir_general="/tmp/construction_phase_d2a"
@@ -36,8 +36,7 @@ create_cpgbin() {
 		# for storing intermediate files
 		tmp_dir="/tmp/construction_phase_d2a_${$}" # unique dir name (using PID)
 		bc_sliced="${tmp_dir}/sliced.bc"
-		cpg_bin="${tmp_dir_general}/${bug_id}.cpg.bin.zip"
-		joern_cpg_bin="${tmp_dir}/workspace/sliced.cpg.bin.zip/cpg.bin"
+		cpg_bin="${tmp_dir_general}/cpg/${bug_id}.cpg.bin.zip"
 		bc_combined="${bitcode_dir}/${bug_id}.bc"
 
 		if [ ! -e "${bc_combined}" ]; then
@@ -83,6 +82,9 @@ create_cpgbin() {
       rm -rf ${cpg_bin} # if there was an error remove the result (just to be sure)
 			exit 0
 		fi
+
+    # remove tmp_dir
+    rm -rf ${tmp_dir}
 }
 
 # function which process a single line in slicing_info_file (single sample)
@@ -108,12 +110,8 @@ cpgbin_to_csv() {
       # joern-export failed probably due to the faulty ${joern_cpg_bin} which
       # was caused by joern's importing which failed half-way
       printf "${WARNING}WARNING${ENDC}: ${script_name}: skipping bug ${bug_id} because joern-export failed to create Neo4j CSV (Joern probably failed to import CPG)!\n"
-      rm -rf ${tmp_dir}
       exit 0
     fi
-
-    # remove cpgbin - it wont needed in future and we save some space, since we are creating new CPGs on disk
-    rm -rf "${tmp_dir_general}/${bug_id}.cpg.bin.zip"
 
     # success
     printf "${OK}SUCCESS${ENDC}: ${script_name}: CPG for bug ${bug_id} was successfully constructed!\n"
@@ -123,8 +121,8 @@ cpgbin_to_csv() {
 export -f create_cpgbin
 export -f cpgbin_to_csv
 
-# recreate tmp dir
-rm -rf ${tmp_dir_general} && mkdir ${tmp_dir_general}
+# recreate tmp dir and cpg dir
+rm -rf ${tmp_dir_general} && mkdir -p ${tmp_dir_general}/cpg
 
 # extract only required samples to separate file
 head -n ${samples_to_proccess} ${slicing_info_file} | tail -n +${start_from_sample} > ${extracted_samples_file}
@@ -141,27 +139,12 @@ done < ${extracted_samples_file} > ${tmp_csv_file}
 # save it back to the original file
 mv ${tmp_csv_file} ${extracted_samples_file}
 
-# for each bug report (slicing criteria record)
-cat ${extracted_samples_file} | parallel --colsep ',' create_cpgbin {1} {2} {3} {4} {5} {6} {7}
-
-# filter out samples without cpg.bin.zip
-while IFS=, read -r rc bug_id rest; do
-  # skip the sample if the cpg.bin.zip is missing
-  if [ ! -f "${tmp_dir_general}/${bug_id}.cpg.bin.zip" ]; then
-    continue
-  fi
-  echo "${rc},${bug_id},${rest}"
-done < ${extracted_samples_file} > ${tmp_csv_file}
-
-# save it back to the original file
-mv ${tmp_csv_file} ${extracted_samples_file}
-
 # we need to switch to tmp, because of joern
 cd ${tmp_dir_general}
 
-# split the ${extracted_samples_file} into smaller files of 500 lines each
+# split the ${extracted_samples_file} into smaller files of 100 lines each
 mkdir ${tmp_dir_general}/split_files/
-split -l 500 ${extracted_samples_file} ${tmp_dir_general}/split_files/split_file_
+split -l 100 ${extracted_samples_file} ${tmp_dir_general}/split_files/split_file_
 
 # iterate over each of the smaller files
 for file in ${tmp_dir_general}/split_files/split_file_*; do
@@ -169,9 +152,24 @@ for file in ${tmp_dir_general}/split_files/split_file_*; do
     continue
   fi
 
+  # for each bug report (slicing criteria record)
+  cat ${file} | parallel --colsep ',' create_cpgbin {1} {2} {3} {4} {5} {6} {7}
+
+  # filter out samples without cpg.bin.zip
+  while IFS=, read -r rc bug_id rest; do
+    # skip the sample if the cpg.bin.zip is missing
+    if [ ! -f "${tmp_dir_general}/cpg/${bug_id}.cpg.bin.zip" ]; then
+      continue
+    fi
+    echo "${rc},${bug_id},${rest}"
+  done < ${file} > ${tmp_csv_file}
+
+  # save it back to the original file
+  mv ${tmp_csv_file} ${file}
+
   # generate joern_script
   while IFS=, read -r rc bug_id rest; do
-    echo "importCpg(\"/tmp/construction_phase_d2a/${bug_id}.cpg.bin.zip\")"
+    echo "importCpg(\"${tmp_dir_general}/cpg/${bug_id}.cpg.bin.zip\")"
   done < ${file} > ${joern_script}
   echo "save" >> ${joern_script}
 
@@ -185,8 +183,10 @@ for file in ${tmp_dir_general}/split_files/split_file_*; do
   # run joern-export in parallel
   cat ${file} | parallel --colsep ',' cpgbin_to_csv {2}
 
-  # remove workspace - it wont needed in future and we save some space, since we are creating new CPGs on disk
+  # remove workspace, cpg dir and logs from llvm2cpg - it be wont needed in future and we save some space, since we are creating new CPGs on disk
   rm -rf "${tmp_dir_general}/workspace"
+  rm -rf "${tmp_dir_general}/cpg" && mkdir ${tmp_dir_general}/cpg
+  rm -rf "/tmp/llvm2cpg-*"
 done
 
 if [ "${samples_to_proccess}" -lt "${all_project_samples_cnt}" ]; then
