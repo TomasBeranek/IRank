@@ -17,7 +17,7 @@
 
 .PHONY: all experiment clean 1 2 3
 
-all: experiment
+all: clean experiment
 
 clean:
 	rm -rf workspace workspaces *.bin */*.bin */*.zip */*_sliced.bc 1_cpg* 2_cpg* 3_cpg*
