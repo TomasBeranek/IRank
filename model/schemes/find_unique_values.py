@@ -33,7 +33,7 @@ def find_unique_values(directory, partial_filename):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2 or len(sys.argv) > 2:
-        print('Usage: python script.py <partial_filename>')
+        print('Usage: python find_unique_values.py <partial_filename>')
         sys.exit(1)
 
     partial_filename = sys.argv[1]
