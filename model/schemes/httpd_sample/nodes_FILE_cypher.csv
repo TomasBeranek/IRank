@@ -1,0 +1,10 @@
+LOAD CSV FROM 'file:/nodes_FILE_data.csv' AS line
+CREATE (:FILE {
+id: toInteger(line[0]),
+CODE: line[2],
+COLUMN_NUMBER: line[3],
+HASH: line[4],
+LINE_NUMBER: line[5],
+NAME: line[6],
+ORDER: toInteger(line[7])
+});
