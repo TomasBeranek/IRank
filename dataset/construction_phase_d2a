@@ -186,7 +186,7 @@ for file in ${tmp_dir_general}/split_files/split_file_*; do
   # remove workspace, cpg dir and logs from llvm2cpg - it be wont needed in future and we save some space, since we are creating new CPGs on disk
   rm -rf "${tmp_dir_general}/workspace"
   rm -rf "${tmp_dir_general}/cpg" && mkdir ${tmp_dir_general}/cpg
-  rm -rf "/tmp/llvm2cpg-*"
+  rm -rf /tmp/llvm2cpg-*.log
 done
 
 if [ "${samples_to_proccess}" -lt "${all_project_samples_cnt}" ]; then
