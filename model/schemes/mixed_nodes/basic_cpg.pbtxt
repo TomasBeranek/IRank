@@ -32,6 +32,54 @@
 
 
 
+# Type Layer (https://cpg.joern.io/#schema-ref-type)
+#   nodes_MEMBER_*
+#   nodes_TYPE_*
+#   nodes_TYPE_ARGUMENT_*
+#   nodes_TYPE_DECL_*
+#   nodes_TYPE_PARAMETER_*
+#   edges_ALIAS_OF_*
+#   edges_BINDS_TO_*
+#   edges_INHERITS_FROM_*
+
+# Uzly TYPE_ARGUMENT, TYPE_PARAMETER a hrany BINDS_TO modelují parametrizovatelné datové typy - Java Generics a C++ templates. Takovéto typy se však v LLVM IR nevyskytují a grafy je tím pádem neobsahují. Rovněž hrany INHERITS_FROM nejsou v grafech přítomny. Type Layer se však dále zabývá modelováním typové hierarchie a aliasů. LLVM IR umožňuje jak strukturované datové typy tak aliasy (https://groups.seas.harvard.edu/courses/cs153/2019fa/lectures/Lec07-Datastructs.pdf). V jazyku C (na který se tato práce především zaměřuje) jsou taktéž přítomny strukturované datové typy (struct Name {...}) a aliasy (typedef OldName NewName). Nicméně při převodu z C do LLVM IR se aliasy odstraní (použijí se skutečná jména) a některé struktury se rozloží (né však všechny, ukázka zachovalé struct a odstraněného aliasu je vidět v <REPO>/model/schemes/test - je vhodné se podívat do human readable LLVM IR (llvm-dis test.bc –o test.ll)). Z tohoto důvodu je tak nutné zahrnout informaci o strukturách do výstupních grafů- Informacemi se myslí názvy struktur, jejich prvky a hierarchii. Pokud pro tento účel využijeme Type Layer zjednodušíme tím tak ostatní AST uzly - řada AST uzlu (u kterým to dává smysl např. LOCAL, LITERAL, IDENTIFIER, ...) obsahuje přidruženou informaci o svém datovém typu. Zároveň je takovýto uzel spojen hranou EVAL_TYPE s uzlem TYPE, vzniká zde tudíž redundantní informace o datových typech. A protože uzly TYPE potřebujeme kvůli informacím o strukturovaných datových typech, zachováme pouze je a informaci v AST uzlech odstraníme - tímto se AST uzly značně zjednodušší. Z TYPE uzlů budou odstraněny pouze ty, které nemají žadné příchozí hrany - jedná se o:
+#  1) metadata pozůstatku po původních aliasech, ale jelikož se tyto aliasy v samotném kódu LLVM IR nikde nepoužívají, je tato informace zbytečná..
+#  2) signatury funkcí - ty jsou taktéž redundantní informací, jelikož každý callsite je spojen s argumenty/parametry volané funkce (které jsou spojeny se svým datovým typem) a její návratovou hodnotou (která je taktéž spojena se svým datovým typem), signature je tak implicitně dána v grafu
+# Dále odstraníme uzly TYPE_DECL, které oproti uzlu TYPE nepřidávají žádnou informaci při použití na LLVM IR. Pokud by však vstupem jazyk s parametrizovanými typy, tak uzel TYPE_DECL by představoval např. List[T] (samotný parametrizovatelný typ) a uzel TYPE by představoval List[Int] (instanci prametrizovatelného datového typu). TYPE_DECL uzly však spojují uzly TYPE s jejich složkami (pokud nějaké mají) - uzly typu MEMBER. Po odstranění některých TYPE_DECL uzlů je tak nutné opět připojit MEMBER uzly. Hrany ALIAS_OF propojují TYPE uzly (původní alias jména) se svým typem (uzel TYPE), protože však tyto "alias" uzly budou odstraněni nemá smysl zachovávat ALIAS_OF hrany. Ověření, že "alias" uzly a ALIAS_OF hrany jsou zbytečné lze udělat, že po odstranění všech TYPE uzlu, které nemají žádné vstupní EVAL_TYPE hrany (žádná část kódu tento typ nepoužívá), budou odstraněny taktéž všechny ALIAS_OF hrany.
+
+node_sets {
+  key: "TYPE"
+  value {
+    description: "This node represents a data type."
+
+    features {
+      key: "DATA_TYPE"
+      value: {
+        description: "Categorical data type label. 0 for structured types. If the type is an array, then DATA_TYPE stores its items type."
+        dtype: DT_UINT8
+      }
+    }
+
+    features {
+      key: "PTR"
+      value: {
+        description: "Information whether this type is a pointer. 0 - not a pointer, > 0 how many times a pointer."
+        dtype: DT_UINT8
+      }
+    }
+
+    features {
+      key: "LEN"
+      value: {
+        description: "Information whether this type is an array. 0 - not an array, > 0 array size."
+        dtype: DT_UINT32
+      }
+    }
+  }
+}
+
+# Uzly MEMBER jsou zakódovány jako obyčejné AST uzly, protože neobsahují žádnou užitečnou informaci - jedná se o latentní uzel propojující TYPE uzel (struktura) s jíným TYPE uzlem (datový typ struct složky, může být opět struct - takto se tvoří v grafu hierarchie). Jedinou potencionálně užitečnou informací je název podsložky v půdovdních C kódu - tetno název se však nikde v LLVM IR kódu nepoužívá a z toho důvodu je zahozen. Mohl by však nést jistý typ sémantické informace - např. pokud název složky je PID - lze z toho odvozovat jisté závěry o jeho hodnotě či použití.
+
 
 # CFG Layer (https://cpg.joern.io/#schema-ref-cfg)
 #   nodes_CFG_NODE_*
