@@ -1,9 +1,22 @@
-#include "function.h"
+#include <stdio.h>
+#include "point.h"
 
-int main(int argc, char const *argv[]) {
-  int x = 0;
 
-  x = f123(10, 20);
+int main() {
+    // Create instances of Point using the alias
+    MyPointStruct p1, p2, newPoint;
 
-  return x;
+    // Assign values
+    p1.x = 10;
+    p1.y = 20;
+    p2.x = 20;
+    p2.y = 10;
+
+    // Call function which sums coordinates of both points
+    newPoint = addPoints(p1, p2);
+
+    // Print the values
+    printf("Point coordinates: (%d, %d)\n", newPoint.x, newPoint.y);
+
+    return 0;
 }
