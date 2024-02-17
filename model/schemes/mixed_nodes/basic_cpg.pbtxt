@@ -29,7 +29,15 @@
 
 
 # Method Layer (https://cpg.joern.io/#schema-ref-method)
+#   nodes_METHOD_*
+#   nodes_METHOD_PARAMETER_IN_*
+#   nodes_METHOD_PARAMETER_OUT_*
+#   nodes_METHOD_RETURN_*
 
+Method Layer explicitně popisuje informace o každé funkci. Uzel METHOD představuje samotnout funkci - obsahuje její jméno, signaturu, soubor původu nebo informaci, zda k ní máme i zdrojový kód (sloupec IS_EXTERNAL). METHOD uzly také slouží jako cílový uzel CALL hrany, který propojuje místo volání funkce (CALL uzel) se samotnou funkci (METHOD uzel). Na každý METHOD uzel jsou pak připojeny (pomocí AST hran) METHOD_PARAMETER_IN a METHOD_PARAMETER_OUT uzly, které slouží jako propojení METHOD uzlu a parametru dané funkce. Rozdíl mezi METHOD_PARAMETER_IN a METHOD_PARAMETER_OUT je pouze u jazyků, kde se pracuje s dynamickými typy - což není případ u LLVM IR. Z toho důvodu jsou odtraněny veškeré METHOD_PARAMETER_OUT uzly. Na METHOD uzel je také připojen (pomocí AST) uezl METHOD_RETURN, které přestavuje abstrakci návratové hodnoty. Na tento uzel je pomocí CFG hrany připojen RETURN uzel (nebo více, pokud má funkce více příkazů 'ret' v LLVM IR - což se ale moc nestává, protože se typicky používá návratová proměnná, která se přepíše - tam kde byl původní 'return' v C a pak na konci funkce je tato návratová hodnota vrácena). Uzly METHOD, METHOD_PARAMETER_IN a METHOD_RETURN jsou všechny použity, protože:
+#   1) dohromady je jich velmi málo - pro každou funkci typicky 1x METHOD, 1x RETURN a Nx METHOD_PARAMETER_IN, kde N je počet parametrů funkce, taktéž k těmto uzlům vede poměrné málo hran,
+#   2) slouží jako velmi pěkné a explicitní propojení mezi místem volání a volanou funkcí (vhodně se předávájí argumenty parametrům a hodnota return výrazu volání funkce)
+# Důležitou zmínkou je taktéž, že METHOD_PARAMETER_IN může být VARIADIC (sloupec IS_VARIADIC) - tzn., že představuje libovolný počet parametrů, v C je tato konstrukce značena jako '...' např u 'int printf(const char *format, ...)'. Zároveň je nutné uvažovat, že každá operace - jako např. sčítání, odčítání, dereference atp. je v modelovánojako volání funkce - viz. model/scheme/examples/arg-passing/.
 
 
 # Type Layer (https://cpg.joern.io/#schema-ref-type)
@@ -79,6 +87,30 @@ node_sets {
 }
 
 # Uzly MEMBER jsou zakódovány jako obyčejné AST uzly, protože neobsahují žádnou užitečnou informaci - jedná se o latentní uzel propojující TYPE uzel (struktura) s jíným TYPE uzlem (datový typ struct složky, může být opět struct - takto se tvoří v grafu hierarchie). Jedinou potencionálně užitečnou informací je název podsložky v půdovdních C kódu - tetno název se však nikde v LLVM IR kódu nepoužívá a z toho důvodu je zahozen. Mohl by však nést jistý typ sémantické informace - např. pokud název složky je PID - lze z toho odvozovat jisté závěry o jeho hodnotě či použití.
+
+
+# CallGraph Layer (https://cpg.joern.io/#schema-ref-callgraph)
+#   edges_ARGUMENT_*
+#   edges_CALL_*
+#   edges_RECEIVER_*
+
+# CallGraph Layer modeluje volání funkcí. Hrany ARGUMENT propojují uzly CALL se svými argumenty (uzly typu EXPRESSION) a také uzly RETURN s hodnotou, kterou vracejí (opět uzel typu EXPRESSION). Tyto uzly jsou užitečné, protože v rámci AST umožňují odližit argumenty funkcí/návrtové hodnoty od ostatních ostaních - jsou explicitnější a zároveň je jich poměrně málo. Hrany CALL propojují CALL uzly a METHOD uzly, jsou tak nezbytné pro dobrou propagaci informace mezi voláním funkce a danou funkcí - je nutné je tak ponechat. Hrany RECEIVER slouží k propojení CALL uzlu a objektu, nad kterým je metoda volána. Tyto hrany jsou užitečné v případě OOP, což ale LLVM IR není. RECEIVER hrany jsou tak vynechány.
+
+edge_sets {
+  key: "ARGUMENT"
+  value {
+    description: "Argument edges connect call sites to their arguments as well as `RETURN` nodes to the expressions that return."
+    source: "TBD"
+    target: "TBD"
+  }
+
+edge_sets {
+  key: "CALL"
+  value {
+    description: "This edge connects call sites to the method they invoke."
+    source: "TBD"
+    target: "TBD"
+  }
 
 
 # CFG Layer (https://cpg.joern.io/#schema-ref-cfg)
@@ -133,6 +165,23 @@ edge_sets {
 # Tato vrstva umožňuje ukládání výsledků analýz (např. zranitelnosti, složitosti smyček, atp.) k různým uzlům. Joern však v základním nastavení tyto uzly neprodukuje a nejsou tak použity.
 
 
+# Shortcuts Layer (https://cpg.joern.io/#schema-ref-shortcuts)
+#   edges_CONTAINS_*
+#   edges_EVAL_TYPE_*
+#   edges_PARAMETER_LINK_*
+
+# Hrany CONTAINS spojují METHOD uzly se všemi uzly, které k dané metodě patří. I když se jedná poměrně užetečnou informaci a takové hrany by mohli sloužit k dobré propagaci informace uvnitř funkcí, tak je počet těchto hran příliš velký. Z tohoto důvodu jsou hrany CONTAINS vynechány a šíření informace tak zůstává na dalších hranách. Hrany EVAL_TYPE propojují AST uzly (u kterých má smysl uvažovat o datovém typu) s uzly TYPE. Těchto hran je taktéž velké množství (ikdyž o něco méně), ale TYPE uzly jsou v tomto modelu zachovány (a informace o datových typech je z AST uzlů odstraněna), kvůli modelování hierarchii datových typů. Je tak nutné zachovat alespoň toto spojení mezi AST uzly jejich typy. Hrany PARAMETER_LINK propojují pouze uzly METHOD_PARAMETER_IN a METHOD_PARAMETER_OUT, ale jelikož jsou všechny uzly METHOD_PARAMETER_OUT odstraněny, nemá smysl tyto hrany ponechávát.
+
+edge_sets {
+  key: "EVAL_TYPE"
+  value {
+    description: "This edge connects a node to its evaluation type."
+    source: "TBD"
+    target: "TBD"
+  }
+}
+
+
 TagsAndLocation Layer (https://cpg.joern.io/#schema-ref-tagsandlocation)
 #   nodes_LOCATION_*
 #   nodes_TAG_*
@@ -140,7 +189,6 @@ TagsAndLocation Layer (https://cpg.joern.io/#schema-ref-tagsandlocation)
 #   edges_TAGGED_BY_*
 
 # Tato vrstva slouží jako jako podpora pro ukládání lokačních informací k uzlům pří custom analýzách. Narozdíl od Finding Layer se TagsAndLocation Layer používá spíše pro uchovávání meziproduktů analýz. V základních nastavení tyto uzly/hrany Joern neprodukuju - nebudou tak použity.
-
 
 
 # Configuration Layer (https://cpg.joern.io/#schema-ref-configuration)
@@ -151,7 +199,11 @@ TagsAndLocation Layer (https://cpg.joern.io/#schema-ref-tagsandlocation)
 #   2) tyto uzly nejsou v základním nastavení Joern přítomny.
 
 
+# Binding Layer (https://cpg.joern.io/#schema-ref-binding)
+#   nodes_BINDING_*
+#   edges_BINDS_*
 
+# BINDING uzel představuje pár - jméno funkce a její signatura. Hrana BINDS, pak spojuje tento uzel s DECL_TYPE uzel, který představuje danou signaturu. Nicméně u tohoto modelu využíváme k získání signatury graf jako takový (RETURN uzel je napojen na TYPE uzel, METHOD_PARAMETER_IN je napojen na TYPE uzel), není tudíž zapotřebí explicitně signaturu ukládat. Navíc jsou všechny DECL_TYPE uzly odstraněni z podobného důvodu. Nepouživá se tak zde ani BINDING uzly, ani BINDS hrany.
 
 
 # Annotation Layer (https://cpg.joern.io/#schema-ref-annotation)
@@ -212,30 +264,3 @@ node_sets {
     }
   }
 }
-
-
-nodes_CALL_data.csv
-nodes_CALL_header.csv
-nodes_FIELD_IDENTIFIER_data.csv
-nodes_FIELD_IDENTIFIER_header.csv
-nodes_IDENTIFIER_data.csv
-nodes_IDENTIFIER_header.csv
-nodes_LITERAL_data.csv
-nodes_LITERAL_header.csv
-nodes_LOCAL_data.csv
-nodes_LOCAL_header.csv
-nodes_METHOD_REF_data.csv
-nodes_METHOD_REF_header.csv
-nodes_RETURN_data.csv
-nodes_RETURN_header.csv
-nodes_UNKNOWN_data.csv
-nodes_UNKNOWN_header.csv
-
-edges_AST_data.csv
-edges_AST_header.csv
-edges_CDG_data.csv
-edges_CDG_header.csv
-edges_CFG_data.csv
-edges_CFG_header.csv
-edges_RECEIVER_data.csv
-edges_RECEIVER_header.csv
