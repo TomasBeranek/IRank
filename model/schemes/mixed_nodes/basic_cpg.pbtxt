@@ -89,6 +89,32 @@ node_sets {
 # Uzly MEMBER jsou zakódovány jako obyčejné AST uzly, protože neobsahují žádnou užitečnou informaci - jedná se o latentní uzel propojující TYPE uzel (struktura) s jíným TYPE uzlem (datový typ struct složky, může být opět struct - takto se tvoří v grafu hierarchie). Jedinou potencionálně užitečnou informací je název podsložky v půdovdních C kódu - tetno název se však nikde v LLVM IR kódu nepoužívá a z toho důvodu je zahozen. Mohl by však nést jistý typ sémantické informace - např. pokud název složky je PID - lze z toho odvozovat jisté závěry o jeho hodnotě či použití.
 
 
+# AST Layer (https://cpg.joern.io/#schema-ref-ast)
+#   nodes_AST_NODE_*
+#   nodes_BLOCK_*
+#   nodes_CALL_*
+#   nodes_CALL_REPR_*
+#   nodes_CONTROL_STRUCTURE_*
+#   nodes_EXPRESSION_*
+#   nodes_FIELD_IDENTIFIER_*
+#   nodes_IDENTIFIER_*
+#   nodes_JUMP_LABEL_*
+#   nodes_JUMP_TARGET_*
+#   nodes_LITERAL_*
+#   nodes_LOCAL_*
+#   nodes_METHOD_REF_*
+#   nodes_MODIFIER_*
+#   nodes_RETURN_*
+#   nodes_TYPE_REF_*
+#   nodes_UNKNOWN_*
+#   edges_AST_*
+#   edges_CONDITION_*
+
+# AST Layer vytváří abstraktní syntaktické stromy ze vstupního kódu. Všechny uzly mají base class AST_NODE a jsou proppojeny AST hranami. Uzly AST_NODE jsou pouze base class, která definuje vlastnosti všechny AST uzlů. AST_NODE uzly tak nejsou přítomny v grafech. Uzly BLOCK představují compound statement - v C, Java, C++ i LLVM IR se to značí pomocí '{}'. BLOCK uzly jako takové nepřínáší žádnou užitečnou informaci, ale vhodně shlukují jiné typy uzlů v AST stromu - např. BLOCK uzel představující tělo funkce má jako své child uzly top-level příkazy v dané funkci. Z toho důvodu jsou BLOCK uzly ponechány pro předávání informací při výpočtu GNN. CALL uzel představuje volání funkce/metody/procedury. Spolu s vrstvami Type a CallGraph tvoří velmi duležité propojení místa volání s volanou funkcí (callee). CALL uzly jsou tak zachovány. CALL_REPR jsou pouze base class pro CALL uzly a v grafu se tak nevyskytuje. Uzly CONTROL_STRUCTURE, JUMP_LABEL, JUMP_TARGET představují popořadě struktury pro ovlivňování toku řízení, názvy návěští skoků a místa, kam se skáče. V LLVM IR nejsou přítomny žádné vysokoúrovňové control structures - pouze podmíněné a nepodmíněné skoky. Ovšem i ty nejsou příitomny jako uzly, ale jsou reprezentovány pomocí PDG a CFG hran - viz obrázky v model/schemes/examples/. Žádné z uzlů  CONTROL_STRUCTURE, JUMP_LABEL, JUMP_TARGET, tak nejsou v grafech přítomny. EXPRESSION je opět pouze base class a tak tyto uzly jako takové nejsou přítomny. Uzly FIELD_IDENTIFIER reprezentují pole, LLVM IR podporuje datový typ pole a proto jsou uzly ponechány. Uzly IDENTIFIER reprezentují proměnné, jsou proto ponechány. Uzly LITERAL představují konstanty různých datových typů, hodnoty těchto uzlů budou uloženy jako speciální uzly (viz. další kapitola). Uzly LOCAL představují lokální proměnné, informace o tom, zda proměnná je lokální či nikoliv může být užitečná. A protože těchto uzlů není mnoho, budou ponechány. Uzly METHOD_REF představují reference na metody/funkce/procedury při použití jako argumenty při volání. U těchto uzlů není potřeba si uchovávat jméno funkcí, které představují, protože jsou REF hranou propojeny s uzly METHOD. Uzly MODIFIER přestavují modifikátory (language dependant) jako např. static/private/public. V grafech vygenerovaných z LLVM IR se tyto uzly nevyskytují. Uzly RETURN představují 'return' příkazy funkcí/metod/procedur. Tyto uzly jsou nezbytné pro zpětné předávání informací z funkcí k jejich callsite. Uzly TYPE_REF představují reference typů/tříd. Tyto uzly se v grafech nevyskytují. Uzly UNKNOWN představují zbylé AST uzly pro které se nehodí žadný jiný typ. Tyto uzly se v grafu ponechávají zejména pro zachování hran v grafu. Hrany AST jsou základem CPG grafu a jsou tak zachovány. Hrany CONDITION propojují kontrolní struktury s jejich řídícími podmínkami. Jelikož však řídící struktury v grafu (v případě LLVM IR) nemají své uzly, tak se tyto hrany v grafu nevyskytují.
+
+
+
+
 # CallGraph Layer (https://cpg.joern.io/#schema-ref-callgraph)
 #   edges_ARGUMENT_*
 #   edges_CALL_*
