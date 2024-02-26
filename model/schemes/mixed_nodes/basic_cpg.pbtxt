@@ -39,6 +39,40 @@ Method Layer explicitně popisuje informace o každé funkci. Uzel METHOD předs
 #   2) slouží jako velmi pěkné a explicitní propojení mezi místem volání a volanou funkcí (vhodně se předávájí argumenty parametrům a hodnota return výrazu volání funkce)
 # Důležitou zmínkou je taktéž, že METHOD_PARAMETER_IN může být VARIADIC (sloupec IS_VARIADIC) - tzn., že představuje libovolný počet parametrů, v C je tato konstrukce značena jako '...' např u 'int printf(const char *format, ...)'. Zároveň je nutné uvažovat, že každá operace - jako např. sčítání, odčítání, dereference atp. je v modelovánojako volání funkce - viz. model/scheme/examples/arg-passing/.
 
+# U uzlu METHOD_PARAMETER_IN není zachováno INDEX, i když se to může zdát jako stěžejní informace. Důvodem je, že ORDER (z AST_NODE) má vstejnou hodnotu jako INDEX je již přítomen - odstraníme tak redundanci a METHOD_PARAMETER_IN může být zarhnut jako AST_NODE. Aby to však bylo možné je nutné odstranit informaci IS_VARIADIC - zde opravdu ztratíme informaci, ale variadic funkce nejsou tak běžné (většina jich je v knihovnách) a velmi se tím zjednodušší schéma - METHOD_PARAMETER_IN budou stejné jako AST_NODE.
+
+node_sets {
+  key: "METHOD_INFO"
+  value {
+    description: "This node represents additional information for each method."
+
+    features {
+      key: "FULL_NAME_HASH"
+      value: {
+        description: "Hashed METHOD_FULL_NAME."
+        dtype: DT_UINT32
+      }
+    }
+
+    features {
+      key: "IS_EXTERNAL"
+      value: {
+        description: "Information whether the method is external or not (we don't have it's source code)."
+        dtype: DT_BOOL
+      }
+    }
+  }
+}
+
+edge_sets {
+  key: "METHOD_INFO_LINK"
+  value {
+    description: "These edges connect the METHOD_INFO nodes to the given METHOD node."
+    source: "METHOD_INFO"
+    target: "AST_NODE"
+  }
+}
+
 
 # Type Layer (https://cpg.joern.io/#schema-ref-type)
 #   nodes_MEMBER_*
@@ -112,7 +146,68 @@ node_sets {
 
 # AST Layer vytváří abstraktní syntaktické stromy ze vstupního kódu. Všechny uzly mají base class AST_NODE a jsou proppojeny AST hranami. Uzly AST_NODE jsou pouze base class, která definuje vlastnosti všechny AST uzlů. AST_NODE uzly tak nejsou přítomny v grafech. Uzly BLOCK představují compound statement - v C, Java, C++ i LLVM IR se to značí pomocí '{}'. BLOCK uzly jako takové nepřínáší žádnou užitečnou informaci, ale vhodně shlukují jiné typy uzlů v AST stromu - např. BLOCK uzel představující tělo funkce má jako své child uzly top-level příkazy v dané funkci. Z toho důvodu jsou BLOCK uzly ponechány pro předávání informací při výpočtu GNN. CALL uzel představuje volání funkce/metody/procedury. Spolu s vrstvami Type a CallGraph tvoří velmi duležité propojení místa volání s volanou funkcí (callee). CALL uzly jsou tak zachovány. CALL_REPR jsou pouze base class pro CALL uzly a v grafu se tak nevyskytuje. Uzly CONTROL_STRUCTURE, JUMP_LABEL, JUMP_TARGET představují popořadě struktury pro ovlivňování toku řízení, názvy návěští skoků a místa, kam se skáče. V LLVM IR nejsou přítomny žádné vysokoúrovňové control structures - pouze podmíněné a nepodmíněné skoky. Ovšem i ty nejsou příitomny jako uzly, ale jsou reprezentovány pomocí PDG a CFG hran - viz obrázky v model/schemes/examples/. Žádné z uzlů  CONTROL_STRUCTURE, JUMP_LABEL, JUMP_TARGET, tak nejsou v grafech přítomny. EXPRESSION je opět pouze base class a tak tyto uzly jako takové nejsou přítomny. Uzly FIELD_IDENTIFIER reprezentují pole, LLVM IR podporuje datový typ pole a proto jsou uzly ponechány. Uzly IDENTIFIER reprezentují proměnné, jsou proto ponechány. Uzly LITERAL představují konstanty různých datových typů, hodnoty těchto uzlů budou uloženy jako speciální uzly (viz. další kapitola). Uzly LOCAL představují lokální proměnné, informace o tom, zda proměnná je lokální či nikoliv může být užitečná. A protože těchto uzlů není mnoho, budou ponechány. Uzly METHOD_REF představují reference na metody/funkce/procedury při použití jako argumenty při volání. U těchto uzlů není potřeba si uchovávat jméno funkcí, které představují, protože jsou REF hranou propojeny s uzly METHOD. Uzly MODIFIER přestavují modifikátory (language dependant) jako např. static/private/public. V grafech vygenerovaných z LLVM IR se tyto uzly nevyskytují. Uzly RETURN představují 'return' příkazy funkcí/metod/procedur. Tyto uzly jsou nezbytné pro zpětné předávání informací z funkcí k jejich callsite. Uzly TYPE_REF představují reference typů/tříd. Tyto uzly se v grafech nevyskytují. Uzly UNKNOWN představují zbylé AST uzly pro které se nehodí žadný jiný typ. Tyto uzly se v grafu ponechávají zejména pro zachování hran v grafu. Hrany AST jsou základem CPG grafu a jsou tak zachovány. Hrany CONDITION propojují kontrolní struktury s jejich řídícími podmínkami. Jelikož však řídící struktury v grafu (v případě LLVM IR) nemají své uzly, tak se tyto hrany v grafu nevyskytují.
 
+node_sets {
+  key: "AST_NODE"
+  value {
+    description: "AST (Abstract Syntax Tree) nodes."
 
+    features {
+      key: "LABEL"
+      value: {
+        description: "Original node type."
+        dtype: DT_UINT8
+      }
+    }
+
+    features {
+      key: "ARGUMENT_INDEX"
+      value: {
+        description: "AST-children of CALL nodes have an argument index, that is used to match call-site arguments with callee parameters."
+        dtype: DT_UINT8
+      }
+    }
+
+    features {
+      key: "ORDER"
+      value: {
+        description: "The order of a node in the AST tree among its siblings."
+        dtype: DT_UINT16
+      }
+    }
+  }
+}
+
+node_sets {
+  key: "LITERAL_VALUE"
+  value {
+    description: "This node stores value of LITERAL nodes."
+
+    features {
+      key: "VALUE"
+      value: {
+        description: "For numeric types, the value is stored directly. For array-like types, a hash of the value is stored."
+        dtype: DT_UINT64
+      }
+    }
+
+    features {
+      key: "LEN"
+      value: {
+        description: "For numeric values, LEN == 0. For array-like types, there is the length of the array.."
+        dtype: DT_UINT32
+      }
+    }
+  }
+}
+
+edge_sets {
+  key: "LITERAL_VALUE_LINK"
+  value {
+    description: "These edges connect the LITERAL_VALUE nodes to the given LITERAL node."
+    source: "LITERAL_VALUE"
+    target: "AST_NODE"
+  }
+}
 
 
 # CallGraph Layer (https://cpg.joern.io/#schema-ref-callgraph)
@@ -126,16 +221,16 @@ edge_sets {
   key: "ARGUMENT"
   value {
     description: "Argument edges connect call sites to their arguments as well as `RETURN` nodes to the expressions that return."
-    source: "TBD"
-    target: "TBD"
+    source: "AST_NODE"
+    target: "AST_NODE"
   }
 
 edge_sets {
   key: "CALL"
   value {
     description: "This edge connects call sites to the method they invoke."
-    source: "TBD"
-    target: "TBD"
+    source: "AST_NODE"
+    target: "AST_NODE"
   }
 
 
@@ -149,8 +244,8 @@ edge_sets {
   key: "CFG"
   value {
     description: "This edge indicates control flow from the source to the destination node."
-    source: "TBD"
-    target: "TBD"
+    source: "AST_NODE"
+    target: "AST_NODE"
   }
 }
 
@@ -172,8 +267,8 @@ edge_sets {
   key: "CDG"
   value {
     description: "A CDG edge expresses that the destination node is control dependent on the source node."
-    source: "TBD"
-    target: "TBD"
+    source: "AST_NODE"
+    target: "AST_NODE"
   }
 }
 
@@ -202,8 +297,8 @@ edge_sets {
   key: "EVAL_TYPE"
   value {
     description: "This edge connects a node to its evaluation type."
-    source: "TBD"
-    target: "TBD"
+    source: "AST_NODE"
+    target: "TYPE"
   }
 }
 
@@ -252,8 +347,8 @@ edge_sets {
   key: "REF"
   value {
     description: "This edge indicates that the source node is an identifier that denotes access to the destination node. For example, an identifier may reference a local variable."
-    source: "TBD"
-    target: "TBD"
+    source: "AST_NODE"
+    target: "AST_NODE"
   }
 }
 
@@ -274,19 +369,3 @@ edge_sets {
 # nasledujicim zpusobem: ARGUMENT_INDEX == 1, pokud blok urcity typ a ARGUMENT_INDEX
 # == 1, pokud blok ma TYPE_FULL_NAME == 'ANY'. Neprinasi nam tudiz zadnou dalsi
 # informaci. Zbyle sloupce maji stale stejnou hodnotu.
-
-
-node_sets {
-  key: "BLOCK"
-  value {
-    description: "This node represents a compound statement. In C it is { code... }."
-
-    features {
-      key: "ORDER"
-      value: {
-        description: "The nodes position among its siblings in AST, where the left most sibling has the position 0."
-        dtype: DT_UINT8
-      }
-    }
-  }
-}
