@@ -9,35 +9,128 @@ import concurrent.futures
 
 headers_cache = {}
 
+def drop_unwanted_attributes(df, type_name):
+    if type_name == 'METHOD':
+        df = df[[':ID', 'ORDER:int', 'FULL_NAME:string', 'IS_EXTERNAL:boolean']]
+        df = df.rename(columns={'ORDER:int': 'ORDER', 'FULL_NAME:string': 'FULL_NAME', 'IS_EXTERNAL:boolean': 'IS_EXTERNAL'})
+        df['ARGUMENT_INDEX'] = 0 # Since 'METHOD' doesn't have ARGUMENT_INDEX, we use invalid value 0
+    elif type_name in ['METHOD_PARAMETER_IN', 'METHOD_RETURN', 'MEMBER', 'LOCAL']:
+        df = df[[':ID', 'ORDER:int']]
+        df = df.rename(columns={'ORDER:int': 'ORDER'})
+        df['ARGUMENT_INDEX'] = 0 # Since these nodes also don't have ARGUMENT_INDEX, we use invalid value 0
+    elif type_name == 'TYPE':
+        df = df[[':ID', 'FULL_NAME:string']]
+        df = df.rename(columns={'FULL_NAME:string': 'FULL_NAME'})
+    elif type_name == 'TYPE_DECL':
+        df = df[[':ID']] # All TYPE_DECL nodes will be removed, but in a special way from other nodes
+    elif type_name == 'LITERAL':
+        df = df[[':ID', 'ARGUMENT_INDEX:int', 'ORDER:int', 'CODE:string']]
+        df = df.rename(columns={'ARGUMENT_INDEX:int': 'ARGUMENT_INDEX', 'ORDER:int': 'ORDER', 'CODE:string': 'CODE'})
+    else:
+        # BLOCK, CALL, FIELD_IDENTIFIER, IDENTIFIER, METHOD_REF, RETURN, UNKNOWN
+        df = df[[':ID', 'ARGUMENT_INDEX:int', 'ORDER:int']]
+        df = df.rename(columns={'ARGUMENT_INDEX:int': 'ARGUMENT_INDEX', 'ORDER:int': 'ORDER'})
+
+    df = df.rename(columns={':ID': 'ID'})
+    return df
+
 
 def load_sample_data(directory):
     valid_nodes = set()
     node_data = {}
     edge_data = {}
+    required_nodes = {
+        # 'META_DATA',
+        # 'FILE',
+        # 'NAMESPACE',
+        # 'NAMESPACE_BLOCK',
+        'METHOD',
+        'METHOD_PARAMETER_IN',
+        # 'METHOD_PARAMETER_OUT',
+        'METHOD_RETURN',
+        'MEMBER',
+        'TYPE',
+        # 'TYPE_ARGUMENT',
+        'TYPE_DECL', # Needs to be removed carefully
+        # 'TYPE_PARAMETER',
+        # 'AST_NODE',
+        'BLOCK',
+        'CALL',
+        # 'CALL_REPR',
+        # 'CONTROL_STRUCTURE',
+        # 'EXPRESSION',
+        'FIELD_IDENTIFIER',
+        'IDENTIFIER',
+        # 'JUMP_LABEL',
+        # 'JUMP_TARGET',
+        'LITERAL',
+        'LOCAL',
+        'METHOD_REF',
+        # 'MODIFIER',
+        'RETURN',
+        # 'TYPE_REF',
+        'UNKNOWN',
+        # 'CFG_NODE',
+        # 'COMMENT',
+        # 'FINDING',
+        # 'KEY_VALUE_PAIR',
+        # 'LOCATION',
+        # 'TAG',
+        # 'TAG_NODE_PAIR',
+        # 'CONFIG_FILE',
+        # 'BINDING',
+        # 'ANNOTATION',
+        # 'ANNOTATION_LITERAL',
+        # 'ANNOTATION_PARAMETER',
+        # 'ANNOTATION_PARAMETER_ASSIGN',
+        # 'ARRAY_INITIALIZER',
+        # 'DECLARATION',
+    }
+
+    required_edges = {
+        # 'SOURCE_FILE',
+        # 'ALIAS_OF',
+        # 'BINDS_TO',
+        # 'INHERITS_FROM',
+        'AST',
+        # 'CONDITION',
+        'ARGUMENT',
+        'CALL',
+        # 'RECEIVER',
+        'CFG',
+        # 'DOMINATE',
+        # 'POST_DOMINATE',
+        'CDG',
+        # 'REACHING_DEF',
+        # 'CONTAINS',
+        'EVAL_TYPE',
+        # 'PARAMETER_LINK',
+        # 'TAGGED_BY',
+        # 'BINDS',
+        'REF',
+    }
 
     for filename in os.listdir(directory):
-        if filename.endswith('_cypher.csv') or filename.endswith('_header.csv'):
+        if not filename.endswith('_data.csv'):
             continue
 
-        # Skip REACHING_DEF for now
-        if 'REACHING_DEF' in filename:
-            continue
+        type_name = '_'.join(filename.split("_")[1:-1])
 
         # Load nodes
         if filename.startswith("nodes_"):
-            type_name = '_'.join(filename.split("_")[1:-1])
+            if type_name not in required_nodes:
+                continue
+
             path_data = os.path.join(directory, filename)
             df = pd.read_csv(path_data, header=None, names=headers_cache[type_name])
 
-            # Keep only useful features (see model/schemes/latent_nodes/basic_cpg.pbtxt for more info)
-            if 'BLOCK' in filename:
-                df = df[[':ID', 'ORDER:int']]
-
-            node_data[type_name] = df
+            node_data[type_name] = drop_unwanted_attributes(df, type_name)
 
         # Load edges
         elif filename.startswith("edges_"):
-            type_name = '_'.join(filename.split("_")[1:-1])
+            if type_name not in required_edges:
+                continue
+
             path = os.path.join(directory, filename)
             df = pd.read_csv(path, header=None, names=["start", "end", 'type'])
             edge_data[type_name] = df[['start', 'end']] # Drop edge type - we already know it
@@ -45,7 +138,7 @@ def load_sample_data(directory):
         # Valid nodes - nodes that are actually stored in CSV files, any other
         # node is considered invalid
         for node_type, data in node_data.items():
-            valid_nodes.update(set(data[':ID']))
+            valid_nodes.update(set(data['ID']))
 
     return node_data, edge_data, valid_nodes
 
@@ -57,7 +150,7 @@ def create_directional_graph(node_data, edge_data):
     for node_type, data in node_data.items():
         nodes = data.to_dict('records')
         for node in nodes:
-            G.add_node(node[':ID'], **{k: v for k, v in node.items() if k != ':ID'}, type=node_type)
+            G.add_node(node['ID'], **{k: v for k, v in node.items() if k != 'ID'}, type=node_type)
 
     # Add edges with types
     for edge_type, data in edge_data.items():
