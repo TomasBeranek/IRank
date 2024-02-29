@@ -51,7 +51,7 @@ def load_sample_data(directory):
 
 
 def create_directional_graph(node_data, edge_data):
-    G = nx.DiGraph()
+    G = nx.MultiDiGraph()
 
     # Add nodes with attributes
     for node_type, data in node_data.items():
