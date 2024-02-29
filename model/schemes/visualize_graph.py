@@ -264,6 +264,68 @@ def remove_all_wcc_nodes(wcc, G):
         G.remove_node(node)
 
 
+def filter_eval_type_edges(G):
+    edges_to_remove = []
+
+    # Find EVAL_TYPE edges which are connected to nodes for which we don't need types
+    for start, end, key, data in G.edges(keys=True, data=True):
+        if data['type'] != 'EVAL_TYPE':
+            continue
+
+        if G.nodes[start]['type'] in ['METHOD', 'BLOCK', 'METHOD_REF']:
+            edges_to_remove.append((start, end, key))
+
+    # Remove the edges
+    for start, end, key in edges_to_remove:
+        G.remove_edge(start, end, key)
+
+    return G
+
+
+def is_AST_child_of_CALL(G, node):
+    for start, _, edge_data in G.in_edges(node, data=True):
+        # Find AST edge which starts in node's parent (they should max one - its a tree)
+        if edge_data['type'] == 'AST':
+            return G.nodes[start]['type'] == 'CALL'
+
+    # There won't be any incoming AST edge for the root
+    return False
+
+
+def set_argument_index(G):
+    for node, node_data in G.nodes(data=True):
+        # Skip nodes which don't have the ARGUMENT_INDEX property
+        if 'ARGUMENT_INDEX' not in node_data:
+            continue
+
+        # If node is AST child of CALL we keep it's ARGUMENT_INDEX value, otherwise the value is set to 0
+        if not is_AST_child_of_CALL(G, node):
+            print('not CALL', node, G.nodes[node])
+            G.nodes[node]['ARGUMENT_INDEX'] = 0
+        else:
+            print('CALL', node, G.nodes[node])
+
+    return G
+
+
+def filter_type_nodes(G):
+    nodes_to_remove = []
+
+    # Find all TYPE nodes without incoming edges (these are remainders of alias metadata or function signatures)
+    for node, data in G.nodes(data=True):
+        if data['type'] != 'TYPE':
+            continue
+
+        if G.in_degree(node) == 0:
+            nodes_to_remove.append(node)
+
+    # Remove the nodes
+    for node in nodes_to_remove:
+        G.remove_node(node)
+
+    return G
+
+
 def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     # Get some stats for compression info
     original_edge_count = 0
@@ -332,6 +394,15 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     for node in all_nodes:
         if node not in valid_nodes:
             G.remove_node(node)
+
+    # Remove EVAL_TYPE edges from some types of nodes
+    G = filter_eval_type_edges(G)
+
+    # If node is not AST children of CALL node, it's ARGUMENT_INDEX will be set to 0
+    G = set_argument_index(G)
+
+    # Remove TYPE nodes without incoming edges
+    G = filter_type_nodes(G)
 
     # Check if the graph is a single WCC
     if len(list(nx.weakly_connected_components(G))) != 1:
