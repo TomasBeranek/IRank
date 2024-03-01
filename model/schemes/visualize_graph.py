@@ -305,28 +305,92 @@ def set_argument_index(G):
 
         # If node is AST child of CALL we keep it's ARGUMENT_INDEX value, otherwise the value is set to 0
         if not is_AST_child_of_CALL(G, node):
-            print('not CALL', node, G.nodes[node])
             G.nodes[node]['ARGUMENT_INDEX'] = 0
-        else:
-            print('CALL', node, G.nodes[node])
 
     return G
 
 
-def filter_type_nodes(G):
-    nodes_to_remove = []
+def num_of_incoming_type_edges(G, node, edge_type):
+    cnt = 0
 
-    # Find all TYPE nodes without incoming edges (these are remainders of alias metadata or function signatures)
-    for node, data in G.nodes(data=True):
-        if data['type'] != 'TYPE':
+    for _, _, edge_data in G.in_edges(node, data=True):
+        if edge_data['type'] == edge_type:
+            cnt += 1
+
+    return cnt
+
+
+def get_member_children(G, node):
+    member_children = []
+
+    for _, end, edge_data in G.out_edges(node, data=True):
+        if edge_data['type'] != 'AST' and edge_data['type'] != 'CONSISTS_OF':
             continue
 
-        if G.in_degree(node) == 0:
-            nodes_to_remove.append(node)
+        if G.nodes[end]['type'] == 'MEMBER':
+            member_children.append(end)
+
+    return member_children
+
+
+# This filtering should also remove recursive structures - because they can only contain reference (pointer)
+# to itself, so there won't be any selfloop of EVAL_TYPE (even more complex ones), which would case the TYPE
+# node to be considered as "USEFUL"
+def filter_type_nodes(G):
+    type_nodes = [ node for node, node_data in G.nodes(data=True) if node_data['type'] == 'TYPE' ]
+
+    # Iterate until all TYPE nodes without incoming EVAL_TYPE edges are removed
+    while True:
+        nodes_without_incoming_edges = [ node for node in type_nodes if not num_of_incoming_type_edges(G, node, 'EVAL_TYPE')]
+
+        if not nodes_without_incoming_edges:
+            # All TYPE nodes now have incoming EVAL_TYPE edges (or there are no TYPE nodes at all - very unlikely...)
+            break
+
+        for node in nodes_without_incoming_edges:
+            member_children = get_member_children(G, node)
+            G.remove_node(node)
+            type_nodes.remove(node)
+            for member_node in member_children:
+                G.remove_node(member_node)
+
+    return G
+
+
+def get_type_parent(G, node, node_type):
+    for start, _, edge_data in G.in_edges(node, data=True):
+        # Find AST edge which starts in node's parent (they should max one - its a tree)
+        if edge_data['type'] == node_type:
+            return start
+
+
+def remove_type_decl_nodes(G):
+    nodes_to_remove = []
+    edges_to_add = []
+
+    for node, data in G.nodes(data=True):
+        # We only want to remove TYPE_DECL nodes
+        if data['type'] != 'TYPE_DECL':
+            continue
+
+        member_children = get_member_children(G, node)
+
+        if member_children:
+            # There is at least one MEMBER child -> we need to connect it to node's parent
+            # When node is root, it will crash later on, but nodes TYPE shouldn't be roots
+            parent = get_type_parent(G, node, 'REF')
+            for member_child in member_children:
+                edges_to_add.append((parent, member_child))
+
+        nodes_to_remove.append(node)
 
     # Remove the nodes
     for node in nodes_to_remove:
         G.remove_node(node)
+
+    # Add back the edges
+    for start, end in edges_to_add:
+        G.add_edge(start, end, type='CONSISTS_OF')
 
     return G
 
@@ -403,11 +467,15 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     # Remove EVAL_TYPE edges from some types of nodes
     G = filter_eval_type_edges(G)
 
+    # Carefully remove TYPE_DECL nodes
+    G = remove_type_decl_nodes(G)
+
+    # Remove TYPE nodes (and it's child MEMBER nodes) without incoming EVAL_TYPE edges
+    G = filter_type_nodes(G)
+
     # If node is not AST children of CALL node, it's ARGUMENT_INDEX will be set to 0
     G = set_argument_index(G)
 
-    # Remove TYPE nodes without incoming edges
-    G = filter_type_nodes(G)
 
     # Check if the graph is a single WCC
     if len(list(nx.weakly_connected_components(G))) != 1:
