@@ -120,6 +120,16 @@ node_sets {
   }
 }
 
+edge_sets {
+  key: "CONSISTS_OF"
+  value {
+    description: "A CONSISTS_OF edge connects TYPE node with it's MEMBER nodes (if there are any)."
+    source: "TYPE"
+    target: "AST_NODE"
+  }
+}
+
+
 # Uzly MEMBER jsou zakódovány jako obyčejné AST uzly, protože neobsahují žádnou užitečnou informaci - jedná se o latentní uzel propojující TYPE uzel (struktura) s jíným TYPE uzlem (datový typ struct složky, může být opět struct - takto se tvoří v grafu hierarchie). Jedinou potencionálně užitečnou informací je název podsložky v půdovdních C kódu - tetno název se však nikde v LLVM IR kódu nepoužívá a z toho důvodu je zahozen. Mohl by však nést jistý typ sémantické informace - např. pokud název složky je PID - lze z toho odvozovat jisté závěry o jeho hodnotě či použití.
 
 
@@ -197,6 +207,15 @@ node_sets {
         dtype: DT_UINT32
       }
     }
+  }
+}
+
+edge_sets {
+  key: "AST"
+  value {
+    description: "Edges of AST (Abstract Syntax Tree)."
+    source: "AST_NODE"
+    target: "AST_NODE"
   }
 }
 
