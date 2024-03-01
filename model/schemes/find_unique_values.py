@@ -36,6 +36,8 @@ if __name__ == '__main__':
         print('Usage: python find_unique_values.py <partial_filename>')
         sys.exit(1)
 
+    csv.field_size_limit(sys.maxsize)
+
     partial_filename = sys.argv[1]
     directory = '../../D2A-CPG/'  # Script needs to be in model/schemes/ or change accordingly
 
