@@ -38,7 +38,7 @@ clean-example-struct-alias:
 example1: example-struct-alias
 example-struct-alias: clean-example-struct-alias
 	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_STRUCT_ALIAS_DIR)/main.c -o $(EXAMPLE_STRUCT_ALIAS_DIR)/main.bc
-	clang -c -emit-llvm -O0 $(EXAMPLE_STRUCT_ALIAS_DIR)/point.c -o $(EXAMPLE_STRUCT_ALIAS_DIR)/point.bc
+	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_STRUCT_ALIAS_DIR)/point.c -o $(EXAMPLE_STRUCT_ALIAS_DIR)/point.bc
 	llvm-link $(EXAMPLE_STRUCT_ALIAS_DIR)/main.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/point.bc -o $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.bc
 	llvm2cpg $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.bc --output=$(EXAMPLE_STRUCT_ALIAS_DIR)/combined.cpg.bin.zip
 	cd $(EXAMPLE_STRUCT_ALIAS_DIR) && joern --script joern_script && llvm-dis combined.bc
@@ -52,7 +52,7 @@ clean-example-arg-passing:
 example2: example-arg-passing
 example-arg-passing: clean-example-arg-passing
 	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_ARG_PASSING_DIR)/main.c -o $(EXAMPLE_ARG_PASSING_DIR)/main.bc
-	clang -c -emit-llvm -O0 $(EXAMPLE_ARG_PASSING_DIR)/add.c -o $(EXAMPLE_ARG_PASSING_DIR)/add.bc
+	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_ARG_PASSING_DIR)/add.c -o $(EXAMPLE_ARG_PASSING_DIR)/add.bc
 	llvm-link $(EXAMPLE_ARG_PASSING_DIR)/main.bc $(EXAMPLE_ARG_PASSING_DIR)/add.bc -o $(EXAMPLE_ARG_PASSING_DIR)/combined.bc
 	llvm2cpg $(EXAMPLE_ARG_PASSING_DIR)/combined.bc --output=$(EXAMPLE_ARG_PASSING_DIR)/combined.cpg.bin.zip
 	cd $(EXAMPLE_ARG_PASSING_DIR) && joern --script joern_script && llvm-dis combined.bc
