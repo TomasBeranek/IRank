@@ -164,36 +164,41 @@ def create_directional_graph(node_data, edge_data):
 def plot_graph(G):
     # Define a node color mapping
     node_color_map = {
-        'BLOCK': 'blue',
-        'CALL': 'green',
-        'FIELD_IDENTIFIER': 'red',
-        'IDENTIFIER': 'cyan',
-        'LITERAL': 'magenta',
-        'LOCAL': 'black',
-        'METHOD_REF': 'orange',
-        'RETURN': 'yellow',
-        'UNKNOWN': 'purple',
-        'default_type': 'grey',
+            'METHOD': 'blue',
+            'METHOD_PARAMETER_IN': 'blue',
+            'METHOD_RETURN': 'blue',
+            'MEMBER': 'purple',
+            'TYPE': 'green',
+            'TYPE_DECL': 'red', # Needs to be removed carefully
+            'BLOCK': 'blue',
+            'CALL': 'blue',
+            'FIELD_IDENTIFIER': 'blue',
+            'IDENTIFIER': 'blue',
+            'LITERAL': 'blue',
+            'LOCAL': 'blue',
+            'METHOD_REF': 'blue',
+            'RETURN': 'blue',
+            'UNKNOWN': 'blue',
     }
 
     # Define a edge color mapping
     edge_color_map = {
-        'AST': 'red',
-        'CALL': 'purple',
+        # 'AST': 'red',
+        # 'CALL': 'purple',
         'CDG': 'green',
         'CFG': 'blue',
-        'REACHING_DEF': 'grey',
-        'RECEIVER': 'cyan',
-        'ARGUMENT': 'yellow',
+        # 'REACHING_DEF': 'grey',
+        # 'RECEIVER': 'cyan',
+        # 'ARGUMENT': 'yellow',
     }
 
     # Get types of nodes/edges
-    node_types = [G.nodes[n].get('type', 'default_type') for n in G.nodes]
+    node_types = [G.nodes[n]['type'] for n in G.nodes]
     edge_types = [G.edges[e]['type'] for e in G.edges]
 
     # Apply color mapping
-    node_colors = [node_color_map[node_type] for node_type in node_types]
-    edge_colors = [edge_color_map[edge_type] for edge_type in edge_types]
+    node_colors = [node_color_map.get(node_type, 'grey') for node_type in node_types]
+    edge_colors = [edge_color_map.get(edge_type, 'grey') for edge_type in edge_types]
 
     # Create legend patches for nodes
     node_legend_patches = [mpatches.Patch(color=color, label=node_type) for node_type, color in node_color_map.items()]
