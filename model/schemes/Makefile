@@ -58,3 +58,11 @@ example-arg-passing: clean-example-arg-passing
 	cd $(EXAMPLE_ARG_PASSING_DIR) && joern --script joern_script && llvm-dis combined.bc
 	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_ARG_PASSING_DIR)/graph $(EXAMPLE_ARG_PASSING_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
 	python3 visualize_graph.py $(EXAMPLE_ARG_PASSING_DIR)/graph
+
+tmp: clean-example-arg-passing
+	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_ARG_PASSING_DIR)/add.c -o $(EXAMPLE_ARG_PASSING_DIR)/add.bc
+	llvm-link $(EXAMPLE_ARG_PASSING_DIR)/add.bc -o $(EXAMPLE_ARG_PASSING_DIR)/combined.bc
+	llvm2cpg $(EXAMPLE_ARG_PASSING_DIR)/combined.bc --output=$(EXAMPLE_ARG_PASSING_DIR)/combined.cpg.bin.zip
+	cd $(EXAMPLE_ARG_PASSING_DIR) && joern --script joern_script && llvm-dis combined.bc
+	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_ARG_PASSING_DIR)/graph $(EXAMPLE_ARG_PASSING_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
+	python3 visualize_graph.py $(EXAMPLE_ARG_PASSING_DIR)/graph
