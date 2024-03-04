@@ -164,32 +164,37 @@ def create_directional_graph(node_data, edge_data):
 def plot_graph(G):
     # Define a node color mapping
     node_color_map = {
-            'METHOD': 'blue',
+            'METHOD': 'red',
             'METHOD_PARAMETER_IN': 'blue',
             'METHOD_RETURN': 'blue',
-            'MEMBER': 'purple',
-            'TYPE': 'green',
-            'TYPE_DECL': 'red', # Needs to be removed carefully
+            'MEMBER': 'blue',
+            'TYPE': 'blue',
+            'TYPE_DECL': 'blue', # Needs to be removed carefully
             'BLOCK': 'blue',
             'CALL': 'blue',
             'FIELD_IDENTIFIER': 'blue',
             'IDENTIFIER': 'blue',
-            'LITERAL': 'blue',
+            'LITERAL': 'green',
             'LOCAL': 'blue',
             'METHOD_REF': 'blue',
             'RETURN': 'blue',
             'UNKNOWN': 'blue',
+            # Splitted nodes
+            'METHOD_INFO': 'orange',
+            'LITERAL_VALUE': 'purple',
     }
 
     # Define a edge color mapping
     edge_color_map = {
         # 'AST': 'red',
         # 'CALL': 'purple',
-        'CDG': 'green',
-        'CFG': 'blue',
+        # 'CDG': 'green',
+        # 'CFG': 'blue',
         # 'REACHING_DEF': 'grey',
         # 'RECEIVER': 'cyan',
         # 'ARGUMENT': 'yellow',
+        'METHOD_INFO_LINK': 'orange',
+        'LITERAL_VALUE_LINK': 'purple',
     }
 
     # Get types of nodes/edges
@@ -476,7 +481,6 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     # If node is not AST children of CALL node, it's ARGUMENT_INDEX will be set to 0
     G = set_argument_index(G)
 
-
     # Check if the graph is a single WCC
     if len(list(nx.weakly_connected_components(G))) != 1:
         print('ERROR: visualize_graph.py: The graph consists of more than one WCC!')
@@ -489,11 +493,52 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     return G
 
 
+def split_method_node(G, node, new_node_id):
+    full_name = G.nodes[node].pop('FULL_NAME')
+    is_external = G.nodes[node].pop('IS_EXTERNAL')
+
+    # Add new METHOD_INFO node
+    G.add_node(new_node_id, FULL_NAME=full_name, IS_EXTERNAL=is_external, type='METHOD_INFO')
+
+    # Connect it to the original METHOD node with METHOD_INFO_LINK edge
+    G.add_edge(new_node_id, node, type='METHOD_INFO_LINK')
+
+    return G
+
+
+def split_literal_node(G, node, new_node_id):
+    code = G.nodes[node].pop('CODE')
+
+    # Add new LITERAL_VALUE node
+    G.add_node(new_node_id, CODE=code, type='LITERAL_VALUE')
+
+    # Connect it to the original LITERAL node with LITERAL_VALUE_LINK edge
+    G.add_edge(new_node_id, node, type='LITERAL_VALUE_LINK')
+
+    return G
+
+
+def split_nodes(G):
+    node_list = list(G.nodes(data=True))
+    new_node_id = max(G.nodes) + 1
+
+    for node, data in node_list:
+        if data['type'] == 'METHOD':
+            G = split_method_node(G, node, new_node_id)
+            new_node_id += 1
+        elif data['type'] == 'LITERAL':
+            G = split_literal_node(G, node, new_node_id)
+            new_node_id += 1
+
+    return G
+
+
 def process_sample(directory):
     sample_id = directory.split('/')[-1]
     node_data, edge_data, valid_nodes = load_sample_data(directory)
-    remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
-    return
+    G = remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
+    G = split_nodes(G)
+    return G
 
 
 def cache_headers(headers_dir):
@@ -527,9 +572,7 @@ if __name__ == "__main__":
     if sys.stdin.isatty():
         # If stdin is empty - run in single-threaded mode (only one graph)
         directory = sys.argv[1]
-        sample_id = directory.split('/')[-1]
-        node_data, edge_data, valid_nodes = load_sample_data(directory)
-        G = remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
+        G = process_sample(directory)
         plot_graph(G)
     else:
         # Stdin has data, process each line in parallel
