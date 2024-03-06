@@ -7,6 +7,8 @@ from collections import defaultdict
 def find_unique_values(directory, partial_filename):
     unique_values = defaultdict(set)
     samples = 0
+    headers = None
+    headers_already_loaded = False
 
     # Iterate over samples
     for subdir, _, files in os.walk(directory):
@@ -15,10 +17,13 @@ def find_unique_values(directory, partial_filename):
         header_file = f'{partial_filename}_header.csv'
 
         if data_file in files and header_file in files:
-            # Read header
-            with open(os.path.join(subdir, header_file), mode='r') as file:
-                reader = csv.reader(file)
-                headers = next(reader)
+            if not headers_already_loaded:
+                # Read header
+                with open(os.path.join(subdir, header_file), mode='r') as file:
+                    reader = csv.reader(file)
+                    headers = next(reader)
+
+                headers_already_loaded = True
 
             # Read data and collect unique values
             with open(os.path.join(subdir, data_file), mode='r') as file:
