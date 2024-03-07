@@ -400,6 +400,45 @@ def remove_type_decl_nodes(G):
     return G
 
 
+def get_ast_children(G, node):
+    ast_children = []
+
+    for _, end, edge_data in G.out_edges(node, data=True):
+        if edge_data['type'] != 'AST':
+            continue
+
+        ast_children.append(end)
+
+    return ast_children
+
+
+def have_incoming_call_edges(G, node):
+    for _, _, edge_data in G.in_edges(node, data=True):
+        if edge_data['type'] == 'CALL':
+            return True
+
+    return False
+
+
+def remove_external_method_children(G):
+    nodes_to_remove = []
+
+    for node, data in G.nodes(data=True):
+        if data['type'] != 'METHOD' or not data['IS_EXTERNAL']:
+            continue
+
+        if not have_incoming_call_edges(G, node):
+            # If the method is not used, there is no need to keep it in a graph
+            nodes_to_remove.append(node)
+
+        nodes_to_remove += get_ast_children(G, node)
+
+    for node in nodes_to_remove:
+        G.remove_node(node)
+
+    return G
+
+
 def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     # Get some stats for compression info
     original_edge_count = 0
@@ -468,6 +507,9 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     for node in all_nodes:
         if node not in valid_nodes:
             G.remove_node(node)
+
+    # Remove AST children (METHOD_PARAMETER_IN and METHOD_RETURN) of external methods
+    G = remove_external_method_children(G)
 
     # Remove EVAL_TYPE edges from some types of nodes
     G = filter_eval_type_edges(G)
