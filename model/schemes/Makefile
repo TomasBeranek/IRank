@@ -1,4 +1,3 @@
-HEADERS_DIR = header_cache/
 EXAMPLES_DIR = examples
 EXAMPLE_STRUCT_ALIAS_DIR = $(EXAMPLES_DIR)/struct-alias
 EXAMPLE_ARG_PASSING_DIR = $(EXAMPLES_DIR)/arg-passing
@@ -21,11 +20,6 @@ httpd-sample:
 process-d2a:
 	 find ../../D2A-CPG -mindepth 2 -type d | shuf -n 5000 | python3 visualize_graph.py
 
-# Copies a single instance of each type of header file to $(HEADERS_DIR)
-header-cache:
-	rm -rf $(HEADERS_DIR)
-	mkdir $(HEADERS_DIR)
-	find ../../D2A-CPG/ -type f -name "*_header.csv" | awk -F/ '!seen[$$NF]++ {print}' | while read -r file; do cp "$$file" "$(HEADERS_DIR)"; done
 
 # Use this as: 'time make measure-time'
 measure-time:

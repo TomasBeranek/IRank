@@ -7,7 +7,6 @@ import pandas as pd
 import concurrent.futures
 
 
-headers_cache = {}
 
 def drop_unwanted_attributes(df, type_name):
     if type_name == 'METHOD':
@@ -122,7 +121,10 @@ def load_sample_data(directory):
                 continue
 
             path_data = os.path.join(directory, filename)
-            df = pd.read_csv(path_data, header=None, names=headers_cache[type_name])
+            path_header = os.path.join(directory, f'nodes_{type_name}_header.csv')
+
+            header = pd.read_csv(path_header, header=None).iloc[0]
+            df = pd.read_csv(path_data, header=None, names=header)
 
             node_data[type_name] = drop_unwanted_attributes(df, type_name)
 
@@ -583,33 +585,14 @@ def process_sample(directory):
     return G
 
 
-def cache_headers(headers_dir):
-    global headers_cache
 
-    if not os.path.isdir(headers_dir):
-        print(f"Error: visualize_graph.py: Directory with CSV headers doesn't exist! Try running 'make header-cache'.")
 
-    for filename in os.listdir(headers_dir):
-        # Skip everything other than a file (there shouldn't be anything else though)
-        if not os.path.isfile(os.path.join(headers_dir, filename)):
-            continue
 
-        # Skip edge files headers - they all have the same header (START,END,TYPE)
-        if 'nodes' not in filename:
-            continue
 
-        # Load header
-        path_header = os.path.join(headers_dir, filename)
-        header = pd.read_csv(path_header, header=None).iloc[0]
 
-        # Save header
-        header_type = filename[6:-11] # Remove 'nodes_' and '_header.csv'
-        headers_cache[header_type] = header
 
 
 if __name__ == "__main__":
-    # Cache CSV headers
-    cache_headers('header_cache/')
 
     if sys.stdin.isatty():
         # If stdin is empty - run in single-threaded mode (only one graph)
