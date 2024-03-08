@@ -22,11 +22,9 @@ def drop_unwanted_attributes(df, type_name):
     if type_name == 'METHOD':
         df = df[[':ID', 'ORDER:int', 'FULL_NAME:string', 'IS_EXTERNAL:boolean', 'nodeset']]
         df = df.rename(columns={'ORDER:int': 'ORDER', 'FULL_NAME:string': 'FULL_NAME', 'IS_EXTERNAL:boolean': 'IS_EXTERNAL'})
-        df['ARGUMENT_INDEX'] = 0 # Since 'METHOD' doesn't have ARGUMENT_INDEX, we use invalid value 0
     elif type_name in ['METHOD_PARAMETER_IN', 'METHOD_RETURN', 'MEMBER', 'LOCAL']:
         df = df[[':ID', 'ORDER:int', 'nodeset']]
         df = df.rename(columns={'ORDER:int': 'ORDER'})
-        df['ARGUMENT_INDEX'] = 0 # Since these nodes also don't have ARGUMENT_INDEX, we use invalid value 0
     elif type_name == 'TYPE':
         df = df[[':ID', 'FULL_NAME:string']]
         df = df.rename(columns={'FULL_NAME:string': 'FULL_NAME'})
@@ -510,8 +508,16 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     # Add rest of the edges 'CFG', 'CALL', ...
     for edge_type, data in edge_data.items():
         edges = data.to_dict('records')
-        for edge in edges:
-            G.add_edge(edge['start'], edge['end'], type=edge_type)
+        if edge_type == 'ARGUMENT':
+            # For arguments we add an ARGUMENT attribute for each edge
+            for edge in edges:
+                # We want keep only ARGUMENT edges between CALL and its arguments
+                if G.nodes[edge['start']]['type'] == 'CALL':
+                    argument_index = G.nodes[edge['end']].get('ARGUMENT_INDEX', 0) # If its missing use invalid value - 0
+                    G.add_edge(edge['start'], edge['end'], type=edge_type, ARGUMENT_INDEX=argument_index)
+        else:
+            for edge in edges:
+                G.add_edge(edge['start'], edge['end'], type=edge_type)
 
     # Newly added edges introduced new invalid nodes
     all_nodes = set(G.nodes)
