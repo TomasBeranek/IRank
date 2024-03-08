@@ -5,29 +5,40 @@ import matplotlib.patches as mpatches
 import sys
 import pandas as pd
 import concurrent.futures
+import re
+import hashlib
 
+
+FP_data_types = {'void': 0, # For code simplicity (although it isn't FP type)
+                 'half': 1,
+                 'float': 2,
+                 'double': 3,
+                 'fp128': 4}
 
 
 def drop_unwanted_attributes(df, type_name):
+    df['nodeset'] = 'AST_NODE'
+
     if type_name == 'METHOD':
-        df = df[[':ID', 'ORDER:int', 'FULL_NAME:string', 'IS_EXTERNAL:boolean']]
+        df = df[[':ID', 'ORDER:int', 'FULL_NAME:string', 'IS_EXTERNAL:boolean', 'nodeset']]
         df = df.rename(columns={'ORDER:int': 'ORDER', 'FULL_NAME:string': 'FULL_NAME', 'IS_EXTERNAL:boolean': 'IS_EXTERNAL'})
         df['ARGUMENT_INDEX'] = 0 # Since 'METHOD' doesn't have ARGUMENT_INDEX, we use invalid value 0
     elif type_name in ['METHOD_PARAMETER_IN', 'METHOD_RETURN', 'MEMBER', 'LOCAL']:
-        df = df[[':ID', 'ORDER:int']]
+        df = df[[':ID', 'ORDER:int', 'nodeset']]
         df = df.rename(columns={'ORDER:int': 'ORDER'})
         df['ARGUMENT_INDEX'] = 0 # Since these nodes also don't have ARGUMENT_INDEX, we use invalid value 0
     elif type_name == 'TYPE':
         df = df[[':ID', 'FULL_NAME:string']]
         df = df.rename(columns={'FULL_NAME:string': 'FULL_NAME'})
+        df['nodeset'] = 'TYPE'
     elif type_name == 'TYPE_DECL':
         df = df[[':ID']] # All TYPE_DECL nodes will be removed, but in a special way from other nodes
     elif type_name == 'LITERAL':
-        df = df[[':ID', 'ARGUMENT_INDEX:int', 'ORDER:int', 'CODE:string']]
+        df = df[[':ID', 'ARGUMENT_INDEX:int', 'ORDER:int', 'CODE:string', 'nodeset']]
         df = df.rename(columns={'ARGUMENT_INDEX:int': 'ARGUMENT_INDEX', 'ORDER:int': 'ORDER', 'CODE:string': 'CODE'})
     else:
         # BLOCK, CALL, FIELD_IDENTIFIER, IDENTIFIER, METHOD_REF, RETURN, UNKNOWN
-        df = df[[':ID', 'ARGUMENT_INDEX:int', 'ORDER:int']]
+        df = df[[':ID', 'ARGUMENT_INDEX:int', 'ORDER:int', 'nodeset']]
         df = df.rename(columns={'ARGUMENT_INDEX:int': 'ARGUMENT_INDEX', 'ORDER:int': 'ORDER'})
 
     df = df.rename(columns={':ID': 'ID'})
@@ -542,7 +553,7 @@ def split_method_node(G, node, new_node_id):
     is_external = G.nodes[node].pop('IS_EXTERNAL')
 
     # Add new METHOD_INFO node
-    G.add_node(new_node_id, FULL_NAME=full_name, IS_EXTERNAL=is_external, type='METHOD_INFO')
+    G.add_node(new_node_id, FULL_NAME=full_name, IS_EXTERNAL=is_external, nodeset='METHOD_INFO', type='METHOD_INFO')
 
     # Connect it to the original METHOD node with METHOD_INFO_LINK edge
     G.add_edge(new_node_id, node, type='METHOD_INFO_LINK')
@@ -554,7 +565,7 @@ def split_literal_node(G, node, new_node_id):
     code = G.nodes[node].pop('CODE')
 
     # Add new LITERAL_VALUE node
-    G.add_node(new_node_id, CODE=code, type='LITERAL_VALUE')
+    G.add_node(new_node_id, CODE=code, nodeset='LITERAL_VALUE', type='LITERAL_VALUE')
 
     # Connect it to the original LITERAL node with LITERAL_VALUE_LINK edge
     G.add_edge(new_node_id, node, type='LITERAL_VALUE_LINK')
@@ -577,23 +588,106 @@ def split_nodes(G):
     return G
 
 
+def count_pointers(full_name):
+    stripped_name = full_name.rstrip('*')
+    pointers_cnt = len(full_name) - len(stripped_name)
+    return stripped_name, pointers_cnt
+
+
+def get_array_len(type_name):
+    # Check if type is array
+    if type_name[0] == '[' and type_name[-1] == ']':
+        string_parts = type_name.split(' x ', 1)
+        len_string = string_parts[0][1:] # Remove initial '['
+        type_name_string = string_parts[1][:-1] # Remove trailing ']'
+        return type_name_string, int(len_string)
+    else:
+        return type_name, 0
+
+
+def hash_string_to_int32(type_name):
+    # Use MD5 to hash type_name
+    hash_obj = hashlib.md5(type_name.encode())  # Encode the string to bytes
+    hash_int = int.from_bytes(hash_obj.digest()[:4], 'little', signed=False)  # Convert first 4 bytes to int
+
+    # Extract 23 bits so this int can be correctly represented by float32 (which has mantissa == 23)
+    extracted_bits = hash_int >> 9
+    return extracted_bits
+
+
+def split_type_full_name(full_name):
+    INT = FP = HASH = 0
+
+    # Remove and count the number of trailing '*' (pointers)
+    name_without_pointers, PTR = count_pointers(full_name)
+
+    # Remove and get LEN if type is array
+    type_name, LEN = get_array_len(name_without_pointers)
+
+    if re.match(r'^i\d+$', type_name):
+        # Type is a integer
+        INT = int(type_name[1:])
+    elif type_name in FP_data_types:
+        # Type is FP (floating point)
+        FP = FP_data_types[type_name]
+    # elif PTR or LEN or (type_name[0] == '{' and type_name[-1] == '}') or (type_name in ['data']):
+    else:
+        # These are either user defined types, structs or arrays
+        HASH = hash_string_to_int32(type_name)
+
+    return INT, FP, LEN, PTR, HASH
+
+
+def transform_type_data(df):
+    # Split FULL_NAME to INT, FP, LEN, PTR and HASH
+    df[['INT', 'FP', 'LEN', 'PTR', 'HASH']] = df['FULL_NAME'].apply(lambda x: pd.Series(split_type_full_name(x)))
+
+    # Keep only columns specified in TFGNN schema
+    df = df.drop(['nodeset', 'type', 'FULL_NAME'], axis=1)
+
+    # Normalize the values and retype to float32 (DT_FLOAT)
+    df['INT'] = df['INT'].astype('float32') / 128
+    df['FP'] = df['FP'].astype('float32') / 4
+    df['LEN'] = (df['LEN'] / 576000).astype('float32') # Highest found in positive samples
+    df['PTR'] = df['PTR'].astype('float32') / 5
+    df['HASH'] = (df['HASH'] / (2**23 - 1)).astype('float32') # MAX_INT for 23 bits
+
+    return df
+
+
+def transform_data_types(G):
+    # Export nodes from NX graph to Pandas df
+    nodes_df = pd.DataFrame.from_dict(dict(G.nodes(data=True)), orient='index')
+
+    # Split nodes df to dfs according to their nodeset
+    grouped = nodes_df.groupby('nodeset')
+    dfs = {name: group for name, group in grouped}
+
+    # Remove NaN columns
+    dfs_cleaned = {name: df.dropna(axis=1, how='all') for name, df in dfs.items()}
+
+    ast_node_df = dfs_cleaned['AST_NODE'].copy()
+    type_df = dfs_cleaned['TYPE'].copy()
+    literal_value_df = dfs_cleaned['LITERAL_VALUE'].copy()
+    method_info_df = dfs_cleaned['METHOD_INFO'].copy()
+
+    type_df = transform_type_data(type_df)
+
+    print(type_df)
+
+    return G
+
+
 def process_sample(directory):
     sample_id = directory.split('/')[-1]
     node_data, edge_data, valid_nodes = load_sample_data(directory)
     G = remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
     G = split_nodes(G)
+    G = transform_data_types(G)
     return G
 
 
-
-
-
-
-
-
-
 if __name__ == "__main__":
-
     if sys.stdin.isatty():
         # If stdin is empty - run in single-threaded mode (only one graph)
         directory = sys.argv[1]
