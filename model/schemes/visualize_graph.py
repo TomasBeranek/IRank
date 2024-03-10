@@ -611,9 +611,9 @@ def get_array_len(type_name):
         return type_name, 0
 
 
-def hash_string_to_int32(type_name):
-    # Use MD5 to hash type_name
-    hash_obj = hashlib.md5(type_name.encode())  # Encode the string to bytes
+def hash_string_to_int23(str):
+    # Use MD5 to hash str
+    hash_obj = hashlib.md5(str.encode())  # Encode the string to bytes
     hash_int = int.from_bytes(hash_obj.digest()[:4], 'little', signed=False)  # Convert first 4 bytes to int
 
     # Extract 23 bits so this int can be correctly represented by float32 (which has mantissa == 23)
@@ -639,7 +639,7 @@ def split_type_full_name(full_name):
     # elif PTR or LEN or (type_name[0] == '{' and type_name[-1] == '}') or (type_name in ['data']):
     else:
         # These are either user defined types, structs or arrays
-        HASH = hash_string_to_int32(type_name)
+        HASH = hash_string_to_int23(type_name)
 
     return INT, FP, LEN, PTR, HASH
 
@@ -661,6 +661,91 @@ def transform_type_data(df):
     return df
 
 
+def split_method_full_name(full_name):
+    # <operator>.assignment      77493
+    # <operator>.indirection      77491
+    # <operator>.pointerShift      76753
+    # <operator>.cast      76318
+    # <operator>.addition      73796
+    # <operator>.getElementPtr      73081
+    # <operator>.notEquals      72129
+    # <operator>.lessThan      68062
+    # <operator>.equals      66878
+    # <operator>.subtraction      66421
+    # <operator>.and      61493
+    # <operator>.greaterThan      61285
+    # <operator>.indexAccess      58405
+    # <operator>.multiplication      56915
+    # <operator>.greaterEqualsThan      51024
+    # <operator>.lessEqualsThan      43891
+    # <operator>.addressOf      42594
+    # <operator>.logicalShiftRight      40293
+    # <operator>.or      40028
+    # <operator>.shiftLeft      39267
+    # <operator>.division      37716
+    # <operator>.arithmeticShiftRight      30709
+    # <operator>.xor      28379
+    # <operator>.select      28313
+    # <operator>.modulo      21745
+    # <operator>.fneg      8627
+    # <operator>.atomicAddition      1282
+    # <operator>.cmpxchg      154
+
+    operators_id = {'<operator>.assignment': 0,
+                    '<operator>.indirection': 1,
+                    '<operator>.pointerShift': 2,
+                    '<operator>.cast': 3,
+                    '<operator>.addition': 4,
+                    '<operator>.getElementPtr': 5,
+                    '<operator>.notEquals': 6,
+                    '<operator>.lessThan': 7,
+                    '<operator>.equals': 8,
+                    '<operator>.subtraction': 9,
+                    '<operator>.and': 10,
+                    '<operator>.greaterThan': 11,
+                    '<operator>.indexAccess': 12,
+                    '<operator>.multiplication': 13,
+                    '<operator>.greaterEqualsThan': 14,
+                    '<operator>.lessEqualsThan': 15,
+                    '<operator>.addressOf': 16,
+                    '<operator>.logicalShiftRight': 17,
+                    '<operator>.or': 18,
+                    '<operator>.shiftLeft': 19,
+                    '<operator>.division': 20,
+                    '<operator>.arithmeticShiftRight': 21,
+                    '<operator>.xor': 22,
+                    '<operator>.select': 23,
+                    '<operator>.modulo': 24,
+                    '<operator>.fneg': 25,
+                    '<operator>.atomicAddition': 26,
+                    '<operator>.cmpxchg': 27}
+
+    HASH = OPERATOR = 0
+
+    if full_name.startswith('<operator>.'):
+        # LLVM IR operator
+        OPERATOR = operators_id[full_name]
+    else:
+        HASH = hash_string_to_int23(full_name)
+
+    return HASH, OPERATOR
+
+
+def transform_method_info_data(df):
+    # Split FULL_NAME to INT, FP, LEN, PTR and HASH
+    df[['HASH', 'OPERATOR']] = df['FULL_NAME'].apply(lambda x: pd.Series(split_method_full_name(x)))
+
+    # Keep only columns specified in TFGNN schema
+    df = df.drop(['type', 'nodeset', 'FULL_NAME'], axis=1)
+
+    # Normalize the values and retype to float32 (DT_FLOAT)
+    df['HASH'] = (df['HASH'] / (2**23 - 1)).astype('float32') # MAX_INT for 23 bits
+    df['OPERATOR'] = df['OPERATOR'].astype('float32') / 27
+    df['IS_EXTERNAL'] = df['IS_EXTERNAL'].astype('float32') # Highest found in positive samples
+
+    return df
+
+
 def transform_data_types(G):
     # Export nodes from NX graph to Pandas df
     nodes_df = pd.DataFrame.from_dict(dict(G.nodes(data=True)), orient='index')
@@ -678,8 +763,7 @@ def transform_data_types(G):
     method_info_df = dfs_cleaned['METHOD_INFO'].copy()
 
     type_df = transform_type_data(type_df)
-
-    print(type_df)
+    method_info_df = transform_method_info_data(method_info_df)
 
     return G
 
