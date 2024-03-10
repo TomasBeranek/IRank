@@ -745,6 +745,32 @@ def transform_method_info_data(df):
 
     return df
 
+
+def transform_ast_node_data(df):
+    labels = {  'UNKNOWN': 0,
+                'METHOD': 1,
+                'METHOD_PARAMETER_IN': 2,
+                'METHOD_RETURN': 3,
+                'MEMBER': 4,
+                'BLOCK': 5,
+                'CALL': 6,
+                'FIELD_IDENTIFIER': 7,
+                'IDENTIFIER': 8,
+                'LITERAL': 9,
+                'LOCAL': 10,
+                'METHOD_REF': 11,
+                'RETURN': 12}
+
+    # Keep only columns specified in TFGNN schema
+    df = df.drop(['ARGUMENT_INDEX', 'nodeset'], axis=1)
+
+    # Rename type to LABEL
+    df = df.rename(columns={'type': 'LABEL'})
+
+    # Normalize the values and retype to float32 (DT_FLOAT)
+    df['ORDER'] = df['ORDER'].astype('float32') / 1098
+    df['LABEL'] = df['LABEL'].map(labels).astype('float32') / len(labels)
+
     return df
 
 
@@ -766,6 +792,7 @@ def transform_data_types(G):
 
     type_df = transform_type_data(type_df)
     method_info_df = transform_method_info_data(method_info_df)
+    ast_node_df = transform_ast_node_data(ast_node_df)
 
     return G
 
