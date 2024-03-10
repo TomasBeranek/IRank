@@ -691,8 +691,7 @@ def split_method_full_name(full_name):
     # <operator>.atomicAddition      1282
     # <operator>.cmpxchg      154
 
-    operators_id = {'<operator>.assignment': 0,
-                    '<operator>.indirection': 1,
+    operators_id = {'<operator>.assignment': 1,
                     '<operator>.pointerShift': 2,
                     '<operator>.cast': 3,
                     '<operator>.addition': 4,
@@ -718,7 +717,8 @@ def split_method_full_name(full_name):
                     '<operator>.modulo': 24,
                     '<operator>.fneg': 25,
                     '<operator>.atomicAddition': 26,
-                    '<operator>.cmpxchg': 27}
+                    '<operator>.indirection': 27,
+                    '<operator>.cmpxchg': 28}
 
     HASH = OPERATOR = 0
 
@@ -740,8 +740,10 @@ def transform_method_info_data(df):
 
     # Normalize the values and retype to float32 (DT_FLOAT)
     df['HASH'] = (df['HASH'] / (2**23 - 1)).astype('float32') # MAX_INT for 23 bits
-    df['OPERATOR'] = df['OPERATOR'].astype('float32') / 27
-    df['IS_EXTERNAL'] = df['IS_EXTERNAL'].astype('float32') # Highest found in positive samples
+    df['OPERATOR'] = df['OPERATOR'].astype('float32') / 28 # Number of found operators
+    df['IS_EXTERNAL'] = df['IS_EXTERNAL'].astype('float32')
+
+    return df
 
     return df
 
