@@ -7,6 +7,8 @@ import pandas as pd
 import concurrent.futures
 import re
 import hashlib
+import numpy as np
+import math
 
 
 FP_data_types = {'void': 0, # For code simplicity (although it isn't FP type)
@@ -567,11 +569,20 @@ def split_method_node(G, node, new_node_id):
     return G
 
 
+def get_node_full_type(G, node):
+    for _, end, edge_data in G.out_edges(node, data=True):
+        if edge_data['type'] == 'EVAL_TYPE':
+            return G.nodes[end]['FULL_NAME']
+
+
 def split_literal_node(G, node, new_node_id):
     code = G.nodes[node].pop('CODE')
 
+    # Get LITERAL type
+    type_full_name = get_node_full_type(G, node)
+
     # Add new LITERAL_VALUE node
-    G.add_node(new_node_id, CODE=code, nodeset='LITERAL_VALUE', type='LITERAL_VALUE')
+    G.add_node(new_node_id, value_type_pair=(code, type_full_name), nodeset='LITERAL_VALUE', type='LITERAL_VALUE')
 
     # Connect it to the original LITERAL node with LITERAL_VALUE_LINK edge
     G.add_edge(new_node_id, node, type='LITERAL_VALUE_LINK')
@@ -773,6 +784,74 @@ def transform_ast_node_data(df):
 
     return df
 
+def encode_literal_value(value_type_pair):
+    value, type = value_type_pair
+
+    INT = FP_MANTISSA = FP_EXPONENT = HASH = INVALID_POINTER = ZERO_INITIALIZED = 0
+
+    if not type:
+        # Type is missing
+        HASH = hash_string_to_int23(str(value))
+    elif type.endswith('*'):
+        # Pointer
+        if value == 'nullptr':
+            INVALID_POINTER = 1.0
+        elif value == 'undef':
+            INVALID_POINTER = 0.5
+        else:
+            # Literal's CODE property can contain function code for funciton pointers
+            HASH = hash_string_to_int23(str(value))
+    elif re.match(r'^i\d+$', type):
+        # Integer
+        # int_size = int(type[1:]) # In bits
+        int_size = 16
+
+        # To keep enough precision for lower values we sacrifice precision in higher values
+        # We basically crop it to unsigned int16 so it can be represented by float32
+        value = min(int(value), (2**(int_size - 1)) - 1)
+        value = max(value, -(2**(int_size - 1)))
+        value += 2**15
+
+        # Convert it to "unsigned" and normalize it according to its size, we lose information this way, but we need to encode it to float32
+        INT = value / (2**int_size - 1)
+    elif type in ['half', 'float', 'double', 'fp128']:
+        # Floating point
+        value = -1
+        value = np.float32(value)
+        FP_MANTISSA, FP_EXPONENT = math.frexp(value)
+
+        if value < 0:
+            # Shift negative mantissa from (-1, -0.5> to (0, 0.5> where 0.5 is reserved for 0 (yes, we lose highest negative number and lowest postive number...)
+            # This will break the equation value=FP_MANTISSA*2^FP_EXPONENT (but we don't need it)
+            FP_MANTISSA += 1
+        elif value == 0:
+            # If value == 0 math.frexp will display it as 0,0 - we need to move it to 0.5
+            FP_MANTISSA = 0.5
+    else:
+        # Arrays, structs, custom types (should be only 'data')
+        if value == 'zero initialized':
+            ZERO_INITIALIZED = 1.0
+        else:
+            HASH = hash_string_to_int23(str(value))
+
+    return INT, FP_MANTISSA, FP_EXPONENT, HASH, INVALID_POINTER, ZERO_INITIALIZED
+
+
+def transform_literal_value_node_data(df):
+    df[['INT', 'FP_MANTISSA', 'FP_EXPONENT', 'HASH', 'INVALID_POINTER', 'ZERO_INITIALIZED']] = df['value_type_pair'].apply(lambda x: pd.Series(encode_literal_value(x)))
+
+    df = df.drop(['nodeset', 'type', 'value_type_pair'], axis=1)
+
+    # Normalize values
+    df['HASH'] = df['HASH'] / (2**23 - 1) # MAX_INT for 23 bits
+    df['FP_EXPONENT'] = (df['FP_EXPONENT'] + 148) / (148 + 128) # MAX_INT for 23 bits
+
+    # Convert df to float32
+    for col in df.columns:
+        df[col] = df[col].astype('float32')
+
+    return df
+
 
 def transform_data_types(G):
     # Export nodes from NX graph to Pandas df
@@ -793,6 +872,7 @@ def transform_data_types(G):
     type_df = transform_type_data(type_df)
     method_info_df = transform_method_info_data(method_info_df)
     ast_node_df = transform_ast_node_data(ast_node_df)
+    literal_value_df = transform_literal_value_node_data(literal_value_df)
 
     return G
 
