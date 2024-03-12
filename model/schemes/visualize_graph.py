@@ -804,6 +804,13 @@ def encode_literal_value(value_type_pair):
             HASH = hash_string_to_int23(str(value))
     elif re.match(r'^i\d+$', type):
         # Integer
+        if type == 'i1':
+            # Bool is special case of integer - might be benefical to create a separate flag for it
+            if value == 'false':
+                value = 0
+            elif value == 'true':
+                value = 1
+
         # int_size = int(type[1:]) # In bits
         int_size = 16
 
