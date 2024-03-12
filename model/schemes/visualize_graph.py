@@ -784,20 +784,21 @@ def transform_ast_node_data(df):
 
     return df
 
+
 def encode_literal_value(value_type_pair):
     value, type = value_type_pair
 
-    INT = FP_MANTISSA = FP_EXPONENT = HASH = INVALID_POINTER = ZERO_INITIALIZED = 0
+    INT = FP_MANTISSA = FP_EXPONENT = HASH = INVALID_POINTER = ZERO_INITIALIZED = UNDEF = 0
 
-    if not type:
+    if value == 'undef':
+        UNDEF = 1.0
+    elif not type:
         # Type is missing
         HASH = hash_string_to_int23(str(value))
     elif type.endswith('*'):
         # Pointer
         if value == 'nullptr':
             INVALID_POINTER = 1.0
-        elif value == 'undef':
-            INVALID_POINTER = 0.5
         else:
             # Literal's CODE property can contain function code for funciton pointers
             HASH = hash_string_to_int23(str(value))
@@ -834,11 +835,11 @@ def encode_literal_value(value_type_pair):
         else:
             HASH = hash_string_to_int23(str(value))
 
-    return INT, FP_MANTISSA, FP_EXPONENT, HASH, INVALID_POINTER, ZERO_INITIALIZED
+    return INT, FP_MANTISSA, FP_EXPONENT, HASH, INVALID_POINTER, ZERO_INITIALIZED, UNDEF
 
 
 def transform_literal_value_node_data(df):
-    df[['INT', 'FP_MANTISSA', 'FP_EXPONENT', 'HASH', 'INVALID_POINTER', 'ZERO_INITIALIZED']] = df['value_type_pair'].apply(lambda x: pd.Series(encode_literal_value(x)))
+    df[['INT', 'FP_MANTISSA', 'FP_EXPONENT', 'HASH', 'INVALID_POINTER', 'ZERO_INITIALIZED', 'UNDEF']] = df['value_type_pair'].apply(lambda x: pd.Series(encode_literal_value(x)))
 
     df = df.drop(['nodeset', 'type', 'value_type_pair'], axis=1)
 
