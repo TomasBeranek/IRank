@@ -454,13 +454,13 @@ def remove_external_method_children(G):
 
 def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     # Get some stats for compression info
-    original_edge_count = 0
-    for data in edge_data.values():
-        original_edge_count += len(data)
+    # original_edge_count = 0
+    # for data in edge_data.values():
+    #     original_edge_count += len(data)
 
     # Add only AST edges, since they form a tree and the following alg works for trees only
     G = create_directional_graph(node_data, {'AST': edge_data.pop('AST')})
-    wccs_num_before = len(list(nx.weakly_connected_components(G)))
+    # wccs_num_before = len(list(nx.weakly_connected_components(G)))
 
     invalid_nodes = set(G.nodes) - valid_nodes
 
@@ -481,11 +481,11 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
             exit(1)
 
     wccs_after = list(nx.weakly_connected_components(G))
-    wccs_num_after = len(wccs_after)
+    # wccs_num_after = len(wccs_after)
 
     # The number of WCCs shouldn't change after removal of invalid nodes
-    if wccs_num_before != wccs_num_after:
-        print('ERROR: visualize_graph.py: By removing the invalid nodes, the graph was split into multiple WCCs!')
+    # if wccs_num_before != wccs_num_after:
+    #     print('ERROR: visualize_graph.py: By removing the invalid nodes, the graph was split into multiple WCCs!')
 
     # Remove WCCs which are composed only from BLOCK nodes
     for wcc in wccs_after:
@@ -542,16 +542,17 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     G = filter_type_nodes(G)
 
     # If node is not AST children of CALL node, it's ARGUMENT_INDEX will be set to 0
-    G = set_argument_index(G)
+    # Since we are moving ARGUMENT_INDEX to ARGUMENT edge this is no longer needed
+    # G = set_argument_index(G)
 
     # Check if the graph is a single WCC
     if len(list(nx.weakly_connected_components(G))) != 1:
         print('ERROR: visualize_graph.py: The graph consists of more than one WCC!')
 
     # Print compression of the graph after removal
-    after_edge_count = G.number_of_edges()
-    compression_percentage = ((original_edge_count - after_edge_count) / original_edge_count) * 100
-    print(f'Note: visualize_graph.py: Graph \'{sample_id}\' compressed by {compression_percentage:.1f}%.')
+    # after_edge_count = G.number_of_edges()
+    # compression_percentage = ((original_edge_count - after_edge_count) / original_edge_count) * 100
+    # print(f'Note: visualize_graph.py: Graph \'{sample_id}\' compressed by {compression_percentage:.1f}%.')
 
     return G
 
@@ -855,8 +856,7 @@ def transform_literal_value_node_data(df):
     df['FP_EXPONENT'] = (df['FP_EXPONENT'] + 148) / (148 + 128) # MAX_INT for 23 bits
 
     # Convert df to float32
-    for col in df.columns:
-        df[col] = df[col].astype('float32')
+    df = df.astype('float32')
 
     return df
 
@@ -891,6 +891,7 @@ def process_sample(directory):
     G = remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
     G = split_nodes(G)
     G = transform_data_types(G)
+    print(f'Note: visualize_graph.py: Graph \'{sample_id}\' successfully transformed!')
     return G
 
 
