@@ -47,10 +47,10 @@ node_sets {
     description: "This node represents additional information for each method."
 
     features {
-      key: "FULL_NAME_HASH"
+      key: "HASH"
       value: {
-        description: "Hashed METHOD_FULL_NAME."
-        dtype: DT_UINT32
+        description: "Normalized hash of METHOD_FULL_NAME."
+        dtype: DT_FLOAT
       }
     }
 
@@ -58,7 +58,15 @@ node_sets {
       key: "IS_EXTERNAL"
       value: {
         description: "Information whether the method is external or not (we don't have it's source code)."
-        dtype: DT_BOOL
+        dtype: DT_FLOAT
+      }
+    }
+
+    features {
+      key: "OPERATOR"
+      value: {
+        description: "If the method is an LLVM IR operator, OPERATOR contains its normalized categorical label."
+        dtype: DT_FLOAT
       }
     }
   }
@@ -95,26 +103,42 @@ node_sets {
     description: "This node represents a data type."
 
     features {
-      key: "DATA_TYPE"
+      key: "INT"
       value: {
-        description: "Categorical data type label. 0 for structured types. If the type is an array, then DATA_TYPE stores its items type."
-        dtype: DT_UINT8
+        description: "If it is an integer, its normalized size in bits is stored here."
+        dtype: DT_FLOAT
+      }
+    }
+
+    features {
+      key: "FP"
+      value: {
+        description: "If it is a floating point, its normalized categorical label is stored here (0 for void type)."
+        dtype: DT_FLOAT
+      }
+    }
+
+    features {
+      key: "HASH"
+      value: {
+        description: "Normalized hash of the data type name if it is an array, structure or user-defined type."
+        dtype: DT_FLOAT
       }
     }
 
     features {
       key: "PTR"
       value: {
-        description: "Information whether this type is a pointer. 0 - not a pointer, > 0 how many times a pointer."
-        dtype: DT_UINT8
+        description: "Normalized information whether this type is a pointer. 0 - not a pointer, > 0 how many times a pointer."
+        dtype: DT_FLOAT
       }
     }
 
     features {
       key: "LEN"
       value: {
-        description: "Information whether this type is an array. 0 - not an array, > 0 array size."
-        dtype: DT_UINT32
+        description: "Normalized information whether this type is an array. 0 - not an array, > 0 array size."
+        dtype: DT_FLOAT
       }
     }
   }
@@ -165,15 +189,7 @@ node_sets {
       key: "LABEL"
       value: {
         description: "Original node type."
-        dtype: DT_UINT8
-      }
-    }
-
-    features {
-      key: "ARGUMENT_INDEX"
-      value: {
-        description: "AST-children of CALL nodes have an argument index, that is used to match call-site arguments with callee parameters."
-        dtype: DT_UINT8
+        dtype: DF_FLOAT
       }
     }
 
@@ -181,7 +197,7 @@ node_sets {
       key: "ORDER"
       value: {
         description: "The order of a node in the AST tree among its siblings."
-        dtype: DT_UINT16
+        dtype: DF_FLOAT
       }
     }
   }
@@ -193,18 +209,58 @@ node_sets {
     description: "This node stores value of LITERAL nodes."
 
     features {
-      key: "VALUE"
+      key: "INT"
       value: {
-        description: "For numeric types, the value is stored directly. For array-like types, a hash of the value is stored."
-        dtype: DT_UINT64
+        description: "If LITERAL is of the integer data type, its normalized value is here."
+        dtype: DT_FLOAT
       }
     }
 
     features {
-      key: "LEN"
+      key: "FP_MANTISSA"
+      value: {
+        description: "If LITERAL is of floating point data type, there is its normalized mantissa."
+        dtype: DT_FLOAT
+      }
+    }
+
+    features {
+      key: "FP_EXPONENT"
+      value: {
+        description: "If LITERAL is of the floating point data type, here is its normalized exponent."
+        dtype: DT_FLOAT
+      }
+    }
+
+    features {
+      key: "HASH"
+      value: {
+        description: "If LITERAL is of array, struct, or user data type, here is its normalized hashed value."
+        dtype: DT_FLOAT
+      }
+    }
+
+    features {
+      key: "INVALID_POINTER"
       value: {
         description: "For numeric values, LEN == 0. For array-like types, there is the length of the array.."
-        dtype: DT_UINT32
+        dtype: DT_FLOAT
+      }
+    }
+
+    features {
+      key: "ZERO_INITIALIZED"
+      value: {
+        description: "Flag if the pointer contains 'nullptr'."
+        dtype: DT_FLOAT
+      }
+    }
+
+    features {
+      key: "UNDEF"
+      value: {
+        description: "Flag if the value contains 'undef'."
+        dtype: DT_FLOAT
       }
     }
   }
@@ -234,7 +290,7 @@ edge_sets {
 #   edges_CALL_*
 #   edges_RECEIVER_*
 
-# CallGraph Layer modeluje volání funkcí. Hrany ARGUMENT propojují uzly CALL se svými argumenty (uzly typu EXPRESSION) a také uzly RETURN s hodnotou, kterou vracejí (opět uzel typu EXPRESSION). Tyto uzly jsou užitečné, protože v rámci AST umožňují odližit argumenty funkcí/návrtové hodnoty od ostatních ostaních - jsou explicitnější a zároveň je jich poměrně málo. Hrany CALL propojují CALL uzly a METHOD uzly, jsou tak nezbytné pro dobrou propagaci informace mezi voláním funkce a danou funkcí - je nutné je tak ponechat. Hrany RECEIVER slouží k propojení CALL uzlu a objektu, nad kterým je metoda volána. Tyto hrany jsou užitečné v případě OOP, což ale LLVM IR není. RECEIVER hrany jsou tak vynechány.
+# CallGraph Layer modeluje volání funkcí. Hrany ARGUMENT propojují uzly CALL se svými argumenty (uzly typu EXPRESSION) a také uzly RETURN s hodnotou, kterou vracejí (opět uzel typu EXPRESSION). Tyto uzly jsou užitečné, protože v rámci AST umožňují odližit argumenty funkcí/návratové hodnoty od ostatních - jsou explicitnější a zároveň je jich poměrně málo. Hrany CALL propojují CALL uzly a METHOD uzly, jsou tak nezbytné pro dobrou propagaci informace mezi voláním funkce a danou funkcí - je nutné je tak ponechat. Hrany RECEIVER slouží k propojení CALL uzlu a objektu, nad kterým je metoda volána. Tyto hrany jsou užitečné v případě OOP, což ale LLVM IR není. RECEIVER hrany jsou tak vynechány.
 
 edge_sets {
   key: "ARGUMENT"
@@ -242,6 +298,14 @@ edge_sets {
     description: "Argument edges connect call sites to their arguments as well as `RETURN` nodes to the expressions that return."
     source: "AST_NODE"
     target: "AST_NODE"
+
+    features {
+      key: "ARGUMENT_INDEX"
+      value: {
+        description: "AST-children of CALL nodes have an argument index, that is used to match call-site arguments with callee parameters."
+        dtype: DF_FLOAT
+      }
+    }
   }
 
 edge_sets {
@@ -360,7 +424,7 @@ TagsAndLocation Layer (https://cpg.joern.io/#schema-ref-tagsandlocation)
 #   nodes_DECLARATION_*
 #   edges_REF_*
 
-# Uzly typu DECLARATION slouží pouze jako base class nad kterou jsou dále definovány uzlu jako např. METHOD, METHOD_PARAMETER_IN, METHOD_PARAMETER_OUT, MEMBER a LOCAL. Uzly DECLARATION se tak samostatně nevyužívají. Hrana REF značí, že její source uzel je identifikátor, který přistupuje k destination uzlu. Příkladem co může hrana spojovat je např. identifikátor proměnné s danou lokální proměnnou nebo identifikátor typu s jeho deklarací, atp. Tato informace je užitečná v případě, když vstupem modelu jsou i identifikátory (což v našem připadě platí). Navíc hran REF není v porovnání s ostatními hranami tolik. Z těchto důvodů bude tato hrana v tomto modelu použita - rozšiřuje tak základní CPG o REF hranu.
+# Uzly typu DECLARATION slouží pouze jako base class nad kterou jsou dále definovány uzlu jako např. METHOD, METHOD_PARAMETER_IN, METHOD_PARAMETER_OUT, MEMBER a LOCAL. Uzly DECLARATION se tak samostatně nevyužívají. Hrana REF značí, že její source uzel je identifikátor, který přistupuje k destination uzlu. Příkladem co může hrana spojovat je např. uzel IDENTIFIER (promenná) s uzlem LOCAL (lokální proměnnou) nebo identifikátor typu s jeho deklarací, atp. Tato informace je užitečná pro zjištění, zda např. proměnná je lokální či nikoliv. Navíc hran REF není v porovnání s ostatními hranami tolik. Z těchto důvodů bude tato hrana v tomto modelu použita - rozšiřuje tak základní CPG o REF hranu.
 
 edge_sets {
   key: "REF"
