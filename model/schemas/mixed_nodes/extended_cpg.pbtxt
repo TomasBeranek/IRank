@@ -34,7 +34,7 @@
 #   nodes_METHOD_PARAMETER_OUT_*
 #   nodes_METHOD_RETURN_*
 
-Method Layer explicitně popisuje informace o každé funkci. Uzel METHOD představuje samotnout funkci - obsahuje její jméno, signaturu, soubor původu nebo informaci, zda k ní máme i zdrojový kód (sloupec IS_EXTERNAL). METHOD uzly také slouží jako cílový uzel CALL hrany, který propojuje místo volání funkce (CALL uzel) se samotnou funkci (METHOD uzel). Na každý METHOD uzel jsou pak připojeny (pomocí AST hran) METHOD_PARAMETER_IN a METHOD_PARAMETER_OUT uzly, které slouží jako propojení METHOD uzlu a parametru dané funkce. Rozdíl mezi METHOD_PARAMETER_IN a METHOD_PARAMETER_OUT je pouze u jazyků, kde se pracuje s dynamickými typy - což není případ u LLVM IR. Z toho důvodu jsou odtraněny veškeré METHOD_PARAMETER_OUT uzly. Na METHOD uzel je také připojen (pomocí AST) uezl METHOD_RETURN, které přestavuje abstrakci návratové hodnoty. Na tento uzel je pomocí CFG hrany připojen RETURN uzel (nebo více, pokud má funkce více příkazů 'ret' v LLVM IR - což se ale moc nestává, protože se typicky používá návratová proměnná, která se přepíše - tam kde byl původní 'return' v C a pak na konci funkce je tato návratová hodnota vrácena). Uzly METHOD, METHOD_PARAMETER_IN a METHOD_RETURN jsou všechny použity, protože:
+# Method Layer explicitně popisuje informace o každé funkci. Uzel METHOD představuje samotnout funkci - obsahuje její jméno, signaturu, soubor původu nebo informaci, zda k ní máme i zdrojový kód (sloupec IS_EXTERNAL). METHOD uzly také slouží jako cílový uzel CALL hrany, který propojuje místo volání funkce (CALL uzel) se samotnou funkci (METHOD uzel). Na každý METHOD uzel jsou pak připojeny (pomocí AST hran) METHOD_PARAMETER_IN a METHOD_PARAMETER_OUT uzly, které slouží jako propojení METHOD uzlu a parametru dané funkce. Rozdíl mezi METHOD_PARAMETER_IN a METHOD_PARAMETER_OUT je pouze u jazyků, kde se pracuje s dynamickými typy - což není případ u LLVM IR. Z toho důvodu jsou odtraněny veškeré METHOD_PARAMETER_OUT uzly. Na METHOD uzel je také připojen (pomocí AST) uezl METHOD_RETURN, které přestavuje abstrakci návratové hodnoty. Na tento uzel je pomocí CFG hrany připojen RETURN uzel (nebo více, pokud má funkce více příkazů 'ret' v LLVM IR - což se ale moc nestává, protože se typicky používá návratová proměnná, která se přepíše - tam kde byl původní 'return' v C a pak na konci funkce je tato návratová hodnota vrácena). Uzly METHOD, METHOD_PARAMETER_IN a METHOD_RETURN jsou všechny použity, protože:
 #   1) dohromady je jich velmi málo - pro každou funkci typicky 1x METHOD, 1x RETURN a Nx METHOD_PARAMETER_IN, kde N je počet parametrů funkce, taktéž k těmto uzlům vede poměrné málo hran,
 #   2) slouží jako velmi pěkné a explicitní propojení mezi místem volání a volanou funkcí (vhodně se předávájí argumenty parametrům a hodnota return výrazu volání funkce)
 # Důležitou zmínkou je taktéž, že METHOD_PARAMETER_IN může být VARIADIC (sloupec IS_VARIADIC) - tzn., že představuje libovolný počet parametrů, v C je tato konstrukce značena jako '...' např u 'int printf(const char *format, ...)'. Zároveň je nutné uvažovat, že každá operace - jako např. sčítání, odčítání, dereference atp. je v modelovánojako volání funkce - viz. model/scheme/examples/arg-passing/.
@@ -189,7 +189,7 @@ node_sets {
       key: "LABEL"
       value: {
         description: "Original node type."
-        dtype: DF_FLOAT
+        dtype: DT_FLOAT
       }
     }
 
@@ -197,7 +197,7 @@ node_sets {
       key: "ORDER"
       value: {
         description: "The order of a node in the AST tree among its siblings."
-        dtype: DF_FLOAT
+        dtype: DT_FLOAT
       }
     }
   }
@@ -303,10 +303,11 @@ edge_sets {
       key: "ARGUMENT_INDEX"
       value: {
         description: "AST-children of CALL nodes have an argument index, that is used to match call-site arguments with callee parameters."
-        dtype: DF_FLOAT
+        dtype: DT_FLOAT
       }
     }
   }
+}
 
 edge_sets {
   key: "CALL"
@@ -315,6 +316,7 @@ edge_sets {
     source: "AST_NODE"
     target: "AST_NODE"
   }
+}
 
 
 # CFG Layer (https://cpg.joern.io/#schema-ref-cfg)
@@ -386,7 +388,7 @@ edge_sets {
 }
 
 
-TagsAndLocation Layer (https://cpg.joern.io/#schema-ref-tagsandlocation)
+# TagsAndLocation Layer (https://cpg.joern.io/#schema-ref-tagsandlocation)
 #   nodes_LOCATION_*
 #   nodes_TAG_*
 #   nodes_TAG_NODE_PAIR_*
