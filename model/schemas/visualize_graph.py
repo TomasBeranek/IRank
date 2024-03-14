@@ -627,13 +627,13 @@ def get_array_len(type_name):
         return type_name, 0
 
 
-def hash_string_to_int23(str):
+def hash_string_to_int24(str):
     # Use MD5 to hash str
     hash_obj = hashlib.md5(str.encode())  # Encode the string to bytes
     hash_int = int.from_bytes(hash_obj.digest()[:4], 'little', signed=False)  # Convert first 4 bytes to int
 
-    # Extract 23 bits so this int can be correctly represented by float32 (which has mantissa == 23)
-    extracted_bits = hash_int >> 9
+    # Extract 24 bits so this int can be correctly represented by float32 (which has mantissa == 23 + 1 implicit bit)
+    extracted_bits = hash_int >> 8
     return extracted_bits
 
 
@@ -655,7 +655,7 @@ def split_type_full_name(full_name):
     # elif PTR or LEN or (type_name[0] == '{' and type_name[-1] == '}') or (type_name in ['data']):
     else:
         # These are either user defined types, structs or arrays
-        HASH = hash_string_to_int23(type_name)
+        HASH = hash_string_to_int24(type_name)
 
     return INT, FP, LEN, PTR, HASH
 
@@ -672,7 +672,7 @@ def transform_type_data(df):
     df['FP'] = df['FP'].astype('float32') / 4
     df['LEN'] = (df['LEN'] / 576000).astype('float32') # Highest found in positive samples
     df['PTR'] = df['PTR'].astype('float32') / 5
-    df['HASH'] = (df['HASH'] / (2**23 - 1)).astype('float32') # MAX_INT for 23 bits
+    df['HASH'] = (df['HASH'] / (2**24 - 1)).astype('float32')  # MAX_UINT for 24 bits
 
     return df
 
@@ -742,7 +742,7 @@ def split_method_full_name(full_name):
         # LLVM IR operator
         OPERATOR = operators_id[full_name]
     else:
-        HASH = hash_string_to_int23(full_name)
+        HASH = hash_string_to_int24(full_name)
 
     return HASH, OPERATOR
 
@@ -755,7 +755,7 @@ def transform_method_info_data(df):
     df = df.drop(['type', 'nodeset', 'FULL_NAME'], axis=1)
 
     # Normalize the values and retype to float32 (DT_FLOAT)
-    df['HASH'] = (df['HASH'] / (2**23 - 1)).astype('float32') # MAX_INT for 23 bits
+    df['HASH'] = (df['HASH'] / (2**24 - 1)).astype('float32') # MAX_UINT for 24 bits
     df['OPERATOR'] = df['OPERATOR'].astype('float32') / 28 # Number of found operators
     df['IS_EXTERNAL'] = df['IS_EXTERNAL'].astype('float32')
 
@@ -799,14 +799,14 @@ def encode_literal_value(value_type_pair):
         UNDEF = 1.0
     elif not type:
         # Type is missing
-        HASH = hash_string_to_int23(str(value))
+        HASH = hash_string_to_int24(str(value))
     elif type.endswith('*'):
         # Pointer
         if value == 'nullptr':
             INVALID_POINTER = 1.0
         else:
             # Literal's CODE property can contain function code for funciton pointers
-            HASH = hash_string_to_int23(str(value))
+            HASH = hash_string_to_int24(str(value))
     elif re.match(r'^i\d+$', type):
         # Integer
         if type == 'i1':
@@ -845,7 +845,7 @@ def encode_literal_value(value_type_pair):
         if value == 'zero initialized':
             ZERO_INITIALIZED = 1.0
         else:
-            HASH = hash_string_to_int23(str(value))
+            HASH = hash_string_to_int24(str(value))
 
     return INT, FP_MANTISSA, FP_EXPONENT, HASH, INVALID_POINTER, ZERO_INITIALIZED, UNDEF
 
@@ -856,8 +856,8 @@ def transform_literal_value_node_data(df):
     df = df.drop(['nodeset', 'type', 'value_type_pair'], axis=1)
 
     # Normalize values
-    df['HASH'] = df['HASH'] / (2**23 - 1) # MAX_INT for 23 bits
-    df['FP_EXPONENT'] = (df['FP_EXPONENT'] + 148) / (148 + 128) # MAX_INT for 23 bits
+    df['HASH'] = df['HASH'] / (2**24 - 1) # MAX_UINT for 24 bits
+    df['FP_EXPONENT'] = (df['FP_EXPONENT'] + 148) / (148 + 128)
 
     # Convert df to float32
     df = df.astype('float32')
