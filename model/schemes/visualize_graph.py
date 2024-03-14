@@ -9,7 +9,10 @@ import re
 import hashlib
 import numpy as np
 import math
+import threading
 
+
+TFRecord_writing_lock = threading.Lock()
 
 FP_data_types = {'void': 0, # For code simplicity (although it isn't FP type)
                  'half': 1,
@@ -206,6 +209,7 @@ def plot_graph(G):
         # 'REACHING_DEF': 'grey',
         # 'RECEIVER': 'cyan',
         # 'ARGUMENT': 'yellow',
+        'REF': 'red',
         'METHOD_INFO_LINK': 'orange',
         'LITERAL_VALUE_LINK': 'purple',
     }
@@ -892,6 +896,12 @@ def process_sample(directory):
     G = split_nodes(G)
     G = transform_data_types(G)
     print(f'Note: visualize_graph.py: Graph \'{sample_id}\' successfully transformed!')
+
+    # Transform graph to TFGNN GraphTensor
+
+    # Save TFGNN GraphTensor to TFRecords file
+    with TFRecord_writing_lock:
+        print('Saving graph')
     return G
 
 
