@@ -58,3 +58,6 @@ experiment-run:
 clean-experiment:
 	@cd example && make clean
 	@rm -rf /tmp/infer-out /tmp/infer.lockdir
+
+plot-graph: #experiment
+	python3 ../model/schemas/visualize_graph.py ../D2A-CPG/1
