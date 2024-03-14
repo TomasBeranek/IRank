@@ -866,25 +866,29 @@ def transform_literal_value_node_data(df):
 
 
 def transform_data_types(G):
-    # Export nodes from NX graph to Pandas df
+    # Export nodes and edges from NX graph to Pandas df
     nodes_df = pd.DataFrame.from_dict(dict(G.nodes(data=True)), orient='index')
+    edges_list = [{'source': u, 'target': v, **data} for u, v, data in G.edges(data=True)]
+    edges_df = pd.DataFrame(edges_list)
 
-    # Split nodes df to dfs according to their nodeset
-    grouped = nodes_df.groupby('nodeset')
-    dfs = {name: group for name, group in grouped}
+    # Split nodes and edges df to dfs according to their nodeset
+    grouped_nodes = nodes_df.groupby('nodeset')
+    grouped_edges = edges_df.groupby('type')
+    grouped_nodes_dfs = {name: group for name, group in grouped_nodes}
+    grouped_edges_dfs = {name: group.drop(columns=['type']) for name, group in grouped_edges}
 
     # Remove NaN columns
-    dfs_cleaned = {name: df.dropna(axis=1, how='all') for name, df in dfs.items()}
+    graph_dfs = {name: df.dropna(axis=1, how='all') for name, df in {**grouped_nodes_dfs, **grouped_edges_dfs}.items()}
 
-    ast_node_df = dfs_cleaned['AST_NODE'].copy()
-    type_df = dfs_cleaned['TYPE'].copy()
-    literal_value_df = dfs_cleaned['LITERAL_VALUE'].copy()
-    method_info_df = dfs_cleaned['METHOD_INFO'].copy()
+    # Transform text features to normalized numeric form
+    graph_dfs['AST_NODE'] = transform_ast_node_data(graph_dfs['AST_NODE'])
+    graph_dfs['TYPE'] = transform_type_data(graph_dfs['TYPE'])
+    graph_dfs['LITERAL_VALUE'] = transform_literal_value_node_data(graph_dfs['LITERAL_VALUE'])
+    graph_dfs['METHOD_INFO'] = transform_method_info_data(graph_dfs['METHOD_INFO'])
 
-    type_df = transform_type_data(type_df)
-    method_info_df = transform_method_info_data(method_info_df)
-    ast_node_df = transform_ast_node_data(ast_node_df)
-    literal_value_df = transform_literal_value_node_data(literal_value_df)
+    # Normalize ARGUMENT_INDEX value of edge ARGUMENT
+    MAX_ARGUMENT_INDEX = 5
+    graph_dfs['ARGUMENT']['ARGUMENT_INDEX'] = (graph_dfs['ARGUMENT']['ARGUMENT_INDEX'] / MAX_ARGUMENT_INDEX).astype('float32')
 
     return G
 
