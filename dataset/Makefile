@@ -41,7 +41,25 @@ graph-libtiff-1:
 	./construction_phase_d2a $(GRAPH_DIR)/libtiff_1 $(SLICING_INFO_DIR)/libtiff_labeler_1.csv $(BITCODE_DIR)/libtiff_1
 
 graph-libtiff-0:
-	./construction_phase_d2a $(GRAPH_DIR)/libtiff_0 $(SLICING_INFO_DIR)/libtiff_labeler_0.csv $(BITCODE_DIR)/libtiff_0 7500
+	./construction_phase_d2a $(GRAPH_DIR)/libtiff_0 $(SLICING_INFO_DIR)/libtiff_labeler_0.csv $(BITCODE_DIR)/libtiff_0
+
+graph-libav-1:
+	./construction_phase_d2a $(GRAPH_DIR)/libav_1 $(SLICING_INFO_DIR)/libav_labeler_1.csv $(BITCODE_DIR)/libav_1
+
+graph-libav-0:
+	./construction_phase_d2a $(GRAPH_DIR)/libav_0 $(SLICING_INFO_DIR)/libav_labeler_0.csv $(BITCODE_DIR)/libav_0
+
+graph-openssl-1:
+	./construction_phase_d2a $(GRAPH_DIR)/openssl_1 $(SLICING_INFO_DIR)/openssl_labeler_1.csv $(BITCODE_DIR)/openssl_1
+
+graph-openssl-0:
+	./construction_phase_d2a $(GRAPH_DIR)/openssl_0 $(SLICING_INFO_DIR)/openssl_labeler_0.csv $(BITCODE_DIR)/openssl_0
+
+graph-ffmpeg-1:
+	./construction_phase_d2a $(GRAPH_DIR)/ffmpeg_1 $(SLICING_INFO_DIR)/ffmpeg_labeler_1.csv $(BITCODE_DIR)/ffmpeg_1
+
+graph-ffmpeg-0:
+	./construction_phase_d2a $(GRAPH_DIR)/ffmpeg_0 $(SLICING_INFO_DIR)/ffmpeg_labeler_0.csv $(BITCODE_DIR)/ffmpeg_0
 
 remove-duplicates:
 	python3 remove_duplicates.py --d2a-dir d2a --bitcode-dir d2a-bitcode
@@ -49,3 +67,7 @@ remove-duplicates:
 # remove symlinks with non-existent targets (removed 877 invalid links from original bitcode)
 remove-invalid-symlinks:
 	python3 remove_invalid_symlinks.py d2a-bitcode
+
+# Removes specified already generated samples
+remove-samples:
+	awk -F, 'NR>=10 && NR<=50 {print "rm -rf ../D2A-CPG/httpd_1/"$$2}' $(SLICING_INFO_DIR)/httpd_labeler_1.csv | sh
