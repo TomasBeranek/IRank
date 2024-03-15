@@ -10,6 +10,8 @@ import hashlib
 import numpy as np
 import math
 import threading
+import tensorflow_gnn as tfgnn
+import tensorflow as tf
 
 
 TFRecord_writing_lock = threading.Lock()
@@ -19,6 +21,42 @@ FP_data_types = {'void': 0, # For code simplicity (although it isn't FP type)
                  'float': 2,
                  'double': 3,
                  'fp128': 4}
+
+norm_coeffs = {'libtiff': {
+                             'ARGUMENT_INDEX': 18,
+                             'LEN': 8192,
+                             'OPERATORS': {'<operator>.addition': 1,
+                                           '<operator>.addressOf': 2,
+                                           '<operator>.and': 3,
+                                           '<operator>.arithmeticShiftRight': 4,
+                                           '<operator>.assignment': 5,
+                                           '<operator>.cast': 6,
+                                           '<operator>.division': 7,
+                                           '<operator>.equals': 8,
+                                           '<operator>.fneg': 9,
+                                           '<operator>.getElementPtr': 10,
+                                           '<operator>.greaterEqualsThan': 11,
+                                           '<operator>.greaterThan': 12,
+                                           '<operator>.indexAccess': 13,
+                                           '<operator>.indirection': 14,
+                                           '<operator>.lessEqualsThan': 15,
+                                           '<operator>.lessThan': 1,
+                                           '<operator>.logicalShiftRight': 16,
+                                           '<operator>.modulo': 17,
+                                           '<operator>.multiplication': 18,
+                                           '<operator>.notEquals': 19,
+                                           '<operator>.or': 20,
+                                           '<operator>.pointerShift': 21,
+                                           '<operator>.select': 22,
+                                           '<operator>.shiftLeft': 23,
+                                           '<operator>.subtraction': 24,
+                                           '<operator>.xor': 25},
+                             'ORDER': 1009,
+                             'PTR': 4
+                          }
+              }
+
+LABEL = None
 
 
 def drop_unwanted_attributes(df, type_name):
@@ -668,79 +706,21 @@ def transform_type_data(df):
     df = df.drop(['nodeset', 'type', 'FULL_NAME'], axis=1)
 
     # Normalize the values and retype to float32 (DT_FLOAT)
-    df['INT'] = df['INT'].astype('float32') / 128
-    df['FP'] = df['FP'].astype('float32') / 4
-    df['LEN'] = (df['LEN'] / 576000).astype('float32') # Highest found in positive samples
-    df['PTR'] = df['PTR'].astype('float32') / 5
+    df['INT'] = (df['INT'] / 128).astype('float32')
+    df['FP'] = (df['FP'] / 4).astype('float32')
+    df['LEN'] = (df['LEN'] / norm_coeffs['LEN']).astype('float32')
+    df['PTR'] = (df['PTR'] / norm_coeffs['PTR']).astype('float32')
     df['HASH'] = (df['HASH'] / (2**24 - 1)).astype('float32')  # MAX_UINT for 24 bits
 
     return df
 
 
 def split_method_full_name(full_name):
-    # <operator>.assignment      77493
-    # <operator>.indirection      77491
-    # <operator>.pointerShift      76753
-    # <operator>.cast      76318
-    # <operator>.addition      73796
-    # <operator>.getElementPtr      73081
-    # <operator>.notEquals      72129
-    # <operator>.lessThan      68062
-    # <operator>.equals      66878
-    # <operator>.subtraction      66421
-    # <operator>.and      61493
-    # <operator>.greaterThan      61285
-    # <operator>.indexAccess      58405
-    # <operator>.multiplication      56915
-    # <operator>.greaterEqualsThan      51024
-    # <operator>.lessEqualsThan      43891
-    # <operator>.addressOf      42594
-    # <operator>.logicalShiftRight      40293
-    # <operator>.or      40028
-    # <operator>.shiftLeft      39267
-    # <operator>.division      37716
-    # <operator>.arithmeticShiftRight      30709
-    # <operator>.xor      28379
-    # <operator>.select      28313
-    # <operator>.modulo      21745
-    # <operator>.fneg      8627
-    # <operator>.atomicAddition      1282
-    # <operator>.cmpxchg      154
-
-    operators_id = {'<operator>.assignment': 1,
-                    '<operator>.pointerShift': 2,
-                    '<operator>.cast': 3,
-                    '<operator>.addition': 4,
-                    '<operator>.getElementPtr': 5,
-                    '<operator>.notEquals': 6,
-                    '<operator>.lessThan': 7,
-                    '<operator>.equals': 8,
-                    '<operator>.subtraction': 9,
-                    '<operator>.and': 10,
-                    '<operator>.greaterThan': 11,
-                    '<operator>.indexAccess': 12,
-                    '<operator>.multiplication': 13,
-                    '<operator>.greaterEqualsThan': 14,
-                    '<operator>.lessEqualsThan': 15,
-                    '<operator>.addressOf': 16,
-                    '<operator>.logicalShiftRight': 17,
-                    '<operator>.or': 18,
-                    '<operator>.shiftLeft': 19,
-                    '<operator>.division': 20,
-                    '<operator>.arithmeticShiftRight': 21,
-                    '<operator>.xor': 22,
-                    '<operator>.select': 23,
-                    '<operator>.modulo': 24,
-                    '<operator>.fneg': 25,
-                    '<operator>.atomicAddition': 26,
-                    '<operator>.indirection': 27,
-                    '<operator>.cmpxchg': 28}
-
     HASH = OPERATOR = 0
 
     if full_name.startswith('<operator>.'):
         # LLVM IR operator
-        OPERATOR = operators_id[full_name]
+        OPERATOR = norm_coeffs['OPERATORS'][full_name]
     else:
         HASH = hash_string_to_int24(full_name)
 
@@ -756,7 +736,7 @@ def transform_method_info_data(df):
 
     # Normalize the values and retype to float32 (DT_FLOAT)
     df['HASH'] = (df['HASH'] / (2**24 - 1)).astype('float32') # MAX_UINT for 24 bits
-    df['OPERATOR'] = df['OPERATOR'].astype('float32') / 28 # Number of found operators
+    df['OPERATOR'] = (df['OPERATOR'] / len(norm_coeffs['OPERATORS'])).astype('float32') # Number of found operators
     df['IS_EXTERNAL'] = df['IS_EXTERNAL'].astype('float32')
 
     return df
@@ -784,8 +764,8 @@ def transform_ast_node_data(df):
     df = df.rename(columns={'type': 'LABEL'})
 
     # Normalize the values and retype to float32 (DT_FLOAT)
-    df['ORDER'] = df['ORDER'].astype('float32') / 1098
-    df['LABEL'] = df['LABEL'].map(labels).astype('float32') / len(labels)
+    df['ORDER'] = (df['ORDER'] / norm_coeffs['ORDER']).astype('float32')
+    df['LABEL'] = (df['LABEL'].map(labels) / len(labels)).astype('float32')
 
     return df
 
@@ -856,11 +836,8 @@ def transform_literal_value_node_data(df):
     df = df.drop(['nodeset', 'type', 'value_type_pair'], axis=1)
 
     # Normalize values
-    df['HASH'] = df['HASH'] / (2**24 - 1) # MAX_UINT for 24 bits
-    df['FP_EXPONENT'] = (df['FP_EXPONENT'] + 148) / (148 + 128)
-
-    # Convert df to float32
-    df = df.astype('float32')
+    df['HASH'] = (df['HASH'] / (2**24 - 1)).astype('float32') # MAX_UINT for 24 bits
+    df['FP_EXPONENT'] = ((df['FP_EXPONENT'] + 148) / (148 + 128)).astype('float32')
 
     return df
 
@@ -887,10 +864,9 @@ def transform_data_types(G):
     graph_dfs['METHOD_INFO'] = transform_method_info_data(graph_dfs['METHOD_INFO'])
 
     # Normalize ARGUMENT_INDEX value of edge ARGUMENT
-    MAX_ARGUMENT_INDEX = 5
-    graph_dfs['ARGUMENT']['ARGUMENT_INDEX'] = (graph_dfs['ARGUMENT']['ARGUMENT_INDEX'] / MAX_ARGUMENT_INDEX).astype('float32')
+    graph_dfs['ARGUMENT']['ARGUMENT_INDEX'] = (graph_dfs['ARGUMENT']['ARGUMENT_INDEX'] / norm_coeffs['ARGUMENT_INDEX']).astype('float32')
 
-    return G
+    return graph_dfs
 
 
 def process_sample(directory):
@@ -898,15 +874,24 @@ def process_sample(directory):
     node_data, edge_data, valid_nodes = load_sample_data(directory)
     G = remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
     G = split_nodes(G)
-    G = transform_data_types(G)
-    print(f'Note: visualize_graph.py: Graph \'{sample_id}\' successfully transformed!')
+    graph_in_dfs = transform_data_types(G)
+
+    return graph_in_dfs
+
+
+def save_sample(directory, graph_spec, output_file):
+    graph_in_dfs = process_sample(directory)
 
     # Transform graph to TFGNN GraphTensor
+    graph = tfgnn.random_graph_tensor(graph_spec)
 
     # Save TFGNN GraphTensor to TFRecords file
-    with TFRecord_writing_lock:
-        print('Saving graph')
-    return G
+    # with TFRecord_writing_lock:
+    with tf.io.TFRecordWriter(output_file) as writer:
+        example = tfgnn.write_example(graph)
+        writer.write(example.SerializeToString())
+
+    print(f'Note: visualize_graph.py: Graph Tensor \'{sample_id}\' successfully saved!')
 
 
 if __name__ == "__main__":
@@ -916,8 +901,31 @@ if __name__ == "__main__":
         G = process_sample(directory)
         plot_graph(G)
     else:
+        # Load TFGNN Schema
+        schema = tfgnn.read_schema(sys.argv[1])
+        graph_spec = tfgnn.create_graph_spec_from_schema_pb(schema)
+
+        output_file = sys.argv[2]
+        project = sys.argv[3] # libtiff, ffmpeg, ...
+        label = int(sys.argv[4]) # 0 or 1
+
+        # Remove previous results, otherwise we only append the new ones
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        # Set normalization_coefficients - we do it globally because it is used across many function
+        norm_coeffs = norm_coeffs[project]
+
+        # Same for label
+        LABEL = label
+
+        # Stdin has data, process each line (parallel seems to be slower + some tf calls seem to have trouble in parallel)
+        for line in sys.stdin:
+            directory = line.strip()
+            save_sample(directory, graph_spec, output_file)
+
         # Stdin has data, process each line in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-            for line in sys.stdin:
-                directory = line.strip()
-                executor.submit(process_sample, directory)
+        # with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
+        #     for line in sys.stdin:
+        #         directory = line.strip()
+        #         executor.submit(save_sample, directory, graph_spec, output_file)
