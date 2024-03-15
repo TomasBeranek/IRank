@@ -17,12 +17,18 @@ experiment2:
 httpd-sample:
 	python3 visualize_graph.py httpd_sample
 
-process-d2a:
-	find ../../D2A-CPG -mindepth 2 -type d | shuf -n 5000 | python3 visualize_graph.py
-
 # Use this as: 'time make measure-time'
 measure-time:
-	find ../../D2A-CPG -mindepth 2 -type d | head -n 50 | python3 visualize_graph.py
+	find ../../D2A-CPG -mindepth 2 -type d | head -n 50 | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ffmpeg_1.tfrecords ffmpeg 1
+
+transform-libtiff-1:
+	find ../../D2A-CPG/libtiff_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_1.tfrecords libtiff 1
+
+transform-libtiff-0:
+	find ../../D2A-CPG/libtiff_0 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_0.tfrecords libtiff 0
+
+transform-ffmpeg-1:
+	find ../../D2A-CPG/ffmpeg_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/ffmpeg_1.tfrecords ffmpeg 1
 
 clean-example-struct-alias:
 	rm -rf $(EXAMPLE_STRUCT_ALIAS_DIR)/main.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/point.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.cpg.bin.zip $(EXAMPLE_STRUCT_ALIAS_DIR)/graph $(EXAMPLE_STRUCT_ALIAS_DIR)/workspace $(EXAMPLE_STRUCT_ALIAS_DIR)/out $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.ll
