@@ -1,5 +1,15 @@
 # Basic CPG graph
 
+context {
+  features {
+    key: "label"
+    value: {
+      description: "A label classifying if the sample is TP (True) or FP (False)."
+      dtype: DT_FLOAT
+    }
+  }
+}
+
 # Následují informace o jednotlivých uzlech/hranách/parametrech a zda jsou zahrnuty do tohoto schématu. Pokud nejsou, je zde uveden důvod. Veškeré informace jsou získany z oficiální dokumentace Joern, která byla automaticky vygenerována z kódu - měla by tudíž být strukturně správně. Verze dokumentace 1.1 (https://cpg.joern.io/), verze Joern 1.1.1169 (Joern verze se shoduje s verzí dokumentace).
 
 
@@ -436,21 +446,3 @@ edge_sets {
     target: "AST_NODE"
   }
 }
-
-
-
-
-
-
-
-
-
-# Ponechame pouze ORDER, ktery je spolecny vsem AST uzlum. TYPE_FULL_NAME nese
-# informaci o typu bloku - jenze v jazyku C bloky nemaji typ, jedna se tak zrejme
-# o typ posledniho statementu - Joern to tak zrejme dela genericky. Např. v jazyce
-# Scala to pak dava smysl, protoze typ bloku == typ polsedniho vyrazu v bloku.
-# Nicmene my pracujeme s C (LLVM IR) a tak budeme tuto informaci ingorovat. Dalsim
-# jedinym uzitecnym sloupcem je ARGUMENT_INDEX, ktery ale souvisi s TYPE_FULL_NAME
-# nasledujicim zpusobem: ARGUMENT_INDEX == 1, pokud blok urcity typ a ARGUMENT_INDEX
-# == 1, pokud blok ma TYPE_FULL_NAME == 'ANY'. Neprinasi nam tudiz zadnou dalsi
-# informaci. Zbyle sloupce maji stale stejnou hodnotu.
