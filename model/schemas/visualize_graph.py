@@ -880,10 +880,115 @@ def process_sample(directory):
 
 
 def save_sample(directory, graph_spec, output_file):
+    sample_id = directory.split('/')[-1]
     graph_in_dfs = process_sample(directory)
 
+    # If some df is missing add it empty
+    if 'CONSISTS_OF' not in graph_in_dfs.keys():
+        graph_in_dfs['CONSISTS_OF'] = pd.DataFrame(columns=['source', 'target'])
+
     # Transform graph to TFGNN GraphTensor
-    graph = tfgnn.random_graph_tensor(graph_spec)
+    graph = tfgnn.GraphTensor.from_pieces(
+        context=tfgnn.Context.from_fields(features={'label': tf.constant([LABEL])}),
+        node_sets={
+            'METHOD_INFO': tfgnn.NodeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['METHOD_INFO'])]),
+                features={
+                    'IS_EXTERNAL': tf.constant(graph_in_dfs['METHOD_INFO']['IS_EXTERNAL'].tolist()),
+                    'HASH':        tf.constant(graph_in_dfs['METHOD_INFO']['HASH'].tolist()),
+                    'OPERATOR':    tf.constant(graph_in_dfs['METHOD_INFO']['OPERATOR'].tolist())
+            }),
+            'TYPE': tfgnn.NodeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['TYPE'])]),
+                features={
+                    'INT':  tf.constant(graph_in_dfs['TYPE']['INT'].tolist()),
+                    'FP':   tf.constant(graph_in_dfs['TYPE']['FP'].tolist()),
+                    'HASH': tf.constant(graph_in_dfs['TYPE']['HASH'].tolist()),
+                    'PTR':  tf.constant(graph_in_dfs['TYPE']['PTR'].tolist()),
+                    'LEN':  tf.constant(graph_in_dfs['TYPE']['LEN'].tolist())
+            }),
+            'AST_NODE': tfgnn.NodeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['AST_NODE'])]),
+                features={
+                    'LABEL': tf.constant(graph_in_dfs['AST_NODE']['LABEL'].tolist()),
+                    'ORDER': tf.constant(graph_in_dfs['AST_NODE']['ORDER'].tolist()),
+            }),
+            'LITERAL_VALUE': tfgnn.NodeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['LITERAL_VALUE'])]),
+                features={
+                    'INT':              tf.constant(graph_in_dfs['LITERAL_VALUE']['INT'].tolist()),
+                    'FP_MANTISSA':      tf.constant(graph_in_dfs['LITERAL_VALUE']['FP_MANTISSA'].tolist()),
+                    'FP_EXPONENT':      tf.constant(graph_in_dfs['LITERAL_VALUE']['FP_EXPONENT'].tolist()),
+                    'HASH':             tf.constant(graph_in_dfs['LITERAL_VALUE']['HASH'].tolist()),
+                    'INVALID_POINTER':  tf.constant(graph_in_dfs['LITERAL_VALUE']['INVALID_POINTER'].tolist()),
+                    'ZERO_INITIALIZED': tf.constant(graph_in_dfs['LITERAL_VALUE']['ZERO_INITIALIZED'].tolist()),
+                    'UNDEF':            tf.constant(graph_in_dfs['LITERAL_VALUE']['UNDEF'].tolist())
+            }),
+        },
+        edge_sets={
+            'METHOD_INFO_LINK': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['METHOD_INFO_LINK'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('METHOD_INFO', tf.constant(graph_in_dfs['METHOD_INFO_LINK']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['METHOD_INFO_LINK']['target'].tolist()))
+            )),
+            'CONSISTS_OF': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['CONSISTS_OF'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('TYPE', tf.constant(graph_in_dfs['CONSISTS_OF']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['CONSISTS_OF']['target'].tolist()))
+            )),
+            'AST': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['AST'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('AST_NODE', tf.constant(graph_in_dfs['AST']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['AST']['target'].tolist()))
+            )),
+            'LITERAL_VALUE_LINK': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['LITERAL_VALUE_LINK'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('LITERAL_VALUE', tf.constant(graph_in_dfs['LITERAL_VALUE_LINK']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['LITERAL_VALUE_LINK']['target'].tolist()))
+            )),
+            'ARGUMENT': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['ARGUMENT'])]),
+                features={ 'ARGUMENT_INDEX': tf.constant(graph_in_dfs['ARGUMENT']['ARGUMENT_INDEX'].tolist()) },
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('AST_NODE', tf.constant(graph_in_dfs['ARGUMENT']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['ARGUMENT']['target'].tolist()))
+            )),
+            'CALL': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['CALL'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('AST_NODE', tf.constant(graph_in_dfs['CALL']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['CALL']['target'].tolist()))
+            )),
+            'CFG': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['CFG'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('AST_NODE', tf.constant(graph_in_dfs['CFG']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['CFG']['target'].tolist()))
+            )),
+            'CDG': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['CDG'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('AST_NODE', tf.constant(graph_in_dfs['CDG']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['CDG']['target'].tolist()))
+            )),
+            'EVAL_TYPE': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['EVAL_TYPE'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('AST_NODE', tf.constant(graph_in_dfs['EVAL_TYPE']['source'].tolist())),
+                    target=('TYPE',    tf.constant(graph_in_dfs['EVAL_TYPE']['target'].tolist()))
+            )),
+            'REF': tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['REF'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('AST_NODE', tf.constant(graph_in_dfs['REF']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['REF']['target'].tolist()))
+            ))
+        }
+    )
 
     # Save TFGNN GraphTensor to TFRecords file
     # with TFRecord_writing_lock:
@@ -894,7 +999,7 @@ def save_sample(directory, graph_spec, output_file):
     print(f'Note: visualize_graph.py: Graph Tensor \'{sample_id}\' successfully saved!')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if sys.stdin.isatty():
         # If stdin is empty - run in single-threaded mode (only one graph)
         directory = sys.argv[1]
