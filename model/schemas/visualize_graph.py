@@ -870,12 +870,42 @@ def transform_data_types(G):
     return graph_dfs
 
 
+def convert_ids_to_tfgnn_format(graph_in_dfs):
+    edgeset_info = {
+        'METHOD_INFO_LINK':   {'SOURCE': 'METHOD_INFO',   'TARGET': 'AST_NODE'},
+        'CONSISTS_OF':        {'SOURCE': 'TYPE',          'TARGET': 'AST_NODE'},
+        'AST':                {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'},
+        'LITERAL_VALUE_LINK': {'SOURCE': 'LITERAL_VALUE', 'TARGET': 'AST_NODE'},
+        'ARGUMENT':           {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'},
+        'CALL':               {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'},
+        'CFG':                {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'},
+        'CDG':                {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'},
+        'EVAL_TYPE':          {'SOURCE': 'AST_NODE',      'TARGET': 'TYPE'},
+        'REF':                {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'}
+    }
+
+    # We need to convert source and target columns of all edge sets
+    for edge_set_name, val in edgeset_info.items():
+        if edge_set_name not in graph_in_dfs.keys():
+            continue
+
+        source_nodeset = val['SOURCE']
+        target_nodeset = val['TARGET']
+
+        # Transform source and target node ID to their location index in their dataframe
+        graph_in_dfs[edge_set_name]['source'] = graph_in_dfs[edge_set_name]['source'].apply(lambda id: graph_in_dfs[source_nodeset].index.get_loc(id))
+        graph_in_dfs[edge_set_name]['target'] = graph_in_dfs[edge_set_name]['target'].apply(lambda id: graph_in_dfs[target_nodeset].index.get_loc(id))
+
+    return graph_in_dfs
+
+
 def process_sample(directory):
     sample_id = directory.split('/')[-1]
     node_data, edge_data, valid_nodes = load_sample_data(directory)
     G = remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
     G = split_nodes(G)
     graph_in_dfs = transform_data_types(G)
+    graph_in_dfs = convert_ids_to_tfgnn_format(graph_in_dfs)
 
     return graph_in_dfs
 
