@@ -821,7 +821,7 @@ def encode_literal_value(value_type_pair):
             # If value == 0 math.frexp will display it as 0,0 - we need to move it to 0.5
             FP_MANTISSA = 0.5
 
-        FP_EXPONENT = ((FP_EXPONENT + 148) / (148 + 128)).astype('float32')
+        FP_EXPONENT = np.float32(((FP_EXPONENT + 148) / (148 + 128)))
     else:
         # Arrays, structs, custom types (should be only 'data')
         if value == 'zero initialized':
