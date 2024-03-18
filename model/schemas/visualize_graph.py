@@ -884,9 +884,21 @@ def save_sample(directory, graph_spec, output_file):
     sample_id = directory.split('/')[-1]
     graph_in_dfs = process_sample(directory)
 
-    # If some df is missing add it empty
+    # If some CONSISTS_OF edges set is missing add it empty
     if 'CONSISTS_OF' not in graph_in_dfs.keys():
-        graph_in_dfs['CONSISTS_OF'] = pd.DataFrame(columns=['source', 'target'])
+        edgeset_CONSISTS_OF = tfgnn.EdgeSet.from_fields(
+            sizes=tf.constant([0]),
+            adjacency=tfgnn.Adjacency.from_indices(
+                source=('TYPE',     tf.constant([], dtype=tf.int64)),
+                target=('AST_NODE', tf.constant([], dtype=tf.int64))
+        ))
+    else:
+        edgeset_CONSISTS_OF = tfgnn.EdgeSet.from_fields(
+            sizes=tf.constant([len(graph_in_dfs['CONSISTS_OF'])]),
+            adjacency=tfgnn.Adjacency.from_indices(
+                source=('TYPE', tf.constant(graph_in_dfs['CONSISTS_OF']['source'].tolist())),
+                target=('AST_NODE',    tf.constant(graph_in_dfs['CONSISTS_OF']['target'].tolist()))
+        ))
 
     # Transform graph to TFGNN GraphTensor
     graph = tfgnn.GraphTensor.from_pieces(
@@ -933,12 +945,7 @@ def save_sample(directory, graph_spec, output_file):
                     source=('METHOD_INFO', tf.constant(graph_in_dfs['METHOD_INFO_LINK']['source'].tolist())),
                     target=('AST_NODE',    tf.constant(graph_in_dfs['METHOD_INFO_LINK']['target'].tolist()))
             )),
-            'CONSISTS_OF': tfgnn.EdgeSet.from_fields(
-                sizes=tf.constant([len(graph_in_dfs['CONSISTS_OF'])]),
-                adjacency=tfgnn.Adjacency.from_indices(
-                    source=('TYPE', tf.constant(graph_in_dfs['CONSISTS_OF']['source'].tolist())),
-                    target=('AST_NODE',    tf.constant(graph_in_dfs['CONSISTS_OF']['target'].tolist()))
-            )),
+            'CONSISTS_OF': edgeset_CONSISTS_OF,
             'AST': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['AST'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
