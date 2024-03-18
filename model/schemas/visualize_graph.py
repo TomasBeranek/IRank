@@ -820,6 +820,8 @@ def encode_literal_value(value_type_pair):
         elif value == 0:
             # If value == 0 math.frexp will display it as 0,0 - we need to move it to 0.5
             FP_MANTISSA = 0.5
+
+        FP_EXPONENT = ((FP_EXPONENT + 148) / (148 + 128)).astype('float32')
     else:
         # Arrays, structs, custom types (should be only 'data')
         if value == 'zero initialized':
@@ -837,7 +839,6 @@ def transform_literal_value_node_data(df):
 
     # Normalize values
     df['HASH'] = (df['HASH'] / (2**24 - 1)).astype('float32') # MAX_UINT for 24 bits
-    df['FP_EXPONENT'] = ((df['FP_EXPONENT'] + 148) / (148 + 128)).astype('float32')
 
     return df
 
