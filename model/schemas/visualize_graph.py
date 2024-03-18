@@ -514,7 +514,7 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
             remove_leaf(node, G)
         elif is_root(node, G):
             # Make this node a valid BLOCK node
-            G.nodes[node].update({'ORDER:int': 0, 'type': 'BLOCK'})
+            G.nodes[node].update({'ARGUMENT_INDEX': 0, 'ORDER': 0, 'nodeset': 'AST_NODE', 'type': 'BLOCK'})
         elif is_inner(node, G):
             remove_inner(node, G)
         else:
