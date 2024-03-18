@@ -914,7 +914,7 @@ def save_sample(directory, graph_spec, output_file):
     sample_id = directory.split('/')[-1]
     graph_in_dfs = process_sample(directory)
 
-    # If some CONSISTS_OF edges set is missing add it empty
+    # If CONSISTS_OF edge set is missing add it empty
     if 'CONSISTS_OF' not in graph_in_dfs.keys():
         edgeset_CONSISTS_OF = tfgnn.EdgeSet.from_fields(
             sizes=tf.constant([0]),
@@ -926,8 +926,24 @@ def save_sample(directory, graph_spec, output_file):
         edgeset_CONSISTS_OF = tfgnn.EdgeSet.from_fields(
             sizes=tf.constant([len(graph_in_dfs['CONSISTS_OF'])]),
             adjacency=tfgnn.Adjacency.from_indices(
-                source=('TYPE', tf.constant(graph_in_dfs['CONSISTS_OF']['source'].tolist())),
-                target=('AST_NODE',    tf.constant(graph_in_dfs['CONSISTS_OF']['target'].tolist()))
+                source=('TYPE',     tf.constant(graph_in_dfs['CONSISTS_OF']['source'].tolist())),
+                target=('AST_NODE', tf.constant(graph_in_dfs['CONSISTS_OF']['target'].tolist()))
+        ))
+
+    # If CDG edge set is missing add it empty
+    if 'CDG' not in graph_in_dfs.keys():
+        edgeset_CDG = tfgnn.EdgeSet.from_fields(
+            sizes=tf.constant([0]),
+            adjacency=tfgnn.Adjacency.from_indices(
+                source=('AST_NODE', tf.constant([], dtype=tf.int64)),
+                target=('AST_NODE', tf.constant([], dtype=tf.int64))
+        ))
+    else:
+        edgeset_CDG = tfgnn.EdgeSet.from_fields(
+            sizes=tf.constant([len(graph_in_dfs['CDG'])]),
+            adjacency=tfgnn.Adjacency.from_indices(
+                source=('AST_NODE', tf.constant(graph_in_dfs['CDG']['source'].tolist())),
+                target=('AST_NODE', tf.constant(graph_in_dfs['CDG']['target'].tolist()))
         ))
 
     # Transform graph to TFGNN GraphTensor
@@ -1007,12 +1023,7 @@ def save_sample(directory, graph_spec, output_file):
                     source=('AST_NODE', tf.constant(graph_in_dfs['CFG']['source'].tolist())),
                     target=('AST_NODE',    tf.constant(graph_in_dfs['CFG']['target'].tolist()))
             )),
-            'CDG': tfgnn.EdgeSet.from_fields(
-                sizes=tf.constant([len(graph_in_dfs['CDG'])]),
-                adjacency=tfgnn.Adjacency.from_indices(
-                    source=('AST_NODE', tf.constant(graph_in_dfs['CDG']['source'].tolist())),
-                    target=('AST_NODE',    tf.constant(graph_in_dfs['CDG']['target'].tolist()))
-            )),
+            'CDG': edgeset_CDG,
             'EVAL_TYPE': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['EVAL_TYPE'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
