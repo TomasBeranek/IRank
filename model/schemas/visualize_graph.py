@@ -519,7 +519,7 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
             remove_inner(node, G)
         else:
             # This shouldn't happen, because it would mean that the AST is not a tree
-            print(f'ERROR: visualize_graph.py: current graph has a node which is not root, inner or leaf - which is not possible in a tree!')
+            print(f'ERROR: visualize_graph.py: current graph has a node which is not root, inner or leaf - which is not possible in a tree!', file=sys.stderr)
             exit(1)
 
     wccs_after = list(nx.weakly_connected_components(G))
@@ -910,7 +910,7 @@ def process_sample(directory):
     return graph_in_dfs
 
 
-def save_sample(directory, graph_spec, output_file):
+def save_sample(directory, graph_spec, output_file, splits):
     sample_id = directory.split('/')[-1]
     graph_in_dfs = process_sample(directory)
 
@@ -1041,9 +1041,21 @@ def save_sample(directory, graph_spec, output_file):
 
     # Save TFGNN GraphTensor to TFRecords file
     # with TFRecord_writing_lock:
-    with tf.io.TFRecordWriter(output_file) as writer:
-        example = tfgnn.write_example(graph)
-        writer.write(example.SerializeToString())
+    if sample_id in splits['train']:
+        with tf.io.TFRecordWriter(output_file + '.train') as writer:
+            example = tfgnn.write_example(graph)
+            writer.write(example.SerializeToString())
+    elif sample_id in splits['val']:
+        with tf.io.TFRecordWriter(output_file + '.val') as writer:
+            example = tfgnn.write_example(graph)
+            writer.write(example.SerializeToString())
+    elif sample_id in splits['test']:
+        with tf.io.TFRecordWriter(output_file + '.test') as writer:
+            example = tfgnn.write_example(graph)
+            writer.write(example.SerializeToString())
+    else:
+        print(f'ERROR: visualize_graph.py: Sample ID \'{sample_id}\' is not in train, val nor test data!', file=sys.stderr)
+        exit(1)
 
     print(f'Note: visualize_graph.py: Graph Tensor \'{sample_id}\' successfully saved!')
 
@@ -1064,8 +1076,9 @@ if __name__ == '__main__':
         label = int(sys.argv[4]) # 0 or 1
 
         # Remove previous results, otherwise we only append the new ones
-        if os.path.exists(output_file):
-            os.remove(output_file)
+        for file in [output_file + '.train', output_file + '.val', output_file + '.test']:
+            if os.path.exists(file):
+                os.remove(file)
 
         # Set normalization_coefficients - we do it globally because it is used across many function
         norm_coeffs = norm_coeffs[project]
@@ -1073,10 +1086,19 @@ if __name__ == '__main__':
         # Same for label
         LABEL = label
 
+        # Load splits and determine which data are for training, validation (development) and testing
+        df = pd.read_csv(sys.argv[5], header=None)
+        project_df = df[df[0].apply(lambda x: x.startswith(f'{project}_') and x.endswith(f'_{LABEL}'))] # Filter only current project and GT
+        train_ids = set(project_df[project_df[1] == 'train'][0]) # Filter train data and keep only IDs
+        val_ids   = set(project_df[project_df[1] == 'dev'][0])
+        test_ids  = set(project_df[project_df[1] == 'test'][0])
+        splits = {'train': train_ids, 'val': val_ids, 'test': test_ids}
+
+
         # Stdin has data, process each line (parallel seems to be slower + some tf calls seem to have trouble in parallel)
         for line in sys.stdin:
             directory = line.strip()
-            save_sample(directory, graph_spec, output_file)
+            save_sample(directory, graph_spec, output_file, splits)
 
         # Stdin has data, process each line in parallel
         # with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
