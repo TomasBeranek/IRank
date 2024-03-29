@@ -448,7 +448,7 @@ def remove_type_decl_nodes(G):
     for node in nodes_to_remove:
         G.remove_node(node)
 
-    # Add back the edges
+    # Add back the edges, but add them to as new CONSISTS_OF edgeset
     for start, end in edges_to_add:
         G.add_edge(start, end, type='CONSISTS_OF')
 
@@ -899,6 +899,13 @@ def convert_ids_to_tfgnn_format(graph_in_dfs):
     return graph_in_dfs
 
 
+def reverse_edge_sets(graph_in_dfs, edge_sets):
+    for edge_set in edge_sets:
+        graph_in_dfs[edge_set].rename(columns={'source': 'target', 'target': 'source'}, inplace=True)
+
+    return graph_in_dfs
+
+
 def process_sample(directory):
     sample_id = directory.split('/')[-1]
     node_data, edge_data, valid_nodes = load_sample_data(directory)
@@ -906,6 +913,7 @@ def process_sample(directory):
     G = split_nodes(G)
     graph_in_dfs = transform_data_types(G)
     graph_in_dfs = convert_ids_to_tfgnn_format(graph_in_dfs)
+    graph_in_dfs = reverse_edge_sets(graph_in_dfs, ['ARGUMENT', 'EVAL_TYPE', 'CONSISTS_OF', 'REF'])
 
     return graph_in_dfs
 

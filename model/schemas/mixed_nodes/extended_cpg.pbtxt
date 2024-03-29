@@ -5,7 +5,7 @@ context {
     key: "label"
     value: {
       description: "A label classifying if the sample is TP (True) or FP (False)."
-      dtype: DT_FLOAT
+      dtype: DT_INT32
     }
   }
 }
@@ -158,8 +158,8 @@ edge_sets {
   key: "CONSISTS_OF"
   value {
     description: "A CONSISTS_OF edge connects TYPE node with it's MEMBER nodes (if there are any)."
-    source: "TYPE"
-    target: "AST_NODE"
+    source: "AST_NODE"
+    target: "TYPE"
   }
 }
 
@@ -392,8 +392,8 @@ edge_sets {
   key: "EVAL_TYPE"
   value {
     description: "This edge connects a node to its evaluation type."
-    source: "AST_NODE"
-    target: "TYPE"
+    source: "TYPE"
+    target: "AST_NODE"
   }
 }
 
