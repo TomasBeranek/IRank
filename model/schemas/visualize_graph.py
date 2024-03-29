@@ -1049,18 +1049,15 @@ def save_sample(directory, graph_spec, output_file, splits):
 
     # Save TFGNN GraphTensor to TFRecords file
     # with TFRecord_writing_lock:
-    if sample_id in splits['train']:
-        with tf.io.TFRecordWriter(output_file + '.train') as writer:
-            example = tfgnn.write_example(graph)
-            writer.write(example.SerializeToString())
-    elif sample_id in splits['val']:
-        with tf.io.TFRecordWriter(output_file + '.val') as writer:
-            example = tfgnn.write_example(graph)
-            writer.write(example.SerializeToString())
-    elif sample_id in splits['test']:
-        with tf.io.TFRecordWriter(output_file + '.test') as writer:
-            example = tfgnn.write_example(graph)
-            writer.write(example.SerializeToString())
+    if sample_id in splits['train'][0]:
+        example = tfgnn.write_example(graph)
+        splits['train'][1].write(example.SerializeToString())
+    elif sample_id in splits['val'][0]:
+        example = tfgnn.write_example(graph)
+        splits['val'][1].write(example.SerializeToString())
+    elif sample_id in splits['test'][0]:
+        example = tfgnn.write_example(graph)
+        splits['test'][1].write(example.SerializeToString())
     else:
         print(f'ERROR: visualize_graph.py: Sample ID \'{sample_id}\' is not in train, val nor test data!', file=sys.stderr)
         exit(1)
@@ -1072,7 +1069,10 @@ if __name__ == '__main__':
     if sys.stdin.isatty():
         # If stdin is empty - run in single-threaded mode (only one graph)
         directory = sys.argv[1]
-        G = process_sample(directory)
+        sample_id = directory.split('/')[-1]
+        node_data, edge_data, valid_nodes = load_sample_data(directory)
+        G = remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
+        G = split_nodes(G)
         plot_graph(G)
     else:
         # Load TFGNN Schema
@@ -1100,13 +1100,18 @@ if __name__ == '__main__':
         train_ids = set(project_df[project_df[1] == 'train'][0]) # Filter train data and keep only IDs
         val_ids   = set(project_df[project_df[1] == 'dev'][0])
         test_ids  = set(project_df[project_df[1] == 'test'][0])
-        splits = {'train': train_ids, 'val': val_ids, 'test': test_ids}
 
+        # Open tfrecords files now, because appending samples after closing the files is not supported
+        with tf.io.TFRecordWriter(output_file + '.train') as writer_train, \
+             tf.io.TFRecordWriter(output_file + '.val') as writer_val, \
+             tf.io.TFRecordWriter(output_file + '.test') as writer_test:
 
-        # Stdin has data, process each line (parallel seems to be slower + some tf calls seem to have trouble in parallel)
-        for line in sys.stdin:
-            directory = line.strip()
-            save_sample(directory, graph_spec, output_file, splits)
+            splits = {'train': (train_ids, writer_train), 'val': (val_ids, writer_val), 'test': (test_ids, writer_test)}
+
+            # Stdin has data, process each line (parallel seems to be slower + some tf calls seem to have trouble in parallel)
+            for line in sys.stdin:
+                directory = line.strip()
+                save_sample(directory, graph_spec, output_file, splits)
 
         # Stdin has data, process each line in parallel
         # with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
