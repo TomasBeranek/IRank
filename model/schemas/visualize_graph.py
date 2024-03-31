@@ -44,17 +44,17 @@ norm_coeffs = {'libtiff': {
                                            '<operator>.indexAccess': 13,
                                            '<operator>.indirection': 14,
                                            '<operator>.lessEqualsThan': 15,
-                                           '<operator>.lessThan': 1,
-                                           '<operator>.logicalShiftRight': 16,
-                                           '<operator>.modulo': 17,
-                                           '<operator>.multiplication': 18,
-                                           '<operator>.notEquals': 19,
-                                           '<operator>.or': 20,
-                                           '<operator>.pointerShift': 21,
-                                           '<operator>.select': 22,
-                                           '<operator>.shiftLeft': 23,
-                                           '<operator>.subtraction': 24,
-                                           '<operator>.xor': 25},
+                                           '<operator>.lessThan': 16,
+                                           '<operator>.logicalShiftRight': 17,
+                                           '<operator>.modulo': 18,
+                                           '<operator>.multiplication': 19,
+                                           '<operator>.notEquals': 20,
+                                           '<operator>.or': 21,
+                                           '<operator>.pointerShift': 22,
+                                           '<operator>.select': 23,
+                                           '<operator>.shiftLeft': 24,
+                                           '<operator>.subtraction': 25,
+                                           '<operator>.xor': 26},
                              'ORDER': 1009,
                              'PTR': 4
                           }
@@ -722,10 +722,11 @@ def transform_type_data(df):
 def split_method_full_name(full_name):
     HASH = OPERATOR = 0
 
-    if full_name.startswith('<operator>.'):
-        # LLVM IR operator
+    if full_name.startswith('<operator>.') and (full_name in norm_coeffs['OPERATORS']):
+        # Recognized LLVM IR operator
         OPERATOR = norm_coeffs['OPERATORS'][full_name]
     else:
+        # Unrecognized LLVM IR operator or function
         HASH = hash_string_to_int24(full_name)
 
     return HASH, OPERATOR
@@ -768,7 +769,7 @@ def transform_ast_node_data(df):
 
     # Normalize the values and retype to float32 (DT_FLOAT)
     df['ORDER'] = (df['ORDER'] / norm_coeffs['ORDER']).astype('float32')
-    df['LABEL'] = (df['LABEL'].map(labels) / len(labels)).astype('float32')
+    df['LABEL'] = (df['LABEL'].map(labels) / (len(labels) - 1)).astype('float32')
 
     return df
 
@@ -908,7 +909,7 @@ def convert_ids_to_tfgnn_format(graph_in_dfs):
 
     # We need to convert source and target columns of all edge sets
     for edge_set_name, val in edgeset_info.items():
-        if edge_set_name not in graph_in_dfs.keys():
+        if edge_set_name not in graph_in_dfs:
             continue
 
         source_nodeset = val['SOURCE']
@@ -946,7 +947,7 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
 
     # If one of CONSISTS_OF, MEMBER or EVAL_MEMBER_TYPE dfs is missing, others should be missing as well
     # If CONSISTS_OF edge set is missing add it empty
-    if 'CONSISTS_OF' not in graph_in_dfs.keys():
+    if 'CONSISTS_OF' not in graph_in_dfs:
         edgeset_CONSISTS_OF = tfgnn.EdgeSet.from_fields(
             sizes=tf.constant([0]),
             adjacency=tfgnn.Adjacency.from_indices(
@@ -962,7 +963,7 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
         ))
 
     # If MEMBER node set is missing add it empty
-    if 'MEMBER' not in graph_in_dfs.keys():
+    if 'MEMBER' not in graph_in_dfs:
         nodeset_MEMBER = tfgnn.NodeSet.from_fields(
                 sizes=tf.constant([0]),
                 features={
@@ -976,7 +977,7 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
         })
 
     # If EVAL_MEMBER_TYPE edge set is missing add it empty
-    if 'EVAL_MEMBER_TYPE' not in graph_in_dfs.keys():
+    if 'EVAL_MEMBER_TYPE' not in graph_in_dfs:
         edgeset_EVAL_MEMBER_TYPE = tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([0]),
                 adjacency=tfgnn.Adjacency.from_indices(
@@ -992,7 +993,7 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
         ))
 
     # If CDG edge set is missing add it empty
-    if 'CDG' not in graph_in_dfs.keys():
+    if 'CDG' not in graph_in_dfs:
         edgeset_CDG = tfgnn.EdgeSet.from_fields(
             sizes=tf.constant([0]),
             adjacency=tfgnn.Adjacency.from_indices(
