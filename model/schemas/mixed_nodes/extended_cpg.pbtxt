@@ -8,6 +8,22 @@ context {
       dtype: DT_INT32
     }
   }
+
+  features {
+    key: "BUG_TYPE"
+    value: {
+      description: "Encoded and normalized bug type."
+      dtype: DT_FLOAT
+    }
+  }
+
+  features {
+    key: "LINE"
+    value: {
+      description: "Normalized line number on which the bug was found."
+      dtype: DT_FLOAT
+    }
+  }
 }
 
 # Následují informace o jednotlivých uzlech/hranách/parametrech a zda jsou zahrnuty do tohoto schématu. Pokud nejsou, je zde uveden důvod. Veškeré informace jsou získany z oficiální dokumentace Joern, která byla automaticky vygenerována z kódu - měla by tudíž být strukturně správně. Verze dokumentace 1.1 (https://cpg.joern.io/), verze Joern 1.1.1169 (Joern verze se shoduje s verzí dokumentace).

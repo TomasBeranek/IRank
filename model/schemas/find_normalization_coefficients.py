@@ -131,10 +131,27 @@ def find_normalization_coefficients(directory, num_samples, normalization_coeffi
     return normalization_coefficients
 
 
+def find_context_normalization_coefficients(train_ids, slicing_info_TP_file, slicing_info_FP_file, normalization_coefficients):
+    columns = ['status', 'bug_id', 'entry', 'file', 'fun', 'line', 'variable']
+    df_1 = pd.read_csv(slicing_info_TP_file, header=None, names=columns)
+    df_0 = pd.read_csv(slicing_info_FP_file, header=None, names=columns)
+    df = df_1.append(df_0, ignore_index=True)
+
+    # Keep only train samples
+    df = df[df['bug_id'].isin(train_ids)]
+
+    normalization_coefficients['LINE'] = df['line'].max()
+
+    return normalization_coefficients
+
+
 if __name__ == '__main__':
     path_to_d2a = os.path.normpath(sys.argv[1]) # ../../D2A-CPG
     project = sys.argv[2] # libtiff, openssl, ...
     splits_path = sys.argv[3] # ../../dataset/d2a/splits.csv
+    d2a_file = sys.argv[4] # ../../dataset/slicing-info/libtiff_labeler_
+    slicing_info_TP_file = d2a_file + '1.csv'
+    slicing_info_FP_file = d2a_file + '0.csv'
 
     # We need to increase possible size of CSV cell - for array literals, array types etc.
     csv.field_size_limit(sys.maxsize)
@@ -159,5 +176,24 @@ if __name__ == '__main__':
     # TP
     path_to_project_TP = f'{path_to_d2a}/{project}_1'
     normalization_coefficients = find_normalization_coefficients(path_to_project_TP, num_samples['libtiff_1'], normalization_coefficients, train_ids)
+
+    # Load D2A and extract context info - only LINE for now
+    normalization_coefficients = find_context_normalization_coefficients(train_ids, slicing_info_TP_file, slicing_info_FP_file, normalization_coefficients)
+
+    # Bug types are defined from the beginning, since we filtered D2A for only those types which have enough samples
+    normalization_coefficients['BUG_TYPES'] = ['NULL_DEREFERENCE',
+                                               'UNINITIALIZED_VALUE',
+                                               'INFERBO_ALLOC_MAY_BE_BIG',
+                                               'NULLPTR_DEREFERENCE',
+                                               'BUFFER_OVERRUN_L1',
+                                               'BUFFER_OVERRUN_L5',
+                                               'BUFFER_OVERRUN_L4',
+                                               'BUFFER_OVERRUN_U5',
+                                               'BUFFER_OVERRUN_L3',
+                                               'BUFFER_OVERRUN_L2'
+                                               'INTEGER_OVERFLOW_L1',
+                                               'INTEGER_OVERFLOW_L5',
+                                               'INTEGER_OVERFLOW_U5',
+                                               'INTEGER_OVERFLOW_L2']
 
     pprint(normalization_coefficients)

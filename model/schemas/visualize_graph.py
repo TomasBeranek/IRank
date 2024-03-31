@@ -12,6 +12,8 @@ import math
 import threading
 import tensorflow_gnn as tfgnn
 import tensorflow as tf
+import gzip
+import pickle
 
 
 TFRecord_writing_lock = threading.Lock()
@@ -25,6 +27,7 @@ FP_data_types = {'void': 0, # For code simplicity (although it isn't FP type)
 norm_coeffs = {'libtiff': {
                              'ARGUMENT_INDEX': 18,
                              'LEN': 8192,
+                             'LINE': 9201,
                              'MEMBER_ORDER': 82,
                              'OPERATORS': {'<operator>.addition': 1,
                                            '<operator>.addressOf': 2,
@@ -937,7 +940,7 @@ def process_sample(directory):
     return graph_in_dfs
 
 
-def save_sample(directory, graph_spec, output_file, splits):
+def save_sample(directory, graph_spec, output_file, splits, context_data):
     sample_id = directory.split('/')[-1]
     graph_in_dfs = process_sample(directory)
 
@@ -1006,7 +1009,11 @@ def save_sample(directory, graph_spec, output_file, splits):
 
     # Transform graph to TFGNN GraphTensor
     graph = tfgnn.GraphTensor.from_pieces(
-        context=tfgnn.Context.from_fields(features={'label': tf.constant([LABEL])}),
+        context=tfgnn.Context.from_fields(features={
+            'label':    tf.constant([LABEL]),
+            'BUG_TYPE': tf.constant([context_data[sample_id][0]]),
+            'LINE':     tf.constant([context_data[sample_id][1]])
+        }),
         node_sets={
             'METHOD_INFO': tfgnn.NodeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['METHOD_INFO'])]),
@@ -1117,6 +1124,53 @@ def save_sample(directory, graph_spec, output_file, splits):
     print(f'Note: visualize_graph.py: Graph Tensor \'{sample_id}\' successfully saved!')
 
 
+def load_context_data(d2a_file, slicing_info_file):
+    BUG_TYPES = {'NULL_DEREFERENCE': 1,
+                 'UNINITIALIZED_VALUE': 2,
+                 'INFERBO_ALLOC_MAY_BE_BIG': 3,
+                 'NULLPTR_DEREFERENCE': 4,
+                 'BUFFER_OVERRUN_L1': 5,
+                 'BUFFER_OVERRUN_L5': 6,
+                 'BUFFER_OVERRUN_L4': 7,
+                 'BUFFER_OVERRUN_U5': 8,
+                 'BUFFER_OVERRUN_L3': 9,
+                 'BUFFER_OVERRUN_L2': 10,
+                 'INTEGER_OVERFLOW_L1': 11,
+                 'INTEGER_OVERFLOW_L5': 12,
+                 'INTEGER_OVERFLOW_U5': 13,
+                 'INTEGER_OVERFLOW_L2': 14}
+
+    context_data = {}
+
+    # Extract LINE for each sample from slicing_info.csv
+    columns = ['status', 'bug_id', 'entry', 'file', 'fun', 'line', 'variable']
+    df = pd.read_csv(slicing_info_file, header=None, names=columns)
+    line_info = df.set_index('bug_id')['line'].to_dict()
+    context_data.update(line_info)
+
+    # Extract BUG_TYPE for each sample from d2a archives
+    with gzip.open(d2a_file, mode = 'rb') as f:
+        while True:
+            try:
+                sample = pickle.load(f)
+                bug_id = sample['id']
+
+                # If it is not in slicing info it is likely unsupported bug type - skip it
+                if bug_id in context_data:
+                    bug_type = sample['bug_type']
+                    line = context_data[bug_id]
+
+                    # Encode and normalize the values
+                    bug_type_normalized = np.float32(BUG_TYPES.get(bug_type, 0) / len(BUG_TYPES)) # 0 for unrecognized bug types
+                    line_normalized = np.float32(line / norm_coeffs['LINE']).astype('float32')
+
+                    context_data[bug_id] = (bug_type_normalized, line_normalized) # Make it a tuple
+            except EOFError:
+                break
+
+    return context_data
+
+
 if __name__ == '__main__':
     if sys.stdin.isatty():
         # If stdin is empty - run in single-threaded mode (only one graph)
@@ -1134,24 +1188,30 @@ if __name__ == '__main__':
         output_file = sys.argv[2]
         project = sys.argv[3] # libtiff, ffmpeg, ...
         label = int(sys.argv[4]) # 0 or 1
+        splits_file = sys.argv[5] # ../../dataset/d2a/splits.csv
+        d2a_file = sys.argv[6] # ../../dataset/d2a/libtiff_labeler_1.pickle.gz, ...
+        slicing_info_file = sys.argv[7] # ../../dataset/slicing-info/libtiff_labeler_1.csv, ...
 
         # Remove previous results, otherwise we only append the new ones
         for file in [output_file + '.train', output_file + '.val', output_file + '.test']:
             if os.path.exists(file):
                 os.remove(file)
 
-        # Set normalization_coefficients - we do it globally because it is used across many function
+        # Set normalization_coefficients - we do it globally because it is used across many functions
         norm_coeffs = norm_coeffs[project]
 
         # Same for label
         LABEL = label
 
         # Load splits and determine which data are for training, validation (development) and testing
-        df = pd.read_csv(sys.argv[5], header=None)
+        df = pd.read_csv(splits_file, header=None)
         project_df = df[df[0].apply(lambda x: x.startswith(f'{project}_') and x.endswith(f'_{LABEL}'))] # Filter only current project and GT
         train_ids = set(project_df[project_df[1] == 'train'][0]) # Filter train data and keep only IDs
         val_ids   = set(project_df[project_df[1] == 'dev'][0])
         test_ids  = set(project_df[project_df[1] == 'test'][0])
+
+        # Load context data - LINE and BUG_TYPE (LABEL is already known)
+        context_data = load_context_data(d2a_file, slicing_info_file)
 
         # Open tfrecords files now, because appending samples after closing the files is not supported
         with tf.io.TFRecordWriter(output_file + '.train') as writer_train, \
@@ -1163,7 +1223,7 @@ if __name__ == '__main__':
             # Stdin has data, process each line (parallel seems to be slower + some tf calls seem to have trouble in parallel)
             for line in sys.stdin:
                 directory = line.strip()
-                save_sample(directory, graph_spec, output_file, splits)
+                save_sample(directory, graph_spec, output_file, splits, context_data)
 
         # Stdin has data, process each line in parallel
         # with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:

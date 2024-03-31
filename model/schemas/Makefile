@@ -22,13 +22,13 @@ measure-time:
 	find ../../D2A-CPG -mindepth 2 -type d | head -n 50 | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ffmpeg_1.tfrecords ffmpeg 1
 
 transform-libtiff-1:
-	find ../../D2A-CPG/libtiff_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_1.tfrecords libtiff 1 ../../dataset/d2a/splits.csv
+	find ../../D2A-CPG/libtiff_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_1.tfrecords libtiff 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/libtiff_labeler_1.pickle.gz ../../dataset/slicing-info/libtiff_labeler_1.csv
 
 transform-libtiff-0:
-	find ../../D2A-CPG/libtiff_0 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_0.tfrecords libtiff 0 ../../dataset/d2a/splits.csv
+	find ../../D2A-CPG/libtiff_0 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_0.tfrecords libtiff 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/libtiff_labeler_0.pickle.gz ../../dataset/slicing-info/libtiff_labeler_0.csv
 
 transform-ffmpeg-1:
-	find ../../D2A-CPG/ffmpeg_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/ffmpeg_1.tfrecords ffmpeg 1 ../../dataset/d2a/splits.csv
+	find ../../D2A-CPG/ffmpeg_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/ffmpeg_1.tfrecords ffmpeg 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/ffmpeg_labeler_1.pickle.gz ../../dataset/slicing-info/ffmpeg_labeler_1.csv
 
 clean-example-struct-alias:
 	rm -rf $(EXAMPLE_STRUCT_ALIAS_DIR)/main.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/point.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.cpg.bin.zip $(EXAMPLE_STRUCT_ALIAS_DIR)/graph $(EXAMPLE_STRUCT_ALIAS_DIR)/workspace $(EXAMPLE_STRUCT_ALIAS_DIR)/out $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.ll
@@ -65,3 +65,6 @@ tmp: clean-example-arg-passing
 	cd $(EXAMPLE_ARG_PASSING_DIR) && joern --script joern_script && llvm-dis combined.bc
 	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_ARG_PASSING_DIR)/graph $(EXAMPLE_ARG_PASSING_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
 	python3 visualize_graph.py $(EXAMPLE_ARG_PASSING_DIR)/graph
+
+extract-norm-coeffs-libtiff:
+	python3 find_normalization_coefficients.py ../../D2A-CPG/ libtiff ../../dataset/d2a/splits.csv ../../dataset/slicing-info/libtiff_labeler_
