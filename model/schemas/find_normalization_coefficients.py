@@ -103,8 +103,12 @@ def find_normalization_coefficients(directory, num_samples, normalization_coeffi
 
             # Only AST files are left
             # AST: ORDER
-            ORDER = df['ORDER:int'].max()
-            normalization_coefficients['ORDER'] = max(normalization_coefficients['ORDER'], ORDER)
+            if header_file == 'nodes_MEMBER_header.csv':
+                MEMBER_ORDER = df['ORDER:int'].max()
+                normalization_coefficients['MEMBER_ORDER'] = max(normalization_coefficients['MEMBER_ORDER'], MEMBER_ORDER)
+            else:
+                ORDER = df['ORDER:int'].max()
+                normalization_coefficients['ORDER'] = max(normalization_coefficients['ORDER'], ORDER)
 
             # METHOD: operators (full_name)
             if header_file == 'nodes_METHOD_header.csv':

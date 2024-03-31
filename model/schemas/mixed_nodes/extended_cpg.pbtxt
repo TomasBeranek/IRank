@@ -158,7 +158,7 @@ edge_sets {
   key: "CONSISTS_OF"
   value {
     description: "A CONSISTS_OF edge connects TYPE node with it's MEMBER nodes (if there are any)."
-    source: "AST_NODE"
+    source: "MEMBER"
     target: "TYPE"
   }
 }
@@ -207,6 +207,21 @@ node_sets {
       key: "ORDER"
       value: {
         description: "The order of a node in the AST tree among its siblings."
+        dtype: DT_FLOAT
+      }
+    }
+  }
+}
+
+node_sets {
+  key: "MEMBER"
+  value {
+    description: "This node represents member of structured data type."
+
+    features {
+      key: "ORDER"
+      value: {
+        description: "The order of a node in the AST tree among its siblings. In this case it is an order in the structure."
         dtype: DT_FLOAT
       }
     }
@@ -394,6 +409,15 @@ edge_sets {
     description: "This edge connects a node to its evaluation type."
     source: "TYPE"
     target: "AST_NODE"
+  }
+}
+
+edge_sets {
+  key: "EVAL_MEMBER_TYPE"
+  value {
+    description: "This edge connects a MEMBER node to its evaluation type."
+    source: "TYPE"
+    target: "MEMBER"
   }
 }
 

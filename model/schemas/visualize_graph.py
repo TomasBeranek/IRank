@@ -25,6 +25,7 @@ FP_data_types = {'void': 0, # For code simplicity (although it isn't FP type)
 norm_coeffs = {'libtiff': {
                              'ARGUMENT_INDEX': 18,
                              'LEN': 8192,
+                             'MEMBER_ORDER': 82,
                              'OPERATORS': {'<operator>.addition': 1,
                                            '<operator>.addressOf': 2,
                                            '<operator>.and': 3,
@@ -747,15 +748,14 @@ def transform_ast_node_data(df):
                 'METHOD': 1,
                 'METHOD_PARAMETER_IN': 2,
                 'METHOD_RETURN': 3,
-                'MEMBER': 4,
-                'BLOCK': 5,
-                'CALL': 6,
-                'FIELD_IDENTIFIER': 7,
-                'IDENTIFIER': 8,
-                'LITERAL': 9,
-                'LOCAL': 10,
-                'METHOD_REF': 11,
-                'RETURN': 12}
+                'BLOCK': 4,
+                'CALL': 5,
+                'FIELD_IDENTIFIER': 6,
+                'IDENTIFIER': 7,
+                'LITERAL': 8,
+                'LOCAL': 9,
+                'METHOD_REF': 10,
+                'RETURN': 11}
 
     # Keep only columns specified in TFGNN schema
     df = df.drop(['ARGUMENT_INDEX', 'nodeset'], axis=1)
@@ -843,6 +843,15 @@ def transform_literal_value_node_data(df):
     return df
 
 
+def transform_member_data(df):
+    df = df.drop(['nodeset', 'type', 'ARGUMENT_INDEX'], axis=1)
+
+    # Normalize values
+    df['ORDER'] = (df['ORDER'] / norm_coeffs['MEMBER_ORDER']).astype('float32')
+
+    return df
+
+
 def transform_data_types(G):
     # Export nodes and edges from NX graph to Pandas df
     nodes_df = pd.DataFrame.from_dict(dict(G.nodes(data=True)), orient='index')
@@ -858,7 +867,16 @@ def transform_data_types(G):
     # Remove NaN columns
     graph_dfs = {name: df.dropna(axis=1, how='all') for name, df in {**grouped_nodes_dfs, **grouped_edges_dfs}.items()}
 
+    # Separate MEMBER nodes from AST_NODE nodes
+    graph_dfs['MEMBER'] = graph_dfs['AST_NODE'].loc[graph_dfs['AST_NODE']['type'] == 'MEMBER']
+    graph_dfs['AST_NODE'] = graph_dfs['AST_NODE'].loc[graph_dfs['AST_NODE']['type'] != 'MEMBER']
+
+    # Separate EVAL_TYPE edges which connect MEMBER and TYPE nodes
+    graph_dfs['EVAL_MEMBER_TYPE'] = graph_dfs['EVAL_TYPE'].loc[graph_dfs['EVAL_TYPE']['source'].isin(graph_dfs['MEMBER'].index)]
+    graph_dfs['EVAL_TYPE'] = graph_dfs['EVAL_TYPE'].loc[~graph_dfs['EVAL_TYPE']['source'].isin(graph_dfs['MEMBER'].index)]
+
     # Transform text features to normalized numeric form
+    graph_dfs['MEMBER'] = transform_member_data(graph_dfs['MEMBER'])
     graph_dfs['AST_NODE'] = transform_ast_node_data(graph_dfs['AST_NODE'])
     graph_dfs['TYPE'] = transform_type_data(graph_dfs['TYPE'])
     graph_dfs['LITERAL_VALUE'] = transform_literal_value_node_data(graph_dfs['LITERAL_VALUE'])
@@ -873,7 +891,7 @@ def transform_data_types(G):
 def convert_ids_to_tfgnn_format(graph_in_dfs):
     edgeset_info = {
         'METHOD_INFO_LINK':   {'SOURCE': 'METHOD_INFO',   'TARGET': 'AST_NODE'},
-        'CONSISTS_OF':        {'SOURCE': 'TYPE',          'TARGET': 'AST_NODE'},
+        'CONSISTS_OF':        {'SOURCE': 'TYPE',          'TARGET': 'MEMBER'},
         'AST':                {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'},
         'LITERAL_VALUE_LINK': {'SOURCE': 'LITERAL_VALUE', 'TARGET': 'AST_NODE'},
         'ARGUMENT':           {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'},
@@ -881,6 +899,7 @@ def convert_ids_to_tfgnn_format(graph_in_dfs):
         'CFG':                {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'},
         'CDG':                {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'},
         'EVAL_TYPE':          {'SOURCE': 'AST_NODE',      'TARGET': 'TYPE'},
+        'EVAL_MEMBER_TYPE':   {'SOURCE': 'MEMBER',        'TARGET': 'TYPE'},
         'REF':                {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'}
     }
 
@@ -913,7 +932,7 @@ def process_sample(directory):
     G = split_nodes(G)
     graph_in_dfs = transform_data_types(G)
     graph_in_dfs = convert_ids_to_tfgnn_format(graph_in_dfs)
-    graph_in_dfs = reverse_edge_sets(graph_in_dfs, ['ARGUMENT', 'EVAL_TYPE', 'CONSISTS_OF', 'REF'])
+    graph_in_dfs = reverse_edge_sets(graph_in_dfs, ['ARGUMENT', 'EVAL_TYPE', 'EVAL_MEMBER_TYPE', 'CONSISTS_OF', 'REF'])
 
     return graph_in_dfs
 
@@ -922,20 +941,51 @@ def save_sample(directory, graph_spec, output_file, splits):
     sample_id = directory.split('/')[-1]
     graph_in_dfs = process_sample(directory)
 
+    # If one of CONSISTS_OF, MEMBER or EVAL_MEMBER_TYPE dfs is missing, others should be missing as well
     # If CONSISTS_OF edge set is missing add it empty
     if 'CONSISTS_OF' not in graph_in_dfs.keys():
         edgeset_CONSISTS_OF = tfgnn.EdgeSet.from_fields(
             sizes=tf.constant([0]),
             adjacency=tfgnn.Adjacency.from_indices(
-                source=('TYPE',     tf.constant([], dtype=tf.int64)),
-                target=('AST_NODE', tf.constant([], dtype=tf.int64))
+                source=('MEMBER', tf.constant([], dtype=tf.int64)),
+                target=('TYPE',   tf.constant([], dtype=tf.int64))
         ))
     else:
         edgeset_CONSISTS_OF = tfgnn.EdgeSet.from_fields(
             sizes=tf.constant([len(graph_in_dfs['CONSISTS_OF'])]),
             adjacency=tfgnn.Adjacency.from_indices(
-                source=('TYPE',     tf.constant(graph_in_dfs['CONSISTS_OF']['source'].tolist())),
-                target=('AST_NODE', tf.constant(graph_in_dfs['CONSISTS_OF']['target'].tolist()))
+                source=('MEMBER', tf.constant(graph_in_dfs['CONSISTS_OF']['source'].tolist())),
+                target=('TYPE',   tf.constant(graph_in_dfs['CONSISTS_OF']['target'].tolist()))
+        ))
+
+    # If MEMBER node set is missing add it empty
+    if 'MEMBER' not in graph_in_dfs.keys():
+        nodeset_MEMBER = tfgnn.NodeSet.from_fields(
+                sizes=tf.constant([0]),
+                features={
+                    'ORDER': tf.constant([], dtype=tf.float32)
+        })
+    else:
+        nodeset_MEMBER = tfgnn.NodeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['MEMBER'])]),
+                features={
+                    'ORDER': tf.constant(graph_in_dfs['MEMBER']['ORDER'].tolist())
+        })
+
+    # If EVAL_MEMBER_TYPE edge set is missing add it empty
+    if 'EVAL_MEMBER_TYPE' not in graph_in_dfs.keys():
+        edgeset_EVAL_MEMBER_TYPE = tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([0]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('TYPE',   tf.constant([], dtype=tf.int64)),
+                    target=('MEMBER', tf.constant([], dtype=tf.int64))
+        ))
+    else:
+        edgeset_EVAL_MEMBER_TYPE = tfgnn.EdgeSet.from_fields(
+                sizes=tf.constant([len(graph_in_dfs['EVAL_MEMBER_TYPE'])]),
+                adjacency=tfgnn.Adjacency.from_indices(
+                    source=('TYPE',   tf.constant(graph_in_dfs['EVAL_MEMBER_TYPE']['source'].tolist())),
+                    target=('MEMBER', tf.constant(graph_in_dfs['EVAL_MEMBER_TYPE']['target'].tolist()))
         ))
 
     # If CDG edge set is missing add it empty
@@ -974,6 +1024,7 @@ def save_sample(directory, graph_spec, output_file, splits):
                     'PTR':  tf.constant(graph_in_dfs['TYPE']['PTR'].tolist()),
                     'LEN':  tf.constant(graph_in_dfs['TYPE']['LEN'].tolist())
             }),
+            'MEMBER': nodeset_MEMBER,
             'AST_NODE': tfgnn.NodeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['AST_NODE'])]),
                 features={
@@ -1035,9 +1086,10 @@ def save_sample(directory, graph_spec, output_file, splits):
             'EVAL_TYPE': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['EVAL_TYPE'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
-                    source=('AST_NODE', tf.constant(graph_in_dfs['EVAL_TYPE']['source'].tolist())),
-                    target=('TYPE',    tf.constant(graph_in_dfs['EVAL_TYPE']['target'].tolist()))
+                    source=('TYPE', tf.constant(graph_in_dfs['EVAL_TYPE']['source'].tolist())),
+                    target=('AST_NODE',    tf.constant(graph_in_dfs['EVAL_TYPE']['target'].tolist()))
             )),
+            'EVAL_MEMBER_TYPE': edgeset_EVAL_MEMBER_TYPE,
             'REF': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['REF'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
