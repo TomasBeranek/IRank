@@ -907,12 +907,20 @@ def transform_data_types(G):
     graph_dfs['EVAL_MEMBER_TYPE'] = graph_dfs['EVAL_TYPE'].loc[graph_dfs['EVAL_TYPE']['source'].isin(graph_dfs['MEMBER'].index)]
     graph_dfs['EVAL_TYPE'] = graph_dfs['EVAL_TYPE'].loc[~graph_dfs['EVAL_TYPE']['source'].isin(graph_dfs['MEMBER'].index)]
 
+    # Remove the separated df if they are empty
+    if len(graph_dfs['MEMBER']) == 0:
+        del graph_dfs['MEMBER']
+
+    if len(graph_dfs['EVAL_MEMBER_TYPE']) == 0:
+        del graph_dfs['EVAL_MEMBER_TYPE']
+
     # Transform text features to normalized numeric form
-    graph_dfs['MEMBER'] = transform_member_data(graph_dfs['MEMBER'])
     graph_dfs['AST_NODE'] = transform_ast_node_data(graph_dfs['AST_NODE'])
     graph_dfs['TYPE'] = transform_type_data(graph_dfs['TYPE'])
     graph_dfs['LITERAL_VALUE'] = transform_literal_value_node_data(graph_dfs['LITERAL_VALUE'])
     graph_dfs['METHOD_INFO'] = transform_method_info_data(graph_dfs['METHOD_INFO'])
+    if 'MEMBER' in graph_dfs:
+        graph_dfs['MEMBER'] = transform_member_data(graph_dfs['MEMBER'])
 
     # Normalize ARGUMENT_INDEX value of edge ARGUMENT
     graph_dfs['ARGUMENT']['ARGUMENT_INDEX'] = (graph_dfs['ARGUMENT']['ARGUMENT_INDEX'] / norm_coeffs['ARGUMENT_INDEX']).astype('float32')
@@ -952,7 +960,8 @@ def convert_ids_to_tfgnn_format(graph_in_dfs):
 
 def reverse_edge_sets(graph_in_dfs, edge_sets):
     for edge_set in edge_sets:
-        graph_in_dfs[edge_set].rename(columns={'source': 'target', 'target': 'source'}, inplace=True)
+        if edge_set in graph_in_dfs:
+            graph_in_dfs[edge_set].rename(columns={'source': 'target', 'target': 'source'}, inplace=True)
 
     return graph_in_dfs
 
@@ -1091,46 +1100,46 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
                 sizes=tf.constant([len(graph_in_dfs['AST'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
                     source=('AST_NODE', tf.constant(graph_in_dfs['AST']['source'].tolist())),
-                    target=('AST_NODE',    tf.constant(graph_in_dfs['AST']['target'].tolist()))
+                    target=('AST_NODE', tf.constant(graph_in_dfs['AST']['target'].tolist()))
             )),
             'LITERAL_VALUE_LINK': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['LITERAL_VALUE_LINK'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
                     source=('LITERAL_VALUE', tf.constant(graph_in_dfs['LITERAL_VALUE_LINK']['source'].tolist())),
-                    target=('AST_NODE',    tf.constant(graph_in_dfs['LITERAL_VALUE_LINK']['target'].tolist()))
+                    target=('AST_NODE',      tf.constant(graph_in_dfs['LITERAL_VALUE_LINK']['target'].tolist()))
             )),
             'ARGUMENT': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['ARGUMENT'])]),
                 features={ 'ARGUMENT_INDEX': tf.constant(graph_in_dfs['ARGUMENT']['ARGUMENT_INDEX'].tolist()) },
                 adjacency=tfgnn.Adjacency.from_indices(
                     source=('AST_NODE', tf.constant(graph_in_dfs['ARGUMENT']['source'].tolist())),
-                    target=('AST_NODE',    tf.constant(graph_in_dfs['ARGUMENT']['target'].tolist()))
+                    target=('AST_NODE', tf.constant(graph_in_dfs['ARGUMENT']['target'].tolist()))
             )),
             'CALL': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['CALL'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
                     source=('AST_NODE', tf.constant(graph_in_dfs['CALL']['source'].tolist())),
-                    target=('AST_NODE',    tf.constant(graph_in_dfs['CALL']['target'].tolist()))
+                    target=('AST_NODE', tf.constant(graph_in_dfs['CALL']['target'].tolist()))
             )),
             'CFG': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['CFG'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
                     source=('AST_NODE', tf.constant(graph_in_dfs['CFG']['source'].tolist())),
-                    target=('AST_NODE',    tf.constant(graph_in_dfs['CFG']['target'].tolist()))
+                    target=('AST_NODE', tf.constant(graph_in_dfs['CFG']['target'].tolist()))
             )),
             'CDG': edgeset_CDG,
             'EVAL_TYPE': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['EVAL_TYPE'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
-                    source=('TYPE', tf.constant(graph_in_dfs['EVAL_TYPE']['source'].tolist())),
-                    target=('AST_NODE',    tf.constant(graph_in_dfs['EVAL_TYPE']['target'].tolist()))
+                    source=('TYPE',     tf.constant(graph_in_dfs['EVAL_TYPE']['source'].tolist())),
+                    target=('AST_NODE', tf.constant(graph_in_dfs['EVAL_TYPE']['target'].tolist()))
             )),
             'EVAL_MEMBER_TYPE': edgeset_EVAL_MEMBER_TYPE,
             'REF': tfgnn.EdgeSet.from_fields(
                 sizes=tf.constant([len(graph_in_dfs['REF'])]),
                 adjacency=tfgnn.Adjacency.from_indices(
                     source=('AST_NODE', tf.constant(graph_in_dfs['REF']['source'].tolist())),
-                    target=('AST_NODE',    tf.constant(graph_in_dfs['REF']['target'].tolist()))
+                    target=('AST_NODE', tf.constant(graph_in_dfs['REF']['target'].tolist()))
             ))
         }
     )
