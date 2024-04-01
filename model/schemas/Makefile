@@ -27,6 +27,12 @@ transform-libtiff-1:
 transform-libtiff-0:
 	find ../../D2A-CPG/libtiff_0 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_0.tfrecords libtiff 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/libtiff_labeler_0.pickle.gz ../../dataset/slicing-info/libtiff_labeler_0.csv
 
+transform-httpd-1:
+	find ../../D2A-CPG/httpd_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/httpd_1.tfrecords httpd 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/httpd_labeler_1.pickle.gz ../../dataset/slicing-info/httpd_labeler_1.csv
+
+transform-httpd-0:
+	find ../../D2A-CPG/httpd_0 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/httpd_0.tfrecords httpd 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/httpd_labeler_0.pickle.gz ../../dataset/slicing-info/httpd_labeler_0.csv
+
 transform-ffmpeg-1:
 	find ../../D2A-CPG/ffmpeg_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/ffmpeg_1.tfrecords ffmpeg 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/ffmpeg_labeler_1.pickle.gz ../../dataset/slicing-info/ffmpeg_labeler_1.csv
 
@@ -68,3 +74,6 @@ tmp: clean-example-arg-passing
 
 extract-norm-coeffs-libtiff:
 	python3 find_normalization_coefficients.py ../../D2A-CPG/ libtiff ../../dataset/d2a/splits.csv ../../dataset/slicing-info/libtiff_labeler_
+
+extract-norm-coeffs-httpd:
+	python3 find_normalization_coefficients.py ../../D2A-CPG/ httpd ../../dataset/d2a/splits.csv ../../dataset/slicing-info/httpd_labeler_

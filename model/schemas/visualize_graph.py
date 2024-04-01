@@ -53,7 +53,39 @@ norm_coeffs = {'libtiff': {
                                            '<operator>.xor': 26},
                              'ORDER': 1009,
                              'PTR': 4
-                          }
+                          },
+               'httpd': {
+                             'ARGUMENT_INDEX': 14,
+                             'LEN': 65536,
+                             'LINE': 9162,
+                             'MEMBER_ORDER': 75,
+                             'OPERATORS': {'<operator>.addition': 1,
+                                           '<operator>.addressOf': 2,
+                                           '<operator>.and': 3,
+                                           '<operator>.arithmeticShiftRight': 4,
+                                           '<operator>.assignment': 5,
+                                           '<operator>.cast': 6,
+                                           '<operator>.division': 7,
+                                           '<operator>.equals': 8,
+                                           '<operator>.getElementPtr': 9,
+                                           '<operator>.greaterEqualsThan': 10,
+                                           '<operator>.greaterThan': 11,
+                                           '<operator>.indexAccess': 12,
+                                           '<operator>.indirection': 13,
+                                           '<operator>.lessEqualsThan': 14,
+                                           '<operator>.lessThan': 15,
+                                           '<operator>.logicalShiftRight': 16,
+                                           '<operator>.modulo': 17,
+                                           '<operator>.multiplication': 18,
+                                           '<operator>.notEquals': 19,
+                                           '<operator>.or': 20,
+                                           '<operator>.pointerShift': 21,
+                                           '<operator>.select': 22,
+                                           '<operator>.shiftLeft': 23,
+                                           '<operator>.subtraction': 24,
+                                           '<operator>.xor': 25},
+                             'ORDER': 1471,
+                             'PTR': 4}
               }
 
 LABEL = None
