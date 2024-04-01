@@ -1045,6 +1045,22 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
                 target=('AST_NODE', tf.constant(graph_in_dfs['CDG']['target'].tolist()))
         ))
 
+    # If REF edge set is missing add it empty
+    if 'REF' not in graph_in_dfs:
+        edgeset_REF = tfgnn.EdgeSet.from_fields(
+            sizes=tf.constant([0]),
+            adjacency=tfgnn.Adjacency.from_indices(
+                source=('AST_NODE', tf.constant([], dtype=tf.int64)),
+                target=('AST_NODE', tf.constant([], dtype=tf.int64))
+        ))
+    else:
+        edgeset_REF = tfgnn.EdgeSet.from_fields(
+            sizes=tf.constant([len(graph_in_dfs['REF'])]),
+            adjacency=tfgnn.Adjacency.from_indices(
+                source=('AST_NODE', tf.constant(graph_in_dfs['REF']['source'].tolist())),
+                target=('AST_NODE', tf.constant(graph_in_dfs['REF']['target'].tolist()))
+        ))
+
     # Transform graph to TFGNN GraphTensor
     graph = tfgnn.GraphTensor.from_pieces(
         context=tfgnn.Context.from_fields(features={
@@ -1135,12 +1151,7 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
                     target=('AST_NODE', tf.constant(graph_in_dfs['EVAL_TYPE']['target'].tolist()))
             )),
             'EVAL_MEMBER_TYPE': edgeset_EVAL_MEMBER_TYPE,
-            'REF': tfgnn.EdgeSet.from_fields(
-                sizes=tf.constant([len(graph_in_dfs['REF'])]),
-                adjacency=tfgnn.Adjacency.from_indices(
-                    source=('AST_NODE', tf.constant(graph_in_dfs['REF']['source'].tolist())),
-                    target=('AST_NODE', tf.constant(graph_in_dfs['REF']['target'].tolist()))
-            ))
+            'REF': edgeset_REF
         }
     )
 
