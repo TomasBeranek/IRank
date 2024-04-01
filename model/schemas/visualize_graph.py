@@ -4,19 +4,15 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import sys
 import pandas as pd
-import concurrent.futures
 import re
 import hashlib
 import numpy as np
 import math
-import threading
 import tensorflow_gnn as tfgnn
 import tensorflow as tf
 import gzip
 import pickle
 
-
-TFRecord_writing_lock = threading.Lock()
 
 FP_data_types = {'void': 0, # For code simplicity (although it isn't FP type)
                  'half': 1,
