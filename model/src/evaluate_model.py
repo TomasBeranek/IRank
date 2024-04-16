@@ -110,7 +110,7 @@ def plot_AUC_curve(label_pair_dicts, models_dir):
   plt.ylabel('True Positive Rate')
   plt.title('Receiver Operating Characteristic')
   plt.legend(loc="lower right")
-  plt.savefig(os.path.join(models_dir, 'AUC_curves.png'))
+  plt.savefig(os.path.join(models_dir, 'ROC_curves.png'))
   plt.show()
 
 
