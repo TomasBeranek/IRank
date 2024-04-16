@@ -9,18 +9,19 @@ from tensorflow.keras import backend as K
 import numpy as np
 import json
 import os
-import sklearn
+import functools
 
 # Hyperparameters (values not defined here have default values)
 hyperparameters = {
+  'epochs': 200,
   'learning_rate': 0.000002,
-  'batch_size': 11,
-  'num_graph_updates': 8,
-  'node_state_dim': 16,
+  'batch_size': 6,
+  'num_graph_updates': 9,
+  'node_state_dim': 18,
   'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
   # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
   # 'argument_edge_dim': 2, # not used for now
-  'state_dropout_rate': 0.1,
+  'state_dropout_rate': 0.15,
   'edge_dropout_rate': 0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 0, # e.g. 1e-5
   'attention_type': 'none', # "none", "multi_head", or "gat_v2",
@@ -28,30 +29,8 @@ hyperparameters = {
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': '' # description of changes since the last version
+  'note': 'Add more dense layers to head and sligthly increase GNN complexity at cost of reducing batch size.' # description of changes since the last version
 }
-
-# Adam s CosineDecay 2 experiment
-  # global_batch_size = 128
-  # steps_per_epoch = 629_571 // global_batch_size  # len(train) == 629,571
-
-  # # len(validation) == 64,879
-  # validation_steps = 64_879 // global_batch_size
-
-  # # Determine learning rate schedule
-  # if _LEARNING_RATE_SCHEDULE.value == "cosine_decay":
-  #   learning_rate = tf.keras.optimizers.schedules.CosineDecay(
-  #       _LEARNING_RATE.value, steps_per_epoch*_EPOCHS.value)
-  # elif _LEARNING_RATE_SCHEDULE.value == "constant":
-  #   learning_rate = _LEARNING_RATE.value
-  # else:
-  #   raise ValueError(
-  #       f"Learning rate schedule '{_LEARNING_RATE_SCHEDULE.value}' not defined")
-
-  # # Optimizer Function
-  # optimizer_fn = functools.partial(tf.keras.optimizers.Adam,
-  #                                  learning_rate=learning_rate)
-
 
 # Pozdeji zkusit attention
 # Zkusit prvni GNN vrstvu na dense misto dense vrstev next_state_type: Literal['dense', 'residual'] = "dense",
@@ -144,8 +123,13 @@ def build_model(model_input_spec):
   bug_type_feature = tf.expand_dims(bug_type_feature, -1)
   line_feature = tf.expand_dims(line_feature, -1)
 
-  # Concatenate node features and context features
-  combined_features = tf.keras.layers.Concatenate()([node_features, bug_type_feature, line_feature])
+  # Concatenate context features
+  context_features = tf.keras.layers.Concatenate()([bug_type_feature, line_feature])
+
+  # Add more neurons to the head
+  context_dense = tf.keras.layers.Dense(4, activation='relu')(context_features)
+  nodes_dense = tf.keras.layers.Dense(8, activation='relu')(node_features)
+  combined_features = tf.keras.layers.Concatenate()([context_dense, nodes_dense])
 
   # Add 'head' - final part of GNN which outputs a single number
   y = tf.keras.layers.Dense(1, activation='sigmoid')(combined_features)
@@ -236,6 +220,16 @@ def train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_
               tf.keras.metrics.Recall(),
               tf.keras.metrics.AUC(),
               tf.keras.metrics.AUC(curve='PR', name='auc_pr')]
+
+  # Determine learning rate schedule - this might be problematic because of EarlyStopping
+  steps_per_epoch = train_ds_len // hyperparameters['batch_size']
+  # learning_rate = tf.keras.optimizers.schedules.CosineDecay(hyperparameters['learning_rate'], steps_per_epoch*hyperparameters['epochs'])
+
+  # Adam with CosineDecay
+  # https://github.com/tensorflow/gnn/blob/main/tensorflow_gnn/models/mt_albis/README.md
+  # https://github.com/tensorflow/gnn/blob/main/tensorflow_gnn/runner/examples/ogbn/mag/train.py
+  # optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+
   optimizer = tf.keras.optimizers.Adam(learning_rate=hyperparameters['learning_rate'])
 
   # Compile the keras model
@@ -249,8 +243,8 @@ def train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_
 
   # Train the model
   history = model.fit(train_ds_batched,
-                      steps_per_epoch=train_ds_len // hyperparameters['batch_size'],
-                      epochs=300,
+                      steps_per_epoch=steps_per_epoch,
+                      epochs=hyperparameters['epochs'],
                       validation_data=val_ds_batched,
                       shuffle=True,
                       callbacks=[early_stopping])
