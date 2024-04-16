@@ -5,54 +5,66 @@ from tensorflow_gnn import runner
 from tensorflow_gnn.models import mt_albis
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras import backend as K
 import numpy as np
+import json
+import os
 import sklearn
 
-# Hyperparameters
-learning_rate = 0.000001
-batch_size = 12
-node_state_dim = 16
-num_graph_updates = 8
+# Hyperparameters (values not defined here have default values)
+hyperparameters = {
+  'learning_rate': 0.000002,
+  'batch_size': 11,
+  'num_graph_updates': 8,
+  'node_state_dim': 16,
+  'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
+  # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
+  # 'argument_edge_dim': 2, # not used for now
+  'state_dropout_rate': 0.1,
+  'edge_dropout_rate': 0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
+  'l2_regularization': 0, # e.g. 1e-5
+  'attention_type': 'none', # "none", "multi_head", or "gat_v2",
+  'attention_num_heads': 4, # 4 is default
+  'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
+  'normalization_type': 'layer', # 'layer', 'batch', or 'none'
+  'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
+  'note': '' # description of changes since the last version
+}
 
-# Load args
-schema_path = sys.argv[1]
-project_path = sys.argv[2]
+# Adam s CosineDecay 2 experiment
+  # global_batch_size = 128
+  # steps_per_epoch = 629_571 // global_batch_size  # len(train) == 629,571
 
-# Load schema
-graph_schema = tfgnn.read_schema(schema_path)
-graph_tensor_spec = tfgnn.create_graph_spec_from_schema_pb(graph_schema)
+  # # len(validation) == 64,879
+  # validation_steps = 64_879 // global_batch_size
 
-# Read the dataset
-train_positive_samples = 371
-train_negative_samples = 7325
-train_ds_len = train_positive_samples + train_negative_samples
-train_ds_1 = tf.data.TFRecordDataset([f'{project_path}_1.tfrecords.train'])
-train_ds_0 = tf.data.TFRecordDataset([f'{project_path}_0.tfrecords.train'])
-val_ds = tf.data.TFRecordDataset([f'{project_path}_1.tfrecords.val', f'{project_path}_0.tfrecords.val'])
+  # # Determine learning rate schedule
+  # if _LEARNING_RATE_SCHEDULE.value == "cosine_decay":
+  #   learning_rate = tf.keras.optimizers.schedules.CosineDecay(
+  #       _LEARNING_RATE.value, steps_per_epoch*_EPOCHS.value)
+  # elif _LEARNING_RATE_SCHEDULE.value == "constant":
+  #   learning_rate = _LEARNING_RATE.value
+  # else:
+  #   raise ValueError(
+  #       f"Learning rate schedule '{_LEARNING_RATE_SCHEDULE.value}' not defined")
 
-# Up-sample
-up_sample_coeff = train_negative_samples // train_positive_samples
-train_ds_1 = train_ds_1.repeat(up_sample_coeff)
+  # # Optimizer Function
+  # optimizer_fn = functools.partial(tf.keras.optimizers.Adam,
+  #                                  learning_rate=learning_rate)
 
-# Concat positive and negative samples
-train_ds = train_ds_1.concatenate(train_ds_0)
 
-# Shuffle training samples
-buffer_size = train_negative_samples + up_sample_coeff * train_positive_samples # Ideally buffer_size >= len(dataset)
-train_ds = train_ds.shuffle(buffer_size)
-train_ds = train_ds.prefetch(buffer_size=tf.data.AUTOTUNE)
-val_ds = val_ds.shuffle(buffer_size)
-val_ds = val_ds.prefetch(buffer_size=tf.data.AUTOTUNE)
+# Pozdeji zkusit attention
+# Zkusit prvni GNN vrstvu na dense misto dense vrstev next_state_type: Literal['dense', 'residual'] = "dense",
 
-# Batch the datasets
-train_ds_batched = train_ds.batch(batch_size=batch_size).repeat()
-val_ds_batched = val_ds.batch(batch_size=batch_size)
+# Its main architectural choices are:
 
-# Parse tf.Example protos
-train_ds_batched = train_ds_batched.map(tfgnn.keras.layers.ParseExample(graph_tensor_spec))
-val_ds_batched = val_ds_batched.map(tfgnn.keras.layers.ParseExample(graph_tensor_spec))
-preproc_input_spec_train = train_ds_batched.element_spec
-preproc_input_spec_val = val_ds_batched.element_spec
+#    - how to aggregate the incoming messages from each node set:
+#         by element-wise averaging (reduce type "mean"),
+#         by a concatenation of the average with other fixed expressions (e.g., "mean|max", "mean|sum"), or
+#         with attention, that is, a trained, data-dependent weighting;
+#    - whether to use residual connections for updating node states;
+#    - if and how to normalize node states.
+
 
 # Define preprocess model which will ONLY extract labels out of graph
 def preprocess(preproc_input_spec, ds_batched):
@@ -66,17 +78,6 @@ def preprocess(preproc_input_spec, ds_batched):
   model_input_spec, _ = ds_batched.element_spec # We dont need spec for labels
   return model_input_spec, ds_batched
 
-model_input_spec_train, train_ds_batched = preprocess(preproc_input_spec_train, train_ds_batched)
-model_input_spec_val, val_ds_batched = preprocess(preproc_input_spec_val, val_ds_batched)
-
-# Preprocess for validation data
-
-# for graph, labels in train_ds_batched:
-#   print(labels.numpy())
-# exit()
-
-# model_input_spec = train_ds_batched.take(1).get_single_element()[0].spec
-
 
 # Encode input nodeset features into a single tensor (+ add some trainable parameters to the transformation)
 def set_initial_node_state(node_set, *, node_set_name):
@@ -87,163 +88,203 @@ def set_initial_node_state(node_set, *, node_set_name):
 
   # Combine all features to a single vector (since all of them are float32 scalars)
   stacked_features = tf.stack([v for _, v in sorted(features.items())], axis=1)
-  return tf.keras.layers.Dense(node_state_dim, 'relu')(stacked_features)
+  return tf.keras.layers.Dense(hyperparameters['node_state_dim'], 'relu')(stacked_features)
+
+
+def encode_ARGUMENT_INDEX(edge_set, *, edge_set_name):
+  if edge_set_name != 'ARGUMENT':
+    return {'ARGUMENT_INDEX': tfgnn.keras.layers.MakeEmptyFeature()(edge_set)}
+
+  stacked_features = tf.stack([edge_set.features['ARGUMENT_INDEX']], axis=1)
+  return {'ARGUMENT_INDEX': tf.keras.layers.Dense(argument_edge_dim, 'relu')(stacked_features)}
+
 
 def drop_all_features(_, **unused_kwargs):
   return {}
 
-def build_model(model_input_spec):
-  message_dim = node_state_dim
-  state_dropout_rate = 0.05
-  # l2_regularization = 1e-5
 
+def build_model(model_input_spec):
   # Input layer (takes input graphs with defined TFGNN schema)
   graph = inputs = tf.keras.layers.Input(type_spec=model_input_spec)
 
-  # Set initial states (Encode edge states??)
+  # Set initial states
   graph = tfgnn.keras.layers.MapFeatures(
       node_sets_fn=set_initial_node_state,
       edge_sets_fn=drop_all_features)(graph)
+      # edge_sets_fn=encode_ARGUMENT_INDEX)(graph)
 
   # Layers of updates
-  for i in range(num_graph_updates):
+  for i in range(hyperparameters['num_graph_updates']):
     graph = mt_albis.MtAlbisGraphUpdate(
-        units=node_state_dim,
-        message_dim=message_dim,
-        receiver_tag=tfgnn.SOURCE, # Up the AST tree
+        units=hyperparameters['node_state_dim'],
+        message_dim=hyperparameters['node_state_dim'],
+        receiver_tag=hyperparameters['receiver_tag'],
         # edge_feature_name='ARGUMENT_INDEX',
-        node_set_names=None if i < num_graph_updates-1 else ["AST_NODE"],
-        simple_conv_reduce_type="mean|sum",
-        state_dropout_rate=state_dropout_rate,
-        # l2_regularization=l2_regularization,
-        normalization_type="layer",
-        next_state_type="residual" # Input layer must have same size of HIDDEN_STATE as units
+        node_set_names=None if i < hyperparameters['num_graph_updates']-1 else ["AST_NODE"],
+        state_dropout_rate=hyperparameters['state_dropout_rate'],
+        edge_dropout_rate=hyperparameters['edge_dropout_rate'],
+        l2_regularization=hyperparameters['l2_regularization'],
+        attention_type=hyperparameters['attention_type'],
+        attention_num_heads=hyperparameters['attention_num_heads'],
+        simple_conv_reduce_type=hyperparameters['simple_conv_reduce_type'],
+        normalization_type=hyperparameters['normalization_type'],
+        next_state_type=hyperparameters['next_state_type']
     )(graph)
 
-    # graph = mt_albis.MtAlbisGraphUpdate(
-    #     units=node_state_dim,
-    #     message_dim=message_dim,
-    #     receiver_tag=tfgnn.TARGET, # Up the AST tree
-    #     # edge_feature_name='ARGUMENT_INDEX',
-    #     simple_conv_reduce_type="mean|sum",
-    #     state_dropout_rate=state_dropout_rate,
-    #     l2_regularization=l2_regularization,
-    #     normalization_type="layer",
-    #     next_state_type="residual" # Input layer must have same size of HIDDEN_STATE as units
-    # )(graph)
-
   # Read hidden states from AST_NODE nodeset
-  readout_features = tfgnn.keras.layers.Pool(tfgnn.CONTEXT, "max", node_set_name=['AST_NODE'])(graph)
+  node_features = tfgnn.keras.layers.Pool(tfgnn.CONTEXT, "max", node_set_name=['AST_NODE'])(graph)
 
-  # Add 'head' - final part GNN which outputsrw-rw-r--  1 tomas tomas  128033122 bře 19 01:20 libtiff_0.tfrecords.testngle number
-  y = tf.keras.layers.Dense(1, activation='sigmoid')(readout_features)
+  # Extract BUG_TYPE context feature
+  bug_type_feature = tfgnn.keras.layers.Readout(from_context=True, feature_name="BUG_TYPE")(graph)
+
+  # Extract LINE context feature
+  line_feature = tfgnn.keras.layers.Readout(from_context=True, feature_name="LINE")(graph)
+
+  # Expand dimensions of context features
+  bug_type_feature = tf.expand_dims(bug_type_feature, -1)
+  line_feature = tf.expand_dims(line_feature, -1)
+
+  # Concatenate node features and context features
+  combined_features = tf.keras.layers.Concatenate()([node_features, bug_type_feature, line_feature])
+
+  # Add 'head' - final part of GNN which outputs a single number
+  y = tf.keras.layers.Dense(1, activation='sigmoid')(combined_features)
   return tf.keras.Model(inputs, y)
 
-# Define Loss and Metrics
-# with tf.device('/CPU:0'):  # Forces the operations to be executed on the CPU
-model = build_model(model_input_spec_train)
 
-loss = tf.keras.losses.BinaryCrossentropy()
-metrics = [ tf.keras.metrics.Precision(),
-            tf.keras.metrics.Recall(),
-            tf.keras.metrics.AUC(),
-            tf.keras.metrics.AUC(curve='PR', name='auc_pr')]
-optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+def save_model(results):
+  saved_models_dir = 'saved_models'
+  max_id = 1
 
-# Compile the keras model
-model.compile(optimizer, loss=loss, metrics=metrics)
-model.summary()
+  # Find latest (max) id
+  for entry in os.listdir(saved_models_dir):
+    relative_path = os.path.join(saved_models_dir, entry)
+    if os.path.isdir(relative_path):
+      id = int(entry.split('_')[0])
+      max_id = max(max_id, id)
 
-# Calculate weights to balance the data
-# weight_for_positive = train_ds_len / (2.0 * train_positive_samples)
-# weight_for_negative = train_ds_len / (2.0 * train_negative_samples)
-# class_weight = {0: weight_for_negative, 1: weight_for_positive}
+  new_id = max_id + 1
 
-early_stopping = EarlyStopping(monitor='val_auc',
-                               min_delta=0.001,
-                               patience=5,
-                               restore_best_weights=True)
+  # We use average val_auc of the models as a measure of architecture/hyperparameters quality
+  avg_val_auc = (results['libtiff'][1] + results['httpd'][1] + results['nginx'][1]) / 3
+  formatted_avg_val_auc = format(avg_val_auc, ".3f")
 
-# Train the model
-history = model.fit(train_ds_batched,
-                    steps_per_epoch=train_ds_len // batch_size,
-                    epochs=300,
-                    validation_data=val_ds_batched,
-                    # class_weight=class_weight,
-                    shuffle=True,
-                    callbacks=[early_stopping])
+  # Make parent dir for all the models
+  models_parent_dir_name = f'{saved_models_dir}/{new_id}_AUC_{formatted_avg_val_auc}'
+  os.makedirs(models_parent_dir_name)
 
-model.save('saved_models/1')
+  # Save all the individual models
+  for project, (model, max_val_auc) in results.items():
+    formatted_max_val_auc = format(max_val_auc, ".3f")
+    model.save(f'{models_parent_dir_name}/{project}_AUC_{formatted_max_val_auc}')
 
-def extract_graph(graph, label):
-    return graph
-
-def extract_label(graph, label):
-    return label
-
-# Remove label from dataset for prediction
-val_ds_batched_graphs = val_ds_batched.map(extract_graph)
-val_ds_batched_graph = val_ds_batched.map(extract_label)
-
-label_pred = model.predict(val_ds_batched_graphs)
-
-# Convert tensors with batches to a simple list
-label_gt = []
-for batch in val_ds_batched_graph:
-   label_gt.extend(batch.numpy().tolist())
-
-# Convert model predictions to a simple list
-label_pred = label_pred.flatten().tolist()
-
-# Sort it according to the highest probability to be TP (likeliest TP is first)
-labels_sorted = sorted(zip(label_pred, label_gt), key=lambda x: x[0], reverse=True)
-
-def plot_top_N_precision(labels_sorted):
-  y = []
-  x = list(range(2, 101)) # Skip 1% as it gets extreme values for libtiff
-  labels_sorted = [label[1] for label in labels_sorted]
-  base_precision = sum(labels_sorted) / len(labels_sorted)
-  captions = []
-
-  for percentage in x:
-    top_items_cnt = round(len(labels_sorted) * (percentage / 100))
-    TP_percentage = sum(labels_sorted[:top_items_cnt]) / top_items_cnt
-    y.append(TP_percentage)
-    captions.append(top_items_cnt)
-
-  # Plot the graph
-  fig, ax = plt.subplots()
-  ax.plot(x, y)
-  for i, txt in enumerate(captions):
-    ax.text(x[i], y[i], txt, fontsize=9)
-  ax.set_title("My Plot")
-  ax.set_xlabel("Top N% of most likely TPs")
-  ax.set_ylabel("TP percentage (Precision)")
-  plt.axhline(y=base_precision, color='r', linestyle=':')
-  plt.axvline(x=base_precision * 100, color='r', linestyle=':')
-  plt.show()
+  # Save hyperparameters as JSON file
+  with open(f'{models_parent_dir_name}/hyperparameters.json', 'w') as f:
+    json.dump(hyperparameters, f, indent=4)
 
 
-def plot_AUC_curve(label_gt, label_pred):
-  fpr, tpr, thresholds = sklearn.metrics.roc_curve(label_gt, label_pred)
+def prepare_data(schema_path, project_path, project, dataset_len):
+  # Load schema
+  graph_schema = tfgnn.read_schema(schema_path)
+  graph_tensor_spec = tfgnn.create_graph_spec_from_schema_pb(graph_schema)
 
-  # Calculate the AUC
-  roc_auc = metrics.auc(fpr, tpr)
+  # Read the dataset
+  train_positive_samples = dataset_len[project][1]
+  train_negative_samples = dataset_len[project][0]
+  train_ds_1 = tf.data.TFRecordDataset([f'{project_path}/{project}_1.tfrecords.train'])
+  train_ds_0 = tf.data.TFRecordDataset([f'{project_path}/{project}_0.tfrecords.train'])
+  val_ds = tf.data.TFRecordDataset([f'{project_path}/{project}_1.tfrecords.val', f'{project_path}/{project}_0.tfrecords.val'])
 
-  # Plot the ROC curve
-  plt.figure()
-  lw = 2
-  plt.plot(fpr, tpr, color='darkorange',
-          lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
-  plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-  plt.xlim([0.0, 1.0])
-  plt.ylim([0.0, 1.05])
-  plt.xlabel('False Positive Rate')
-  plt.ylabel('True Positive Rate')
-  plt.title('Receiver Operating Characteristic')
-  plt.legend(loc="lower right")
-  plt.show()
+  # Up-sample
+  up_sample_coeff = train_negative_samples // train_positive_samples
+  train_ds_1 = train_ds_1.repeat(up_sample_coeff)
+
+  # Concat positive and negative samples
+  train_ds = train_ds_1.concatenate(train_ds_0)
+
+  # Shuffle training samples
+  buffer_size = train_negative_samples + up_sample_coeff * train_positive_samples # Ideally buffer_size >= len(dataset)
+  train_ds = train_ds.shuffle(buffer_size)
+  train_ds = train_ds.prefetch(buffer_size=tf.data.AUTOTUNE)
+  val_ds = val_ds.shuffle(buffer_size)
+  val_ds = val_ds.prefetch(buffer_size=tf.data.AUTOTUNE)
+
+  # Batch the datasets
+  train_ds_batched = train_ds.batch(batch_size=hyperparameters['batch_size']).repeat()
+  val_ds_batched = val_ds.batch(batch_size=hyperparameters['batch_size'])
+
+  # Parse tf.Example protos
+  train_ds_batched = train_ds_batched.map(tfgnn.keras.layers.ParseExample(graph_tensor_spec))
+  val_ds_batched = val_ds_batched.map(tfgnn.keras.layers.ParseExample(graph_tensor_spec))
+  preproc_input_spec_train = train_ds_batched.element_spec
+  preproc_input_spec_val = val_ds_batched.element_spec
+
+  # Apply preprocess model
+  model_input_spec_train, train_ds_batched = preprocess(preproc_input_spec_train, train_ds_batched)
+  model_input_spec_val, val_ds_batched = preprocess(preproc_input_spec_val, val_ds_batched)
+
+  return model_input_spec_train, train_ds_batched, model_input_spec_val, val_ds_batched
 
 
-plot_top_N_precision(labels_sorted)
-plot_AUC_curve(label_gt, label_pred)
+def train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_ds_len):
+  # Define Loss and Metrics
+  # with tf.device('/CPU:0'):  # Forces the operations to be executed on the CPU
+  model = build_model(model_input_spec_train)
+
+  loss = tf.keras.losses.BinaryCrossentropy()
+  metrics = [ tf.keras.metrics.Precision(),
+              tf.keras.metrics.Recall(),
+              tf.keras.metrics.AUC(),
+              tf.keras.metrics.AUC(curve='PR', name='auc_pr')]
+  optimizer = tf.keras.optimizers.Adam(learning_rate=hyperparameters['learning_rate'])
+
+  # Compile the keras model
+  model.compile(optimizer, loss=loss, metrics=metrics)
+  model.summary()
+
+  early_stopping = EarlyStopping(monitor='val_auc',
+                                min_delta=0.001,
+                                patience=20,
+                                restore_best_weights=True)
+
+  # Train the model
+  history = model.fit(train_ds_batched,
+                      steps_per_epoch=train_ds_len // hyperparameters['batch_size'],
+                      epochs=300,
+                      validation_data=val_ds_batched,
+                      shuffle=True,
+                      callbacks=[early_stopping])
+  return model, history
+
+
+if __name__ == '__main__':
+  # Load args
+  schema_path = sys.argv[1] # schemas/mixed_nodes/extended_cpg.pbtxt
+  project_path = sys.argv[2] # ../D2A-CPG
+
+  dataset_len = {
+    'libtiff': [7325, 371],
+    'httpd': [7502, 149],
+    'nginx': [13391, 319]
+  }
+
+  # We do a form of k-validation - the same model architecture is tested on the following projects
+  projects = ['libtiff', 'httpd', 'nginx']
+  results = {}
+
+  for project in projects:
+    # Load, preprocess, balance and batch dataset
+    model_input_spec_train, train_ds_batched, _, val_ds_batched = prepare_data(schema_path, project_path, project, dataset_len)
+
+    # Train the model for the current project
+    train_ds_len = sum(dataset_len[project])
+    model, history = train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_ds_len)
+
+    max_val_auc = max(history.history['val_auc'])
+    results[project] = (model, max_val_auc)
+
+    # To prevent TF/Keras from behaving like all the models are the same one
+    K.clear_session()
+
+  # Save models and it's hyperparameters (same hyperparameters for all saved models)
+  save_model(results)
