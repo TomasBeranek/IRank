@@ -14,10 +14,10 @@ import functools
 # Hyperparameters (values not defined here have default values)
 hyperparameters = {
   'epochs': 200,
-  'learning_rate': 0.000002,
-  'batch_size': 10,
-  'num_graph_updates': 9,
-  'node_state_dim': 12,
+  'learning_rate': 0.000001,
+  'batch_size': 6,
+  'num_graph_updates': 8,
+  'node_state_dim': 20,
   'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
   # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
   # 'argument_edge_dim': 2, # not used for now
@@ -29,7 +29,7 @@ hyperparameters = {
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'Simplify GNN layers and increase batch size. Comparison of complex vs simple GNN layers.' # description of changes since the last version
+  'note': 'Simpler GNNs didnt work. So we try to make them even more complex at the cost of 1 GNN layer. Also add dropout to the head.' # description of changes since the last version
 }
 
 # Pozdeji zkusit attention
@@ -112,7 +112,7 @@ def build_model(model_input_spec):
 
   # Read hidden states from AST_NODE nodeset
   node_features = tfgnn.keras.layers.Pool(tfgnn.CONTEXT, "max", node_set_name=['AST_NODE'])(graph)
-
+  node_features_dropout = tf.keras.layers.Dropout(hyperparameters['state_dropout_rate'])(node_features)
   # Extract BUG_TYPE context feature
   bug_type_feature = tfgnn.keras.layers.Readout(from_context=True, feature_name="BUG_TYPE")(graph)
 
@@ -128,7 +128,7 @@ def build_model(model_input_spec):
 
   # Add more neurons to the head
   context_dense = tf.keras.layers.Dense(4, activation='relu')(context_features)
-  nodes_dense = tf.keras.layers.Dense(8, activation='relu')(node_features)
+  nodes_dense = tf.keras.layers.Dense(8, activation='relu')(node_features_dropout)
   combined_features = tf.keras.layers.Concatenate()([context_dense, nodes_dense])
 
   # Add 'head' - final part of GNN which outputs a single number
