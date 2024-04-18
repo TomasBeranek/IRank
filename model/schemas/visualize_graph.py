@@ -696,7 +696,7 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
 
     # Check if the graph is a single WCC
     if len(list(nx.weakly_connected_components(G))) != 1:
-        print('ERROR: visualize_graph.py: The graph consists of more than one WCC!', file=sys.stderr)
+        print(f'ERROR: visualize_graph.py: The graph {sample_id} consists of more than one WCC!', file=sys.stderr)
 
     # Print compression of the graph after removal
     # after_edge_count = G.number_of_edges()
@@ -880,17 +880,17 @@ def transform_ast_node_data(df):
 def encode_literal_value(value_type_pair):
     value, type = value_type_pair
 
-    INT = FP_MANTISSA = FP_EXPONENT = HASH = INVALID_POINTER = ZERO_INITIALIZED = UNDEF = 0
+    INT = FP_MANTISSA = FP_EXPONENT = HASH = INVALID_POINTER = ZERO_INITIALIZED = UNDEF = np.float32(0)
 
     if value == 'undef':
-        UNDEF = 1.0
+        UNDEF = np.float32(1.0)
     elif not type:
         # Type is missing
         HASH = hash_string_to_int24(str(value))
     elif type.endswith('*'):
         # Pointer
         if value == 'nullptr':
-            INVALID_POINTER = 1.0
+            INVALID_POINTER = np.float32(1.0)
         else:
             # Literal's CODE property can contain function code for funciton pointers
             HASH = hash_string_to_int24(str(value))
@@ -926,7 +926,7 @@ def encode_literal_value(value_type_pair):
             FP_MANTISSA += 1
         elif value == 0:
             # If value == 0 math.frexp will display it as 0,0 - we need to move it to 0.5
-            FP_MANTISSA = 0.5
+            FP_MANTISSA = np.float32(0.5)
 
         FP_EXPONENT = np.float32(((FP_EXPONENT + 148) / (148 + 128)))
     else:
@@ -1064,7 +1064,7 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
 
     # Its faulty sample - skip it
     if graph_in_dfs is None:
-        print('ERROR: visualize_graph.py: The graph doesn\'t contain any AST edges!', file=sys.stderr)
+        print(f'ERROR: visualize_graph.py: The graph {sample_id} doesn\'t contain any AST edges!', file=sys.stderr)
         return
 
     # If one of CONSISTS_OF, MEMBER or EVAL_MEMBER_TYPE dfs is missing, others should be missing as well
