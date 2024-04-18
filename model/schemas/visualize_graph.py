@@ -120,7 +120,43 @@ norm_coeffs = {'libtiff': {
                                            '<operator>.subtraction': 27,
                                            '<operator>.xor': 28},
                              'ORDER': 1618,
-                             'PTR': 5}
+                             'PTR': 5},
+               # It is a simple max/union of norm coeffs from nginx, libtiff and httpd
+               'nginx+libtiff+httpd': {
+                             'ARGUMENT_INDEX': 18,
+                             'LEN': 65536,
+                             'LINE': 9201,
+                             'MEMBER_ORDER': 82,
+                             'OPERATORS': {'<operator>.addition': 1,
+                                           '<operator>.addressOf': 2,
+                                           '<operator>.and': 3,
+                                           '<operator>.arithmeticShiftRight': 4,
+                                           '<operator>.assignment': 5,
+                                           '<operator>.atomicAddition': 6,
+                                           '<operator>.cast': 7,
+                                           '<operator>.cmpxchg': 8,
+                                           '<operator>.division': 9,
+                                           '<operator>.equals': 10,
+                                           '<operator>.fneg': 11,
+                                           '<operator>.getElementPtr': 12,
+                                           '<operator>.greaterEqualsThan': 13,
+                                           '<operator>.greaterThan': 14,
+                                           '<operator>.indexAccess': 15,
+                                           '<operator>.indirection': 16,
+                                           '<operator>.lessEqualsThan': 17,
+                                           '<operator>.lessThan': 18,
+                                           '<operator>.logicalShiftRight': 19,
+                                           '<operator>.modulo': 20,
+                                           '<operator>.multiplication': 21,
+                                           '<operator>.notEquals': 22,
+                                           '<operator>.or': 23,
+                                           '<operator>.pointerShift': 24,
+                                           '<operator>.select': 25,
+                                           '<operator>.shiftLeft': 26,
+                                           '<operator>.subtraction': 27,
+                                           '<operator>.xor': 28},
+                             'ORDER': 1618,
+                             'PTR': 5},
               }
 
 LABEL = None
@@ -892,7 +928,7 @@ def encode_literal_value(value_type_pair):
     else:
         # Arrays, structs, custom types (should be only 'data')
         if value == 'zero initialized':
-            ZERO_INITIALIZED = 1.0
+            ZERO_INITIALIZED = np.float32(1.0)
         else:
             HASH = hash_string_to_int24(str(value))
 
