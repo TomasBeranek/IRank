@@ -16,8 +16,8 @@ hyperparameters = {
   'epochs': 200,
   'learning_rate': 0.000001,
   'batch_size': 6,
-  'num_graph_updates': 8,
-  'node_state_dim': 20,
+  'num_graph_updates': 9,
+  'node_state_dim': 18,
   'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
   # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
   # 'argument_edge_dim': 2, # not used for now
@@ -29,7 +29,7 @@ hyperparameters = {
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'Simpler GNNs didnt work. So we try to make them even more complex at the cost of 1 GNN layer. Also add dropout to the head.' # description of changes since the last version
+  'note': 'We go back to Model 2, but we keep dropout in the head. And we try data normalized using the same norm. coeffs.' # description of changes since the last version
 }
 
 # Pozdeji zkusit attention
