@@ -603,6 +603,10 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
     # for data in edge_data.values():
     #     original_edge_count += len(data)
 
+    # Check if there are 'AST' edges - if not, its faulty sample
+    if 'AST' not in edge_data:
+        return None
+
     # Add only AST edges, since they form a tree and the following alg works for trees only
     G = create_directional_graph(node_data, {'AST': edge_data.pop('AST')})
     # wccs_num_before = len(list(nx.weakly_connected_components(G)))
@@ -692,7 +696,7 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
 
     # Check if the graph is a single WCC
     if len(list(nx.weakly_connected_components(G))) != 1:
-        print('ERROR: visualize_graph.py: The graph consists of more than one WCC!')
+        print('ERROR: visualize_graph.py: The graph consists of more than one WCC!', file=sys.stderr)
 
     # Print compression of the graph after removal
     # after_edge_count = G.number_of_edges()
@@ -1041,6 +1045,11 @@ def process_sample(directory):
     sample_id = directory.split('/')[-1]
     node_data, edge_data, valid_nodes = load_sample_data(directory)
     G = remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes)
+
+    # Its faulty sample
+    if G is None:
+        return None
+
     G = split_nodes(G)
     graph_in_dfs = transform_data_types(G)
     graph_in_dfs = convert_ids_to_tfgnn_format(graph_in_dfs)
@@ -1052,6 +1061,11 @@ def process_sample(directory):
 def save_sample(directory, graph_spec, output_file, splits, context_data):
     sample_id = directory.split('/')[-1]
     graph_in_dfs = process_sample(directory)
+
+    # Its faulty sample - skip it
+    if graph_in_dfs is None:
+        print('ERROR: visualize_graph.py: The graph doesn\'t contain any AST edges!', file=sys.stderr)
+        return
 
     # If one of CONSISTS_OF, MEMBER or EVAL_MEMBER_TYPE dfs is missing, others should be missing as well
     # If CONSISTS_OF edge set is missing add it empty
