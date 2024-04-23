@@ -1,6 +1,7 @@
 EXAMPLES_DIR = examples
 EXAMPLE_STRUCT_ALIAS_DIR = $(EXAMPLES_DIR)/struct-alias
 EXAMPLE_ARG_PASSING_DIR = $(EXAMPLES_DIR)/arg-passing
+EXAMPLE_GLOBAL_VARS_DIR = $(EXAMPLES_DIR)/global-vars
 
 
 .PHONY: experiment all httpd-sample
@@ -64,16 +65,25 @@ example-arg-passing: clean-example-arg-passing
 	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_ARG_PASSING_DIR)/graph $(EXAMPLE_ARG_PASSING_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
 	python3 visualize_graph.py $(EXAMPLE_ARG_PASSING_DIR)/graph
 
-tmp: clean-example-arg-passing
-	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_ARG_PASSING_DIR)/add.c -o $(EXAMPLE_ARG_PASSING_DIR)/add.bc
-	llvm-link $(EXAMPLE_ARG_PASSING_DIR)/add.bc -o $(EXAMPLE_ARG_PASSING_DIR)/combined.bc
-	llvm2cpg $(EXAMPLE_ARG_PASSING_DIR)/combined.bc --output=$(EXAMPLE_ARG_PASSING_DIR)/combined.cpg.bin.zip
-	cd $(EXAMPLE_ARG_PASSING_DIR) && joern --script joern_script && llvm-dis combined.bc
-	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_ARG_PASSING_DIR)/graph $(EXAMPLE_ARG_PASSING_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
-	python3 visualize_graph.py $(EXAMPLE_ARG_PASSING_DIR)/graph
+clean-example-global-vars:
+	rm -rf $(EXAMPLE_GLOBAL_VARS_DIR)/main.bc $(EXAMPLE_GLOBAL_VARS_DIR)/add.bc $(EXAMPLE_GLOBAL_VARS_DIR)/combined.bc $(EXAMPLE_GLOBAL_VARS_DIR)/combined.cpg.bin.zip $(EXAMPLE_GLOBAL_VARS_DIR)/graph $(EXAMPLE_GLOBAL_VARS_DIR)/workspace $(EXAMPLE_GLOBAL_VARS_DIR)/out $(EXAMPLE_GLOBAL_VARS_DIR)/combined.ll
+
+# This target visualizes graph of custom code in 'model/schemas/examples/arg-passing'
+example3: example-global-vars
+example-global-vars: clean-example-global-vars
+	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_GLOBAL_VARS_DIR)/main.c -o $(EXAMPLE_GLOBAL_VARS_DIR)/main.bc
+	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_GLOBAL_VARS_DIR)/add.c -o $(EXAMPLE_GLOBAL_VARS_DIR)/add.bc
+	llvm-link $(EXAMPLE_GLOBAL_VARS_DIR)/main.bc $(EXAMPLE_GLOBAL_VARS_DIR)/add.bc -o $(EXAMPLE_GLOBAL_VARS_DIR)/combined.bc
+	llvm2cpg $(EXAMPLE_GLOBAL_VARS_DIR)/combined.bc --output=$(EXAMPLE_GLOBAL_VARS_DIR)/combined.cpg.bin.zip
+	cd $(EXAMPLE_GLOBAL_VARS_DIR) && joern --script joern_script && llvm-dis combined.bc
+	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_GLOBAL_VARS_DIR)/graph $(EXAMPLE_GLOBAL_VARS_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
+	python3 visualize_graph.py $(EXAMPLE_GLOBAL_VARS_DIR)/graph
 
 extract-norm-coeffs-libtiff:
 	python3 find_normalization_coefficients.py ../../D2A-CPG/ libtiff ../../dataset/d2a/splits.csv ../../dataset/slicing-info/libtiff_labeler_
 
 extract-norm-coeffs-httpd:
 	python3 find_normalization_coefficients.py ../../D2A-CPG/ httpd ../../dataset/d2a/splits.csv ../../dataset/slicing-info/httpd_labeler_
+
+extract-norm-coeffs-nginx:
+	python3 find_normalization_coefficients.py ../../D2A-CPG/ nginx ../../dataset/d2a/splits.csv ../../dataset/slicing-info/nginx_labeler_
