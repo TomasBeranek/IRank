@@ -14,7 +14,7 @@ import functools
 # Hyperparameters (values not defined here have default values)
 hyperparameters = {
   'epochs': 200,
-  'learning_rate': 0.000001,
+  'learning_rate': 0.0001,
   'batch_size': 6,
   'num_graph_updates': 9,
   'node_state_dim': 18,
@@ -29,7 +29,7 @@ hyperparameters = {
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'We go back to Model 2, but we keep dropout in the head. And we try data normalized using the same norm. coeffs.' # description of changes since the last version
+  'note': 'We go back to model 2 completely, but train it on htppd+nginx+libtiff and we increase lreanting rate.' # description of changes since the last version
 }
 
 # Pozdeji zkusit attention
@@ -112,7 +112,7 @@ def build_model(model_input_spec):
 
   # Read hidden states from AST_NODE nodeset
   node_features = tfgnn.keras.layers.Pool(tfgnn.CONTEXT, "max", node_set_name=['AST_NODE'])(graph)
-  node_features_dropout = tf.keras.layers.Dropout(hyperparameters['state_dropout_rate'])(node_features)
+
   # Extract BUG_TYPE context feature
   bug_type_feature = tfgnn.keras.layers.Readout(from_context=True, feature_name="BUG_TYPE")(graph)
 
@@ -128,7 +128,7 @@ def build_model(model_input_spec):
 
   # Add more neurons to the head
   context_dense = tf.keras.layers.Dense(4, activation='relu')(context_features)
-  nodes_dense = tf.keras.layers.Dense(8, activation='relu')(node_features_dropout)
+  nodes_dense = tf.keras.layers.Dense(8, activation='relu')(node_features)
   combined_features = tf.keras.layers.Concatenate()([context_dense, nodes_dense])
 
   # Add 'head' - final part of GNN which outputs a single number
@@ -136,7 +136,7 @@ def build_model(model_input_spec):
   return tf.keras.Model(inputs, y)
 
 
-def save_model(results):
+def save_model(results, combined):
   saved_models_dir = 'saved_models'
   max_id = 1
 
@@ -150,17 +150,24 @@ def save_model(results):
   new_id = max_id + 1
 
   # We use average val_auc of the models as a measure of architecture/hyperparameters quality
-  avg_val_auc = (results['libtiff'][1] + results['httpd'][1] + results['nginx'][1]) / 3
+  if combined:
+    avg_val_auc = results['combined'][1]
+  else:
+    avg_val_auc = (results['libtiff'][1] + results['httpd'][1] + results['nginx'][1]) / 3
   formatted_avg_val_auc = format(avg_val_auc, ".3f")
 
   # Make parent dir for all the models
   models_parent_dir_name = f'{saved_models_dir}/{new_id}_AUC_{formatted_avg_val_auc}'
   os.makedirs(models_parent_dir_name)
 
-  # Save all the individual models
-  for project, (model, max_val_auc) in results.items():
-    formatted_max_val_auc = format(max_val_auc, ".3f")
-    model.save(f'{models_parent_dir_name}/{project}_AUC_{formatted_max_val_auc}')
+  if combined:
+    model = results['combined'][0]
+    model.save(f'{models_parent_dir_name}/combined_AUC_{formatted_avg_val_auc}')
+  else:
+    # Save all the individual models
+    for project, (model, max_val_auc) in results.items():
+      formatted_max_val_auc = format(max_val_auc, ".3f")
+      model.save(f'{models_parent_dir_name}/{project}_AUC_{formatted_max_val_auc}')
 
   # Save hyperparameters as JSON file
   with open(f'{models_parent_dir_name}/hyperparameters.json', 'w') as f:
@@ -172,25 +179,60 @@ def prepare_data(schema_path, project_path, project, dataset_len):
   graph_schema = tfgnn.read_schema(schema_path)
   graph_tensor_spec = tfgnn.create_graph_spec_from_schema_pb(graph_schema)
 
-  # Read the dataset
   train_positive_samples = dataset_len[project][1]
   train_negative_samples = dataset_len[project][0]
-  train_ds_1 = tf.data.TFRecordDataset([f'{project_path}/{project}_1.tfrecords.train'])
-  train_ds_0 = tf.data.TFRecordDataset([f'{project_path}/{project}_0.tfrecords.train'])
-  val_ds = tf.data.TFRecordDataset([f'{project_path}/{project}_1.tfrecords.val', f'{project_path}/{project}_0.tfrecords.val'])
+
+  # Read the dataset
+  if project == 'libtiff+httpd+nginx':
+    train_ds_files_1 = [f'{project_path}/libtiff_1.tfrecords.train',
+                        f'{project_path}/httpd_1.tfrecords.train',
+                        f'{project_path}/nginx_1.tfrecords.train']
+    train_ds_files_0 = [f'{project_path}/libtiff_0.tfrecords.train',
+                        f'{project_path}/httpd_0.tfrecords.train',
+                        f'{project_path}/nginx_0.tfrecords.train']
+    val_ds_files = [f'{project_path}/libtiff_0.tfrecords.val',
+                    f'{project_path}/httpd_0.tfrecords.val',
+                    f'{project_path}/nginx_0.tfrecords.val',
+                    f'{project_path}/libtiff_1.tfrecords.val',
+                    f'{project_path}/httpd_1.tfrecords.val',
+                    f'{project_path}/nginx_1.tfrecords.val']
+    train_ds_1 = tf.data.TFRecordDataset(train_ds_files_1, num_parallel_reads=3)
+    train_ds_0 = tf.data.TFRecordDataset(train_ds_files_0, num_parallel_reads=3)
+    val_ds = tf.data.TFRecordDataset(val_ds_files, num_parallel_reads=6)
+  elif project == 'libtiff+httpd':
+    train_ds_files_1 = [f'{project_path}/libtiff_1.tfrecords.train',
+                        f'{project_path}/httpd_1.tfrecords.train',
+                        f'{project_path}/libtiff_1.tfrecords.val',
+                        f'{project_path}/httpd_1.tfrecords.val',
+                        f'{project_path}/libtiff_1.tfrecords.test',
+                        f'{project_path}/httpd_1.tfrecords.test']
+    train_ds_files_0 = [f'{project_path}/libtiff_0.tfrecords.train',
+                        f'{project_path}/httpd_0.tfrecords.train',
+                        f'{project_path}/libtiff_0.tfrecords.val',
+                        f'{project_path}/httpd_0.tfrecords.val',
+                        f'{project_path}/libtiff_0.tfrecords.test',
+                        f'{project_path}/httpd_0.tfrecords.test']
+    train_ds_1 = tf.data.TFRecordDataset(train_ds_files_1, num_parallel_reads=6)
+    train_ds_0 = tf.data.TFRecordDataset(train_ds_files_0, num_parallel_reads=6)
+    val_ds_1 = tf.data.TFRecordDataset([f'{project_path}/nginx_1.tfrecords.val'])
+    val_ds_0 = tf.data.TFRecordDataset([f'{project_path}/nginx_0.tfrecords.val'])
+    val_ds = tf.data.Dataset.sample_from_datasets([val_ds_1, val_ds_0])
+  else:
+    train_ds_1 = tf.data.TFRecordDataset([f'{project_path}/{project}_1.tfrecords.train'])
+    train_ds_0 = tf.data.TFRecordDataset([f'{project_path}/{project}_0.tfrecords.train'])
+    val_ds = tf.data.TFRecordDataset([f'{project_path}/{project}_1.tfrecords.val', f'{project_path}/{project}_0.tfrecords.val'])
 
   # Up-sample
   up_sample_coeff = train_negative_samples // train_positive_samples
   train_ds_1 = train_ds_1.repeat(up_sample_coeff)
 
-  # Concat positive and negative samples
-  train_ds = train_ds_1.concatenate(train_ds_0)
+  # Interleav positive and negative samples
+  train_ds = tf.data.Dataset.sample_from_datasets([train_ds_0, train_ds_1])
 
   # Shuffle training samples
-  buffer_size = train_negative_samples + up_sample_coeff * train_positive_samples # Ideally buffer_size >= len(dataset)
+  buffer_size = 10_000 #train_negative_samples + up_sample_coeff * train_positive_samples # Ideally buffer_size == len(dataset)
   train_ds = train_ds.shuffle(buffer_size)
   train_ds = train_ds.prefetch(buffer_size=tf.data.AUTOTUNE)
-  val_ds = val_ds.shuffle(buffer_size)
   val_ds = val_ds.prefetch(buffer_size=tf.data.AUTOTUNE)
 
   # Batch the datasets
@@ -237,8 +279,8 @@ def train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_
   model.summary()
 
   early_stopping = EarlyStopping(monitor='val_auc',
-                                min_delta=0.001,
-                                patience=20,
+                                min_delta=0.0001,
+                                patience=15,
                                 restore_best_weights=True)
 
   # Train the model
@@ -259,26 +301,45 @@ if __name__ == '__main__':
   dataset_len = {
     'libtiff': [7325, 371],
     'httpd': [7502, 149],
-    'nginx': [13391, 319]
+    'nginx': [13391, 319],
+    'libtiff+httpd+nginx': [7325 + 7502 + 13391, 371 + 149 + 319],
+    'libtiff+httpd': [7325 + 1011 + 940 + 7502 + 1294 + 909, 371 + 47 + 41 + 149 + 24 + 20]
   }
 
   # We do a form of k-validation - the same model architecture is tested on the following projects
   projects = ['libtiff', 'httpd', 'nginx']
   results = {}
 
-  for project in projects:
+  combined = True # Move this to args
+  if combined:
+    project = 'libtiff+httpd+nginx'
+    # project = 'libtiff+httpd'
+
     # Load, preprocess, balance and batch dataset
     model_input_spec_train, train_ds_batched, _, val_ds_batched = prepare_data(schema_path, project_path, project, dataset_len)
 
     # Train the model for the current project
     train_ds_len = sum(dataset_len[project])
     model, history = train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_ds_len)
-
     max_val_auc = max(history.history['val_auc'])
-    results[project] = (model, max_val_auc)
+    results['combined'] = (model, max_val_auc)
 
-    # To prevent TF/Keras from behaving like all the models are the same one
-    K.clear_session()
+    # Save combined model
+    save_model(results, combined=True)
+  else:
+    for project in projects:
+      # Load, preprocess, balance and batch dataset
+      model_input_spec_train, train_ds_batched, _, val_ds_batched = prepare_data(schema_path, project_path, project, dataset_len)
 
-  # Save models and it's hyperparameters (same hyperparameters for all saved models)
-  save_model(results)
+      # Train the model for the current project
+      train_ds_len = sum(dataset_len[project])
+      model, history = train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_ds_len)
+
+      max_val_auc = max(history.history['val_auc'])
+      results[project] = (model, max_val_auc)
+
+      # To prevent TF/Keras from behaving like all the models are the same one
+      K.clear_session()
+
+    # Save models and it's hyperparameters (same hyperparameters for all saved models)
+    save_model(results, combined=False)
