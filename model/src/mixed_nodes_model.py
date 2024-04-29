@@ -22,14 +22,14 @@ hyperparameters = {
   # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
   # 'argument_edge_dim': 2, # not used for now
   'state_dropout_rate': 0.2,
-  'edge_dropout_rate': 0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
+  'edge_dropout_rate': 0.2, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 1e-5, # e.g. 1e-5
   'attention_type': 'none', # "none", "multi_head", or "gat_v2",
   'attention_num_heads': 4, # 4 is default
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'We try model 6 and try to improve generalization, since it had training AUC almost 0.95.' # description of changes since the last version
+  'note': 'We try increasing dropout.' # description of changes since the last version
 }
 
 # Pozdeji zkusit attention
