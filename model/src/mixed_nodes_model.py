@@ -14,15 +14,15 @@ import functools
 # Hyperparameters (values not defined here have default values)
 hyperparameters = {
   'epochs': 200,
-  'learning_rate': 0.0001,
+  'learning_rate': 0.00005,
   'batch_size': 6,
   'num_graph_updates': 9,
   'node_state_dim': 18,
   'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
   # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
   # 'argument_edge_dim': 2, # not used for now
-  'state_dropout_rate': 0.2,
-  'edge_dropout_rate': 0.2, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
+  'state_dropout_rate': 0.25,
+  'edge_dropout_rate': 0.0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 1e-5, # e.g. 1e-5
   'attention_type': 'none', # "none", "multi_head", or "gat_v2",
   'attention_num_heads': 4, # 4 is default
