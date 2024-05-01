@@ -14,14 +14,14 @@ import functools
 # Hyperparameters (values not defined here have default values)
 hyperparameters = {
   'epochs': 200,
-  'learning_rate': 0.00005,
+  'learning_rate': 0.0001,
   'batch_size': 6,
   'num_graph_updates': 9,
   'node_state_dim': 18,
   'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
   # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
   # 'argument_edge_dim': 2, # not used for now
-  'state_dropout_rate': 0.25,
+  'state_dropout_rate': 0.2,
   'edge_dropout_rate': 0.0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 1e-5, # e.g. 1e-5
   'attention_type': 'none', # "none", "multi_head", or "gat_v2",
@@ -29,7 +29,7 @@ hyperparameters = {
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'We try increasing dropout.' # description of changes since the last version
+  'note': 'We try model 8, but use bi-directional GNN.' # description of changes since the last version
 }
 
 # Pozdeji zkusit attention
@@ -93,13 +93,13 @@ def build_model(model_input_spec):
       # edge_sets_fn=encode_ARGUMENT_INDEX)(graph)
 
   # Layers of updates
-  for i in range(hyperparameters['num_graph_updates']):
+  for i in range((hyperparameters['num_graph_updates'] - 1) // 2):
     graph = mt_albis.MtAlbisGraphUpdate(
         units=hyperparameters['node_state_dim'],
         message_dim=hyperparameters['node_state_dim'],
-        receiver_tag=hyperparameters['receiver_tag'],
+        receiver_tag=tfgnn.TARGET,
         # edge_feature_name='ARGUMENT_INDEX',
-        node_set_names=None if i < hyperparameters['num_graph_updates']-1 else ["AST_NODE"],
+        node_set_names=None,
         state_dropout_rate=hyperparameters['state_dropout_rate'],
         edge_dropout_rate=hyperparameters['edge_dropout_rate'],
         l2_regularization=hyperparameters['l2_regularization'],
@@ -109,6 +109,38 @@ def build_model(model_input_spec):
         normalization_type=hyperparameters['normalization_type'],
         next_state_type=hyperparameters['next_state_type']
     )(graph)
+
+    graph = mt_albis.MtAlbisGraphUpdate(
+        units=hyperparameters['node_state_dim'],
+        message_dim=hyperparameters['node_state_dim'],
+        receiver_tag=tfgnn.SOURCE,
+        # edge_feature_name='ARGUMENT_INDEX',
+        node_set_names=None,
+        state_dropout_rate=hyperparameters['state_dropout_rate'],
+        edge_dropout_rate=hyperparameters['edge_dropout_rate'],
+        l2_regularization=hyperparameters['l2_regularization'],
+        attention_type=hyperparameters['attention_type'],
+        attention_num_heads=hyperparameters['attention_num_heads'],
+        simple_conv_reduce_type=hyperparameters['simple_conv_reduce_type'],
+        normalization_type=hyperparameters['normalization_type'],
+        next_state_type=hyperparameters['next_state_type']
+    )(graph)
+
+  graph = mt_albis.MtAlbisGraphUpdate(
+      units=hyperparameters['node_state_dim'],
+      message_dim=hyperparameters['node_state_dim'],
+      receiver_tag=tfgnn.TARGET,
+      # edge_feature_name='ARGUMENT_INDEX',
+      node_set_names=["AST_NODE"],
+      state_dropout_rate=hyperparameters['state_dropout_rate'],
+      edge_dropout_rate=hyperparameters['edge_dropout_rate'],
+      l2_regularization=hyperparameters['l2_regularization'],
+      attention_type=hyperparameters['attention_type'],
+      attention_num_heads=hyperparameters['attention_num_heads'],
+      simple_conv_reduce_type=hyperparameters['simple_conv_reduce_type'],
+      normalization_type=hyperparameters['normalization_type'],
+      next_state_type=hyperparameters['next_state_type']
+  )(graph)
 
   # Read hidden states from AST_NODE nodeset
   node_features = tfgnn.keras.layers.Pool(tfgnn.CONTEXT, "max", node_set_name=['AST_NODE'])(graph)
