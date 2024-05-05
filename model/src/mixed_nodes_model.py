@@ -22,14 +22,14 @@ hyperparameters = {
   # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
   # 'argument_edge_dim': 2, # not used for now
   'state_dropout_rate': 0.2,
-  'edge_dropout_rate': 0.0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
+  'edge_dropout_rate': 0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 1e-5, # e.g. 1e-5
   'attention_type': 'none', # "none", "multi_head", or "gat_v2",
   'attention_num_heads': 4, # 4 is default
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'We try model 8, but use bi-directional GNN.' # description of changes since the last version
+  'note': 'We try model 8, but with ARGUMENT_INDEX' # description of changes since the last version
 }
 
 # Pozdeji zkusit attention
@@ -75,7 +75,7 @@ def encode_ARGUMENT_INDEX(edge_set, *, edge_set_name):
     return {'ARGUMENT_INDEX': tfgnn.keras.layers.MakeEmptyFeature()(edge_set)}
 
   stacked_features = tf.stack([edge_set.features['ARGUMENT_INDEX']], axis=1)
-  return {'ARGUMENT_INDEX': tf.keras.layers.Dense(argument_edge_dim, 'relu')(stacked_features)}
+  return {'ARGUMENT_INDEX': tf.keras.layers.Dense(hyperparameters['node_state_dim'], 'relu')(stacked_features)}
 
 
 def drop_all_features(_, **unused_kwargs):
@@ -89,17 +89,17 @@ def build_model(model_input_spec):
   # Set initial states
   graph = tfgnn.keras.layers.MapFeatures(
       node_sets_fn=set_initial_node_state,
-      edge_sets_fn=drop_all_features)(graph)
-      # edge_sets_fn=encode_ARGUMENT_INDEX)(graph)
+      # edge_sets_fn=drop_all_features)(graph)
+      edge_sets_fn=encode_ARGUMENT_INDEX)(graph)
 
   # Layers of updates
-  for i in range((hyperparameters['num_graph_updates'] - 1) // 2):
+  for i in range(hyperparameters['num_graph_updates']):
     graph = mt_albis.MtAlbisGraphUpdate(
         units=hyperparameters['node_state_dim'],
         message_dim=hyperparameters['node_state_dim'],
-        receiver_tag=tfgnn.TARGET,
-        # edge_feature_name='ARGUMENT_INDEX',
-        node_set_names=None,
+        receiver_tag=hyperparameters['receiver_tag'],
+        edge_feature_name='ARGUMENT_INDEX',
+        node_set_names=None if i < hyperparameters['num_graph_updates']-1 else ["AST_NODE"],
         state_dropout_rate=hyperparameters['state_dropout_rate'],
         edge_dropout_rate=hyperparameters['edge_dropout_rate'],
         l2_regularization=hyperparameters['l2_regularization'],
@@ -109,38 +109,6 @@ def build_model(model_input_spec):
         normalization_type=hyperparameters['normalization_type'],
         next_state_type=hyperparameters['next_state_type']
     )(graph)
-
-    graph = mt_albis.MtAlbisGraphUpdate(
-        units=hyperparameters['node_state_dim'],
-        message_dim=hyperparameters['node_state_dim'],
-        receiver_tag=tfgnn.SOURCE,
-        # edge_feature_name='ARGUMENT_INDEX',
-        node_set_names=None,
-        state_dropout_rate=hyperparameters['state_dropout_rate'],
-        edge_dropout_rate=hyperparameters['edge_dropout_rate'],
-        l2_regularization=hyperparameters['l2_regularization'],
-        attention_type=hyperparameters['attention_type'],
-        attention_num_heads=hyperparameters['attention_num_heads'],
-        simple_conv_reduce_type=hyperparameters['simple_conv_reduce_type'],
-        normalization_type=hyperparameters['normalization_type'],
-        next_state_type=hyperparameters['next_state_type']
-    )(graph)
-
-  graph = mt_albis.MtAlbisGraphUpdate(
-      units=hyperparameters['node_state_dim'],
-      message_dim=hyperparameters['node_state_dim'],
-      receiver_tag=tfgnn.TARGET,
-      # edge_feature_name='ARGUMENT_INDEX',
-      node_set_names=["AST_NODE"],
-      state_dropout_rate=hyperparameters['state_dropout_rate'],
-      edge_dropout_rate=hyperparameters['edge_dropout_rate'],
-      l2_regularization=hyperparameters['l2_regularization'],
-      attention_type=hyperparameters['attention_type'],
-      attention_num_heads=hyperparameters['attention_num_heads'],
-      simple_conv_reduce_type=hyperparameters['simple_conv_reduce_type'],
-      normalization_type=hyperparameters['normalization_type'],
-      next_state_type=hyperparameters['next_state_type']
-  )(graph)
 
   # Read hidden states from AST_NODE nodeset
   node_features = tfgnn.keras.layers.Pool(tfgnn.CONTEXT, "max", node_set_name=['AST_NODE'])(graph)
