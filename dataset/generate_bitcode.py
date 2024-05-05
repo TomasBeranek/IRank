@@ -260,10 +260,9 @@ if __name__ == '__main__':
     # Make output dir path absolute
     args.output_dir = os.path.abspath(args.output_dir)
 
-    # Check if output dir exists
+    # Check if output dir exists, if not - create it
     if not os.path.exists(args.output_dir):
-        print(f"{ERROR}ERROR{ENDC}: construction_phase_d2a.py: output directory '{args.output_dir}' doesn't exist!", file=sys.stderr)
-        exit(1)
+        os.makedirs(args.output_dir)
 
     # Get chronological list of hashes
     hashes = get_git_commit_hashes(args.repository)
