@@ -202,9 +202,21 @@ def run_compile_commands(compiler_args_dict):
 
 
 def save_bitcode(id, bc_files, output_dir):
+    output_bc_file = os.path.join(output_dir, f'{id}.bc')
+
     # Run llvm-link to create a single bitcode file
-    completed_process = subprocess.run(['llvm-link'] + list(bc_files) + ['-o', os.path.join(output_dir, f'{id}.bc')])
-    return completed_process.returncode
+    completed_process = subprocess.run(['llvm-link'] + list(bc_files) + ['-o', output_bc_file])
+
+    if completed_process:
+        # Error happened
+        return completed_process.returncode
+
+    if os.path.exists(output_bc_file):
+        # Everything is OK
+        return 0
+    else:
+        # The output .bc file is missing
+        return 1
 
 
 def files_updated(tracked_files, hash, prev_hash):
