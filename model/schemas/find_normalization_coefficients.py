@@ -67,10 +67,13 @@ def extract_operators(full_name_list):
 
 
 def find_normalization_coefficients(directory, num_samples, normalization_coefficients, train_ids):
+    first_dir = True
+
     # Iterate over samples
     for subdir, _, files in tqdm(os.walk(directory), total=num_samples):
-        # Skipt all the dirs which aren't individual samples
-        if subdir.split('D2A-CPG')[1].count('/') <= 1:
+        # Skipt first dir - its the parent dir itself
+        if first_dir:
+            first_dir = False
             continue
 
         # Skip val (dev) and test samples
@@ -146,12 +149,12 @@ def find_context_normalization_coefficients(train_ids, slicing_info_TP_file, sli
 
 
 if __name__ == '__main__':
-    path_to_d2a = os.path.normpath(sys.argv[1]) # ../../D2A-CPG
-    project = sys.argv[2] # libtiff, openssl, ...
-    splits_path = sys.argv[3] # ../../dataset/d2a/splits.csv
-    d2a_file = sys.argv[4] # ../../dataset/slicing-info/libtiff_labeler_
-    slicing_info_TP_file = d2a_file + '1.csv'
-    slicing_info_FP_file = d2a_file + '0.csv'
+    path_to_project_FP = sys.argv[1] # ../../D2A-CPG/libtiff_0
+    path_to_project_TP = sys.argv[2] # ../../D2A-CPG/libtiff_1
+    project = sys.argv[3] # libtiff, openssl, ...
+    splits_path = sys.argv[4] # ../../dataset/d2a/splits.csv
+    slicing_info_FP_file = sys.argv[5] # ../../dataset/slicing-info/libtiff_labeler_0.csv
+    slicing_info_TP_file = sys.argv[6] # ../../dataset/slicing-info/libtiff_labeler_1.csv
 
     # We need to increase possible size of CSV cell - for array literals, array types etc.
     csv.field_size_limit(sys.maxsize)
@@ -170,11 +173,9 @@ if __name__ == '__main__':
     normalization_coefficients['OPERATORS'] = set()
 
     # FP
-    path_to_project_FP = f'{path_to_d2a}/{project}_0'
     normalization_coefficients = find_normalization_coefficients(path_to_project_FP, num_samples['libtiff_0'], normalization_coefficients, train_ids)
 
     # TP
-    path_to_project_TP = f'{path_to_d2a}/{project}_1'
     normalization_coefficients = find_normalization_coefficients(path_to_project_TP, num_samples['libtiff_1'], normalization_coefficients, train_ids)
 
     # Load D2A and extract context info - only LINE for now

@@ -79,11 +79,13 @@ example-global-vars: clean-example-global-vars
 	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_GLOBAL_VARS_DIR)/graph $(EXAMPLE_GLOBAL_VARS_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
 	python3 visualize_graph.py $(EXAMPLE_GLOBAL_VARS_DIR)/graph
 
+python3.8 find_normalization_coefficients.py graph-d2a/httpd_0/ graph-d2a/httpd_1/ httpd d2a/splits.csv slicing-info/httpd_labeler_0.csv slicing-info/httpd_labeler_1.csv
+
 extract-norm-coeffs-libtiff:
-	python3 find_normalization_coefficients.py ../../D2A-CPG/ libtiff ../../dataset/d2a/splits.csv ../../dataset/slicing-info/libtiff_labeler_
+	python3 find_normalization_coefficients.py ../../D2A-CPG/libtiff_0 ../../D2A-CPG/libtiff_1 libtiff ../../dataset/d2a/splits.csv ../../dataset/slicing-info/libtiff_labeler_0.csv ../../dataset/slicing-info/libtiff_labeler_1.csv
 
 extract-norm-coeffs-httpd:
-	python3 find_normalization_coefficients.py ../../D2A-CPG/ httpd ../../dataset/d2a/splits.csv ../../dataset/slicing-info/httpd_labeler_
+	python3 find_normalization_coefficients.py ../../D2A-CPG/httpd_0 ../../D2A-CPG/httpd_1 httpd ../../dataset/d2a/splits.csv ../../dataset/slicing-info/httpd_labeler_0.csv ../../dataset/slicing-info/httpd_labeler_1.csv
 
 extract-norm-coeffs-nginx:
-	python3 find_normalization_coefficients.py ../../D2A-CPG/ nginx ../../dataset/d2a/splits.csv ../../dataset/slicing-info/nginx_labeler_
+	python3 find_normalization_coefficients.py ../../D2A-CPG/nginx_0 ../../D2A-CPG/nginx_1 nginx ../../dataset/d2a/splits.csv ../../dataset/slicing-info/nginx_labeler_0.csv ../../dataset/slicing-info/nginx_labeler_1.csv
