@@ -27,7 +27,7 @@ export ENDC='\033[0m'
 create_cpgbin() {
     rc=$1
     bug_id=$2
-		entry_function=$3
+		entry=$3
 		file=$4
 		fun=$5
 		line=$6
@@ -40,7 +40,7 @@ create_cpgbin() {
 		bc_combined="${bitcode_dir}/${bug_id}.bc"
 
 		if [ ! -e "${bc_combined}" ]; then
-			# samples without bitcode are skipped (they coun as unsuccessfull)
+			# samples without bitcode are skipped (they count as unsuccessfull)
 			printf "${WARNING}WARNING${ENDC}: ${script_name}: sample '${bug_id}' doesn't have bitcode!\n"
 			exit 0
 		fi
@@ -50,13 +50,13 @@ create_cpgbin() {
 
 		# slice the combined LLVM bitcode according to extracted slicing criteria
 		# variables already contain required '&' sign
-		timeout 3s llvm-slicer --entry=${entry_function} --sc="${file}#${fun}#${line}#${variable}" -o=${bc_sliced} ${bc_combined} > /dev/null 2> ${tmp_dir}/llvm_slicer_stderr.txt
+		timeout 3s llvm-slicer --entry=${entry} --sc="${file}#${fun}#${line}#${variable}" -o=${bc_sliced} ${bc_combined} > /dev/null 2> ${tmp_dir}/llvm_slicer_stderr.txt
 
 		# check if llvm-slicer timed-out, there are 2 reason for that:
 		# 	1) llvm-slicer got stuck
 		#		2) llvm-slicer takes too long - the graph will be too large (we dont want it)
 		if [ $? -eq 124 ]; then
-			printf "${WARNING}WARNING${ENDC}: ${script_name}: skipping bug '${bug_id}' because llvm-slicer timed out for slicing criteria '--entry=${entry_function} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
+			printf "${WARNING}WARNING${ENDC}: ${script_name}: skipping bug '${bug_id}' because llvm-slicer timed out for slicing criteria '--entry=${entry} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
 			rm -rf ${tmp_dir}
 			exit 0
 		fi
@@ -65,7 +65,7 @@ create_cpgbin() {
 		if grep "No reachable slicing criteria:" ${tmp_dir}/llvm_slicer_stderr.txt > /dev/null
 		then
 			# llvm-slicer coudn't match extracted slicing criteria to bitcode
-			printf "${WARNING}WARNING${ENDC}: ${script_name}: skipping bug '${bug_id}' because llvm-slicer couldn't match the extracted slicing criteria '--entry=${entry_function} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
+			printf "${WARNING}WARNING${ENDC}: ${script_name}: skipping bug '${bug_id}' because llvm-slicer couldn't match the extracted slicing criteria '--entry=${entry} --sc=\"${file}#${fun}#${line}#${variable}\"'!\n"
 			rm -rf ${tmp_dir}
 			exit 0
 		fi
