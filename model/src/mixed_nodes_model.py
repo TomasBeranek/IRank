@@ -14,7 +14,8 @@ import functools
 # Hyperparameters (values not defined here have default values)
 hyperparameters = {
   'epochs': 200,
-  'learning_rate': 0.0001,
+  'learning_rate': 0.0002,
+  'early_stopping_patience': 5,
   'batch_size': 6,
   'num_graph_updates': 9,
   'node_state_dim': 18,
@@ -24,12 +25,12 @@ hyperparameters = {
   'state_dropout_rate': 0.2,
   'edge_dropout_rate': 0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 1e-5, # e.g. 1e-5
-  'attention_type': 'none', # "none", "multi_head", or "gat_v2",
-  'attention_num_heads': 4, # 4 is default
+  'attention_type': 'gat_v2', # "none", "multi_head", or "gat_v2",
+  'attention_num_heads': 3, # 4 is default
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'We try model 8, but with ARGUMENT_INDEX' # description of changes since the last version
+  'note': 'We try model 8, but with attention.' # description of changes since the last version
 }
 
 # Pozdeji zkusit attention
@@ -89,8 +90,8 @@ def build_model(model_input_spec):
   # Set initial states
   graph = tfgnn.keras.layers.MapFeatures(
       node_sets_fn=set_initial_node_state,
-      # edge_sets_fn=drop_all_features)(graph)
-      edge_sets_fn=encode_ARGUMENT_INDEX)(graph)
+      edge_sets_fn=drop_all_features)(graph)
+      # edge_sets_fn=encode_ARGUMENT_INDEX)(graph)
 
   # Layers of updates
   for i in range(hyperparameters['num_graph_updates']):
@@ -98,7 +99,7 @@ def build_model(model_input_spec):
         units=hyperparameters['node_state_dim'],
         message_dim=hyperparameters['node_state_dim'],
         receiver_tag=hyperparameters['receiver_tag'],
-        edge_feature_name='ARGUMENT_INDEX',
+        # edge_feature_name='ARGUMENT_INDEX',
         node_set_names=None if i < hyperparameters['num_graph_updates']-1 else ["AST_NODE"],
         state_dropout_rate=hyperparameters['state_dropout_rate'],
         edge_dropout_rate=hyperparameters['edge_dropout_rate'],
@@ -280,7 +281,7 @@ def train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_
 
   early_stopping = EarlyStopping(monitor='val_auc',
                                 min_delta=0.0001,
-                                patience=15,
+                                patience=hyperparameters['early_stopping_patience'],
                                 restore_best_weights=True)
 
   # Train the model
