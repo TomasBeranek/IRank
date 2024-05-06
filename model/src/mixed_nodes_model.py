@@ -15,14 +15,14 @@ import functools
 hyperparameters = {
   'epochs': 200,
   'learning_rate': 0.0002,
-  'early_stopping_patience': 5,
+  'early_stopping_patience': 10,
   'batch_size': 6,
   'num_graph_updates': 9,
   'node_state_dim': 18,
   'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
   # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
   # 'argument_edge_dim': 2, # not used for now
-  'state_dropout_rate': 0.2,
+  'state_dropout_rate': 0.22,
   'edge_dropout_rate': 0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 1e-5, # e.g. 1e-5
   'attention_type': 'gat_v2', # "none", "multi_head", or "gat_v2",
@@ -30,7 +30,7 @@ hyperparameters = {
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'We try model 8, but with attention.' # description of changes since the last version
+  'note': 'We try model 13 and increase dropout and patience.' # description of changes since the last version
 }
 
 # Pozdeji zkusit attention
