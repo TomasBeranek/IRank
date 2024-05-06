@@ -321,38 +321,38 @@ def create_directional_graph(node_data, edge_data):
 def plot_graph(G):
     # Define a node color mapping
     node_color_map = {
-            'METHOD': 'red',
-            'METHOD_PARAMETER_IN': 'blue',
-            'METHOD_RETURN': 'blue',
-            'MEMBER': 'blue',
-            'TYPE': 'blue',
-            'TYPE_DECL': 'blue', # Needs to be removed carefully
-            'BLOCK': 'blue',
-            'CALL': 'blue',
-            'FIELD_IDENTIFIER': 'blue',
-            'IDENTIFIER': 'blue',
-            'LITERAL': 'green',
-            'LOCAL': 'blue',
-            'METHOD_REF': 'blue',
-            'RETURN': 'blue',
-            'UNKNOWN': 'blue',
-            # Splitted nodes
-            'METHOD_INFO': 'orange',
-            'LITERAL_VALUE': 'purple',
+            # 'METHOD': 'red',
+            # 'METHOD_PARAMETER_IN': 'blue',
+            # 'METHOD_RETURN': 'blue',
+            # 'MEMBER': 'blue',
+            # 'TYPE': 'green',
+            # 'TYPE_DECL': 'blue', # Needs to be removed carefully
+            # 'BLOCK': 'blue',
+            # 'CALL': 'black',
+            # 'FIELD_IDENTIFIER': 'green',
+            # 'IDENTIFIER': 'red',
+            # 'LITERAL': 'purple',
+            # 'LOCAL': 'blue',
+            # 'METHOD_REF': 'blue',
+            # 'RETURN': 'blue',
+            # 'UNKNOWN': 'blue',
+            # # Splitted nodes
+            # 'METHOD_INFO': 'orange',
+            # 'LITERAL_VALUE': 'purple',
     }
 
     # Define a edge color mapping
     edge_color_map = {
-        # 'AST': 'red',
+        # 'AST': 'green',
         # 'CALL': 'purple',
-        # 'CDG': 'green',
+        'CDG': 'red',
         # 'CFG': 'blue',
-        # 'REACHING_DEF': 'grey',
-        # 'RECEIVER': 'cyan',
-        # 'ARGUMENT': 'yellow',
-        'REF': 'red',
-        'METHOD_INFO_LINK': 'orange',
-        'LITERAL_VALUE_LINK': 'purple',
+        # 'ARGUMENT': 'red',
+        # 'REF': 'purple',
+        # 'EVAL_TYPE': 'red',
+        # 'CONSISTS_OF': 'red',
+        # 'LITERAL_VALUE_LINK': 'purple',
+        # 'METHOD_INFO_LINK': 'orange',
     }
 
     # Get types of nodes/edges
@@ -626,7 +626,7 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
             remove_inner(node, G)
         else:
             # This shouldn't happen, because it would mean that the AST is not a tree
-            print(f'ERROR: visualize_graph.py: current graph has a node which is not root, inner or leaf - which is not possible in a tree!', file=sys.stderr)
+            print(f'ERROR: feature_engineering.py: current graph has a node which is not root, inner or leaf - which is not possible in a tree!', file=sys.stderr)
             exit(1)
 
     wccs_after = list(nx.weakly_connected_components(G))
@@ -634,7 +634,7 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
 
     # The number of WCCs shouldn't change after removal of invalid nodes
     # if wccs_num_before != wccs_num_after:
-    #     print('ERROR: visualize_graph.py: By removing the invalid nodes, the graph was split into multiple WCCs!')
+    #     print('ERROR: feature_engineering.py: By removing the invalid nodes, the graph was split into multiple WCCs!')
 
     # Remove WCCs which are composed only from BLOCK nodes
     for wcc in wccs_after:
@@ -696,12 +696,12 @@ def remove_invalid_nodes(sample_id, node_data, edge_data, valid_nodes):
 
     # Check if the graph is a single WCC
     if len(list(nx.weakly_connected_components(G))) != 1:
-        print(f'ERROR: visualize_graph.py: The graph {sample_id} consists of more than one WCC!', file=sys.stderr)
+        print(f'ERROR: feature_engineering.py: The graph {sample_id} consists of more than one WCC!', file=sys.stderr)
 
     # Print compression of the graph after removal
     # after_edge_count = G.number_of_edges()
     # compression_percentage = ((original_edge_count - after_edge_count) / original_edge_count) * 100
-    # print(f'Note: visualize_graph.py: Graph \'{sample_id}\' compressed by {compression_percentage:.1f}%.')
+    # print(f'Note: feature_engineering.py: Graph \'{sample_id}\' compressed by {compression_percentage:.1f}%.')
 
     return G
 
@@ -1064,7 +1064,7 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
 
     # Its faulty sample - skip it
     if graph_in_dfs is None:
-        print(f'ERROR: visualize_graph.py: The graph {sample_id} doesn\'t contain any AST edges!', file=sys.stderr)
+        print(f'ERROR: feature_engineering.py: The graph {sample_id} doesn\'t contain any AST edges!', file=sys.stderr)
         return
 
     # If one of CONSISTS_OF, MEMBER or EVAL_MEMBER_TYPE dfs is missing, others should be missing as well
@@ -1252,10 +1252,10 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
         example = tfgnn.write_example(graph)
         splits['test'][1].write(example.SerializeToString())
     else:
-        print(f'ERROR: visualize_graph.py: Sample ID \'{sample_id}\' is not in train, val nor test data!', file=sys.stderr)
+        print(f'ERROR: feature_engineering.py: Sample ID \'{sample_id}\' is not in train, val nor test data!', file=sys.stderr)
         exit(1)
 
-    print(f'Note: visualize_graph.py: Graph Tensor \'{sample_id}\' successfully saved!')
+    print(f'Note: feature_engineering.py: Graph Tensor \'{sample_id}\' successfully saved!')
 
 
 def load_context_data(d2a_file, slicing_info_file):
@@ -1332,7 +1332,7 @@ if __name__ == '__main__':
                 os.remove(file)
 
         # Set normalization_coefficients - we do it globally because it is used across many functions
-        norm_coeffs = norm_coeffs[project]
+        norm_coeffs = norm_coeffs['nginx+libtiff+httpd']
 
         # Same for label
         LABEL = label

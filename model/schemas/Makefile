@@ -10,32 +10,38 @@ all: experiment
 
 # This experiment contains all types of invalid nodes for demonstration
 experiment:
-	python3 visualize_graph.py experiment/sample_graph
+	python3 feature_engineering.py experiment/sample_graph
 
 experiment2:
-	python3 visualize_graph.py ../../D2A-CPG/1
+	python3 feature_engineering.py ../../D2A-CPG/1
 
 httpd-sample:
-	python3 visualize_graph.py httpd_sample
+	python3 feature_engineering.py httpd_sample
 
 # Use this as: 'time make measure-time'
 measure-time:
-	find ../../D2A-CPG -mindepth 2 -type d | head -n 50 | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ffmpeg_1.tfrecords ffmpeg 1
+	find ../../D2A-CPG -mindepth 2 -type d | head -n 50 | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ffmpeg_1.tfrecords ffmpeg 1
 
 transform-libtiff-1:
-	find ../../D2A-CPG/libtiff_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_1.tfrecords libtiff 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/libtiff_labeler_1.pickle.gz ../../dataset/slicing-info/libtiff_labeler_1.csv
+	find ../../D2A-CPG/libtiff_1 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_1.tfrecords libtiff 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/libtiff_labeler_1.pickle.gz ../../dataset/slicing-info/libtiff_labeler_1.csv
 
 transform-libtiff-0:
-	find ../../D2A-CPG/libtiff_0 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_0.tfrecords libtiff 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/libtiff_labeler_0.pickle.gz ../../dataset/slicing-info/libtiff_labeler_0.csv
+	find ../../D2A-CPG/libtiff_0 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libtiff_0.tfrecords libtiff 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/libtiff_labeler_0.pickle.gz ../../dataset/slicing-info/libtiff_labeler_0.csv
 
 transform-httpd-1:
-	find ../../D2A-CPG/httpd_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/httpd_1.tfrecords httpd 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/httpd_labeler_1.pickle.gz ../../dataset/slicing-info/httpd_labeler_1.csv
+	find ../../D2A-CPG/httpd_1 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/httpd_1.tfrecords httpd 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/httpd_labeler_1.pickle.gz ../../dataset/slicing-info/httpd_labeler_1.csv
 
 transform-httpd-0:
-	find ../../D2A-CPG/httpd_0 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/httpd_0.tfrecords httpd 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/httpd_labeler_0.pickle.gz ../../dataset/slicing-info/httpd_labeler_0.csv
+	find ../../D2A-CPG/httpd_0 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/httpd_0.tfrecords httpd 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/httpd_labeler_0.pickle.gz ../../dataset/slicing-info/httpd_labeler_0.csv
+
+transform-nginx-1:
+	find ../../D2A-CPG/nginx_1 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/nginx_1.tfrecords nginx 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/nginx_labeler_1.pickle.gz ../../dataset/slicing-info/nginx_labeler_1.csv
+
+transform-nginx-0:
+	find ../../D2A-CPG/nginx_0 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/nginx_0.tfrecords nginx 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/nginx_labeler_0.pickle.gz ../../dataset/slicing-info/nginx_labeler_0.csv
 
 transform-ffmpeg-1:
-	find ../../D2A-CPG/ffmpeg_1 -mindepth 1 -type d | python3 visualize_graph.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/ffmpeg_1.tfrecords ffmpeg 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/ffmpeg_labeler_1.pickle.gz ../../dataset/slicing-info/ffmpeg_labeler_1.csv
+	find ../../D2A-CPG/ffmpeg_1 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/ffmpeg_1.tfrecords ffmpeg 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/ffmpeg_labeler_1.pickle.gz ../../dataset/slicing-info/ffmpeg_labeler_1.csv
 
 clean-example-struct-alias:
 	rm -rf $(EXAMPLE_STRUCT_ALIAS_DIR)/main.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/point.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.cpg.bin.zip $(EXAMPLE_STRUCT_ALIAS_DIR)/graph $(EXAMPLE_STRUCT_ALIAS_DIR)/workspace $(EXAMPLE_STRUCT_ALIAS_DIR)/out $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.ll
