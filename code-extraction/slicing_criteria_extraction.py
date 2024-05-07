@@ -424,7 +424,7 @@ if __name__ == "__main__":
             try:
                 reports = json.load(f)
             except json.decoder.JSONDecodeError:
-                print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{report_json_file}" in not in JSON format!', file=sys.stderr)
+                print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{args.file}" in not in JSON format!', file=sys.stderr)
                 exit(7)
 
     # Print output header
