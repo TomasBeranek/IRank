@@ -25,5 +25,8 @@ int main(int argc, char const *argv[]) {
     y = g(x);
   }
 
+  int *f = NULL;
+  *f = 10; 
+
   return y;
 }
