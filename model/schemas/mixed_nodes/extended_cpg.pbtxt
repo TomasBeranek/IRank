@@ -121,8 +121,8 @@ edge_sets {
 
 # Nodes TYPE_ARGUMENT, TYPE_PARAMETER, and BINDS_TO edges model parameterizable data types - such as Java Generics and C++ templates. However, these types do not appear in LLVM IR, and therefore, the graphs do not contain them. Similarly, INHERITS_FROM edges are not present in the graphs. Nonetheless, the Type Layer models type hierarchies and aliases. LLVM IR allows for both structured data types and aliases (https://groups.seas.harvard.edu/courses/cs153/2019fa/lectures/Lec07-Datastructs.pdf). In the C language (the primary focus of this work), structured data types (struct Name {...}) and aliases (typedef OldName NewName) are also present. However, when converting from C to LLVM IR, aliases are removed (real names are used) and some structures are decomposed (though not all, examples of preserved struct and removed alias can be seen in <REPO>/model/schemas/struct-alias/ - it's advisable to look into human-readable LLVM IR). For this reason, it is necessary to include information about structures in the output graphs - meaning names of structures, their elements, and hierarchy. If we use the Type Layer for this purpose, it simplifies the other AST nodes - many AST nodes (where it makes sense e.g., LOCAL, LITERAL, IDENTIFIER, ...) contain associated information about their data type. Also, such a node is connected by an EVAL_TYPE edge to a TYPE node, thus creating redundant information about data types. Since we need TYPE nodes for information about structured data types, we will keep only them and remove the information in AST nodes - thus significantly simplifying AST nodes. TYPE nodes will only be removed if they have no incoming edges - these are:
 
-    1) Metadata remnants from original aliases, but since these aliases are not used anywhere in the actual LLVM IR code, this information is unnecessary.
-    2) Function signatures - they are also redundant, as each callsite is connected with the arguments/parameters of the called function (which are connected with their data type) and its return value (which is also connected with its data type), so the signature is implicitly given embedded in the graph.
+#    1) Metadata remnants from original aliases, but since these aliases are not used anywhere in the actual LLVM IR code, this information is unnecessary.
+#    2) Function signatures - they are also redundant, as each callsite is connected with the arguments/parameters of the called function (which are connected with their data type) and its return value (which is also connected with its data type), so the signature is implicitly given embedded in the graph.
 
 # Further, we will remove TYPE_DECL nodes, which do not add any information over TYPE nodes when used on LLVM IR. However, if the input were a language with parameterized types, a TYPE_DECL node would represent, for example, List[T] (the parameterizable type itself) and a TYPE node would represent List[Int] (an instance of the parameterizable data type). TYPE_DECL nodes, however, connect TYPE nodes with their components (if any) - MEMBER type nodes. After removing some TYPE_DECL nodes, it is necessary to reconnect MEMBER nodes. ALIAS_OF edges connect TYPE nodes (original alias names) with their type (TYPE node), but since these "alias" nodes will be removed, it does not make sense to preserve ALIAS_OF edges. Verification that "alias" nodes and ALIAS_OF edges are unnecessary can be done by removing all TYPE nodes that do not have any incoming EVAL_TYPE edges (no part of the code uses this type), which will also remove all ALIAS_OF edges.
 
@@ -307,7 +307,7 @@ node_sets {
     features {
       key: "INVALID_POINTER"
       value: {
-        description: "For numeric values, LEN == 0. For array-like types, there is the length of the array.."
+        description: "Flag if the pointer contains 'nullptr'."
         dtype: DT_FLOAT
       }
     }
@@ -315,7 +315,7 @@ node_sets {
     features {
       key: "ZERO_INITIALIZED"
       value: {
-        description: "Flag if the pointer contains 'nullptr'."
+        description: "Flag if the value was initialized by zeroes."
         dtype: DT_FLOAT
       }
     }
