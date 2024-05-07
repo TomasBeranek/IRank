@@ -12,6 +12,7 @@ import tensorflow_gnn as tfgnn
 import tensorflow as tf
 import gzip
 import pickle
+import json
 
 
 FP_data_types = {'void': 0, # For code simplicity (although it isn't FP type)
@@ -160,6 +161,7 @@ norm_coeffs = {'libtiff': {
               }
 
 LABEL = None
+mode = 'training'
 
 
 def drop_unwanted_attributes(df, type_name):
@@ -1018,6 +1020,7 @@ def convert_ids_to_tfgnn_format(graph_in_dfs):
         'REF':                {'SOURCE': 'AST_NODE',      'TARGET': 'AST_NODE'}
     }
 
+
     # We need to convert source and target columns of all edge sets
     for edge_set_name, val in edgeset_info.items():
         if edge_set_name not in graph_in_dfs:
@@ -1026,9 +1029,12 @@ def convert_ids_to_tfgnn_format(graph_in_dfs):
         source_nodeset = val['SOURCE']
         target_nodeset = val['TARGET']
 
+        get_source_node_loc = lambda id: graph_in_dfs[source_nodeset].index.get_loc(id)
+        get_target_node_loc = lambda id: graph_in_dfs[target_nodeset].index.get_loc(id)
+
         # Transform source and target node ID to their location index in their dataframe
-        graph_in_dfs[edge_set_name]['source'] = graph_in_dfs[edge_set_name]['source'].apply(lambda id: graph_in_dfs[source_nodeset].index.get_loc(id))
-        graph_in_dfs[edge_set_name]['target'] = graph_in_dfs[edge_set_name]['target'].apply(lambda id: graph_in_dfs[target_nodeset].index.get_loc(id))
+        graph_in_dfs[edge_set_name]['source'] = graph_in_dfs[edge_set_name]['source'].apply(get_source_node_loc)
+        graph_in_dfs[edge_set_name]['target'] = graph_in_dfs[edge_set_name]['target'].apply(get_target_node_loc)
 
     return graph_in_dfs
 
@@ -1059,7 +1065,11 @@ def process_sample(directory):
 
 
 def save_sample(directory, graph_spec, output_file, splits, context_data):
-    sample_id = directory.split('/')[-1]
+    if mode == 'training':
+        sample_id = directory.split('/')[-1]
+    elif mode == 'inference':
+        sample_id = LABEL
+
     graph_in_dfs = process_sample(directory)
 
     # Its faulty sample - skip it
@@ -1240,25 +1250,29 @@ def save_sample(directory, graph_spec, output_file, splits, context_data):
         }
     )
 
-    # Save TFGNN GraphTensor to TFRecords file
-    # with TFRecord_writing_lock:
-    if sample_id in splits['train'][0]:
-        example = tfgnn.write_example(graph)
-        splits['train'][1].write(example.SerializeToString())
-    elif sample_id in splits['val'][0]:
-        example = tfgnn.write_example(graph)
-        splits['val'][1].write(example.SerializeToString())
-    elif sample_id in splits['test'][0]:
+    if mode == 'training':
+        # Save TFGNN GraphTensor to TFRecords file
+        # with TFRecord_writing_lock:
+        if sample_id in splits['train'][0]:
+            example = tfgnn.write_example(graph)
+            splits['train'][1].write(example.SerializeToString())
+        elif sample_id in splits['val'][0]:
+            example = tfgnn.write_example(graph)
+            splits['val'][1].write(example.SerializeToString())
+        elif sample_id in splits['test'][0]:
+            example = tfgnn.write_example(graph)
+            splits['test'][1].write(example.SerializeToString())
+        else:
+            print(f'ERROR: feature_engineering.py: Sample ID \'{sample_id}\' is not in train, val nor test data!', file=sys.stderr)
+            exit(1)
+    elif mode == 'inference':
         example = tfgnn.write_example(graph)
         splits['test'][1].write(example.SerializeToString())
-    else:
-        print(f'ERROR: feature_engineering.py: Sample ID \'{sample_id}\' is not in train, val nor test data!', file=sys.stderr)
-        exit(1)
 
     print(f'Note: feature_engineering.py: Graph Tensor \'{sample_id}\' successfully saved!')
 
 
-def load_context_data(d2a_file, slicing_info_file):
+def load_context_data(reports_file, slicing_info_file, from_infer=False):
     BUG_TYPES = {'NULL_DEREFERENCE': 1,
                  'UNINITIALIZED_VALUE': 2,
                  'INFERBO_ALLOC_MAY_BE_BIG': 3,
@@ -1282,25 +1296,39 @@ def load_context_data(d2a_file, slicing_info_file):
     line_info = df.set_index('bug_id')['line'].to_dict()
     context_data.update(line_info)
 
-    # Extract BUG_TYPE for each sample from d2a archives
-    with gzip.open(d2a_file, mode = 'rb') as f:
-        while True:
-            try:
-                sample = pickle.load(f)
-                bug_id = sample['id']
+    if from_infer:
+        with open(reports_file, 'r') as f:
+            infer_reports = json.load(f)
 
-                # If it is not in slicing info it is likely unsupported bug type - skip it
-                if bug_id in context_data:
-                    bug_type = sample['bug_type']
-                    line = context_data[bug_id]
+        for id, infer_report in enumerate(infer_reports):
+            if id in context_data:
+                line = context_data[id]
+                bug_type = infer_report['bug_type']
 
-                    # Encode and normalize the values
-                    bug_type_normalized = np.float32(BUG_TYPES.get(bug_type, 0) / len(BUG_TYPES)) # 0 for unrecognized bug types
-                    line_normalized = np.float32(line / norm_coeffs['LINE']).astype('float32')
+                bug_type_normalized = np.float32(BUG_TYPES.get(bug_type, 0) / len(BUG_TYPES)) # 0 for unrecognized bug types
+                line_normalized = np.float32(line / norm_coeffs['LINE']).astype('float32')
 
-                    context_data[bug_id] = (bug_type_normalized, line_normalized) # Make it a tuple
-            except EOFError:
-                break
+                context_data[id] = (bug_type_normalized, line_normalized) # Make it a tuple
+    else:
+        # Extract BUG_TYPE for each sample from d2a archives
+        with gzip.open(reports_file, mode = 'rb') as f:
+            while True:
+                try:
+                    sample = pickle.load(f)
+                    bug_id = sample['id']
+
+                    # If it is not in slicing info it is likely unsupported bug type - skip it
+                    if bug_id in context_data:
+                        bug_type = sample['bug_type']
+                        line = context_data[bug_id]
+
+                        # Encode and normalize the values
+                        bug_type_normalized = np.float32(BUG_TYPES.get(bug_type, 0) / len(BUG_TYPES)) # 0 for unrecognized bug types
+                        line_normalized = np.float32(line / norm_coeffs['LINE']).astype('float32')
+
+                        context_data[bug_id] = (bug_type_normalized, line_normalized) # Make it a tuple
+                except EOFError:
+                    break
 
     return context_data
 
@@ -1315,52 +1343,86 @@ if __name__ == '__main__':
         G = split_nodes(G)
         plot_graph(G)
     else:
-        # Load TFGNN Schema
-        schema = tfgnn.read_schema(sys.argv[1])
-        graph_spec = tfgnn.create_graph_spec_from_schema_pb(schema)
+        if len(sys.argv) == 5:
+            mode = 'inference'
+        else:
+            mode = 'training'
 
-        output_file = sys.argv[2]
-        project = sys.argv[3] # libtiff, ffmpeg, ...
-        label = int(sys.argv[4]) # 0 or 1
-        splits_file = sys.argv[5] # ../../dataset/d2a/splits.csv
-        d2a_file = sys.argv[6] # ../../dataset/d2a/libtiff_labeler_1.pickle.gz, ...
-        slicing_info_file = sys.argv[7] # ../../dataset/slicing-info/libtiff_labeler_1.csv, ...
+        if mode == 'training':
+            # Load TFGNN Schema
+            schema = tfgnn.read_schema(sys.argv[1])
+            graph_spec = tfgnn.create_graph_spec_from_schema_pb(schema)
 
-        # Remove previous results, otherwise we only append the new ones
-        for file in [output_file + '.train', output_file + '.val', output_file + '.test']:
-            if os.path.exists(file):
+            output_file = sys.argv[2]
+            project = sys.argv[3] # libtiff, ffmpeg, ...
+            label = int(sys.argv[4]) # 0 or 1
+            splits_file = sys.argv[5] # ../../dataset/d2a/splits.csv
+            d2a_file = sys.argv[6] # ../../dataset/d2a/libtiff_labeler_1.pickle.gz, ...
+            slicing_info_file = sys.argv[7] # ../../dataset/slicing-info/libtiff_labeler_1.csv, ...
+            if len(sys.argv) > 8:
+                norm_coeffs_from = sys.argv[8] # nginx, httpd, libtiff, nginx+libtiff+httpd
+            else:
+                norm_coeffs_from = project
+
+            # Remove previous results
+            for file in [output_file + '.train', output_file + '.val', output_file + '.test']:
+                if os.path.exists(file):
+                    os.remove(file)
+
+            # Set normalization_coefficients - we do it globally because it is used across many functions
+            norm_coeffs = norm_coeffs[norm_coeffs_from]
+
+            # Same for label
+            LABEL = label
+
+            # Load splits and determine which data are for training, validation (development) and testing
+            df = pd.read_csv(splits_file, header=None)
+            project_df = df[df[0].apply(lambda x: x.startswith(f'{project}_') and x.endswith(f'_{LABEL}'))] # Filter only current project and GT
+            train_ids = set(project_df[project_df[1] == 'train'][0]) # Filter train data and keep only IDs
+            val_ids   = set(project_df[project_df[1] == 'dev'][0])
+            test_ids  = set(project_df[project_df[1] == 'test'][0])
+
+            # Load context data - LINE and BUG_TYPE (LABEL is already known)
+            context_data = load_context_data(d2a_file, slicing_info_file)
+
+            # Open tfrecords files now, because appending samples after closing the files is not supported
+            with tf.io.TFRecordWriter(output_file + '.train') as writer_train, \
+                 tf.io.TFRecordWriter(output_file + '.val') as writer_val, \
+                 tf.io.TFRecordWriter(output_file + '.test') as writer_test:
+
+                splits = {'train': (train_ids, writer_train), 'val': (val_ids, writer_val), 'test': (test_ids, writer_test)}
+
+                # Stdin has data, process each line (parallel seems to be slower + some tf calls seem to have trouble in parallel)
+                for line in sys.stdin:
+                    directory = line.strip()
+                    save_sample(directory, graph_spec, output_file, splits, context_data)
+        elif mode == 'inference':
+            # Load TFGNN Schema
+            schema = tfgnn.read_schema(sys.argv[1])
+            graph_spec = tfgnn.create_graph_spec_from_schema_pb(schema)
+            output_file = sys.argv[2]
+            infer_json = sys.argv[3]
+            slicing_info_file = sys.argv[4]
+
+            # Remove previous results
+            if os.path.exists(output_file):
                 os.remove(file)
 
-        # Set normalization_coefficients - we do it globally because it is used across many functions
-        norm_coeffs = norm_coeffs['nginx+libtiff+httpd']
+            # Set normalization_coefficients - we do it globally because it is used across many functions
+            norm_coeffs = norm_coeffs['nginx+libtiff+httpd']
 
-        # Same for label
-        LABEL = label
+            # Load context data - LINE and BUG_TYPE
+            context_data = load_context_data(infer_json, slicing_info_file, from_infer=True)
 
-        # Load splits and determine which data are for training, validation (development) and testing
-        df = pd.read_csv(splits_file, header=None)
-        project_df = df[df[0].apply(lambda x: x.startswith(f'{project}_') and x.endswith(f'_{LABEL}'))] # Filter only current project and GT
-        train_ids = set(project_df[project_df[1] == 'train'][0]) # Filter train data and keep only IDs
-        val_ids   = set(project_df[project_df[1] == 'dev'][0])
-        test_ids  = set(project_df[project_df[1] == 'test'][0])
+            # Open tfrecords files now, because appending samples after closing the files is not supported
+            with tf.io.TFRecordWriter(output_file) as writer_test:
+                splits = {'test': (None, writer_test)}
 
-        # Load context data - LINE and BUG_TYPE (LABEL is already known)
-        context_data = load_context_data(d2a_file, slicing_info_file)
+                # Stdin has data, process each line (parallel seems to be slower + some tf calls seem to have trouble in parallel)
+                for line in sys.stdin:
+                    directory = line.strip()
+                    bug_id = directory.split('/')[-1]
 
-        # Open tfrecords files now, because appending samples after closing the files is not supported
-        with tf.io.TFRecordWriter(output_file + '.train') as writer_train, \
-             tf.io.TFRecordWriter(output_file + '.val') as writer_val, \
-             tf.io.TFRecordWriter(output_file + '.test') as writer_test:
-
-            splits = {'train': (train_ids, writer_train), 'val': (val_ids, writer_val), 'test': (test_ids, writer_test)}
-
-            # Stdin has data, process each line (parallel seems to be slower + some tf calls seem to have trouble in parallel)
-            for line in sys.stdin:
-                directory = line.strip()
-                save_sample(directory, graph_spec, output_file, splits, context_data)
-
-        # Stdin has data, process each line in parallel
-        # with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-        #     for line in sys.stdin:
-        #         directory = line.strip()
-        #         executor.submit(save_sample, directory, graph_spec, output_file)
+                    # for inference we use LABEL to store report ID
+                    LABEL = int(bug_id)
+                    save_sample(directory, graph_spec, output_file, splits, context_data)

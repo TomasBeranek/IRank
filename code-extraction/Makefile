@@ -52,12 +52,9 @@ experiment: clean-experiment install-wrappers experiment-run uninstall-wrappers
 
 experiment-run:
 	@cd example && make
-	./construction_phase /home/tomas/Documents/diplomka/D2A-CPG
+	./inference_pipeline ./
 
 # Delete leftovers from previous runs
 clean-experiment:
 	@cd example && make clean
 	@rm -rf /tmp/infer-out /tmp/infer.lockdir
-
-plot-graph: #experiment
-	python3 ../model/schemas/visualize_graph.py ../D2A-CPG/1

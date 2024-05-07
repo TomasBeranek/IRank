@@ -1,0 +1,81 @@
+#!/bin/bash
+
+script=$(readlink -f "$0")
+script_dir=$(dirname "$script")
+script_name=$(basename "$script")
+
+output_dir="$1"
+
+infer_flags='--bufferoverrun --pulse'
+infer_dir="/tmp/infer-out"
+old_bitcode_files_list="${infer_dir}/old_bc_files.txt"
+new_bitcode_files_list="${infer_dir}/new_bc_files.txt"
+added_bitcode_files_list="${infer_dir}/added_bc_files.txt"
+bc_combined="${infer_dir}/combined.bc"
+slicing_info_file="${infer_dir}/slicing_info.csv"
+bc_sliced="${infer_dir}/sliced.bc"
+cpg_bin="${infer_dir}/sliced.cpg.bin.zip"
+joern_script="${script_dir}/joern_script"
+criteria_extraction_script="${script_dir}/slicing_criteria_extraction.py"
+joern_cpg_bin="${infer_dir}/workspace/sliced.cpg.bin.zip/cpg.bin"
+bitcode_dir="${infer_dir}/bitcode"
+raw_expg_dir="${infer_dir}/raw-ecpg"
+tfgnn_schema="../model/schemas/mixed_nodes/extended_cpg.pbtxt"
+tfrecord_file="${infer_dir}/graphs.tfrecords"
+model_dir="../model/saved_models/8_AUC_0.818/combined_AUC_0.818"
+
+# colors
+OK='\033[0;92m'
+WARNING='\033[0;93m'
+ERROR='\033[0;31m'
+ENDC='\033[0m'
+
+# navigate to Infer's dir
+cd ${infer_dir}
+
+# run infer's analysis phase to generate report.json
+infer analyze --keep-going ${infer_flags} -o ${infer_dir}
+
+# find all .bc files on the system and save them
+find / -type f -name "*.bc" 2> /dev/null > ${new_bitcode_files_list}
+
+# determine which files have been newly added and save them
+grep -Fxvf ${old_bitcode_files_list} ${new_bitcode_files_list} > ${added_bitcode_files_list}
+
+# link all .bc files into a single one
+llvm-link $(< ${added_bitcode_files_list}) -o ${bc_combined}
+
+# extract slicing criteria for all the bugs
+python3 ${criteria_extraction_script} ${infer_dir}/report.json > ${slicing_info_file}
+rc=$?
+
+# if slicing_criteria_extraction.py exited with return code 0, it means that
+# it successfully processed all the bugs (some may have been skipped) and created
+# slicing_info.csv file
+if [ ${rc} -eq 0 ]
+then
+	printf "${OK}SUCCESS${ENDC}: ${script_name}: slicing criteria has been successfully extracted!\n"
+else
+	printf "${ERROR}ERROR${ENDC}: ${script_name}: slicing_criteria_extraction.py has encountered an unrecoverable error!\n"
+	exit 1
+fi
+
+# prepare bitcode directory
+mkdir -p ${bitcode_dir}
+
+# read the ID column and create symlinks
+awk -F',' '{print $2}' "${slicing_info_file}" | while read -r value; do
+  ln -sf "${bc_combined}" "${bitcode_dir}/${value}.bc"
+done
+
+# move back to script dir
+cd ${script_dir}
+
+# generate raw ECPGs from bitcode
+../dataset/construction_phase_d2a ${raw_expg_dir} ${slicing_info_file} ${bitcode_dir}
+
+# create tfrecords from raw ECPGs
+find ${raw_expg_dir} -mindepth 1 -type d | python3 ../model/schemas/feature_engineering.py  ${tfgnn_schema} ${tfrecord_file} ${infer_dir}/report.json ${slicing_info_file}
+
+# do the inference
+python3 model_inference.py ${tfgnn_schema} ${tfrecord_file} ${model_dir} ${infer_dir}/report.json ${output_dir}/ranked_report.json
