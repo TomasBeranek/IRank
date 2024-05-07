@@ -40,6 +40,12 @@ transform-nginx-1:
 transform-nginx-0:
 	find ../../D2A-CPG/nginx_0 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/nginx_0.tfrecords nginx 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/nginx_labeler_0.pickle.gz ../../dataset/slicing-info/nginx_labeler_0.csv
 
+transform-libav-1:
+	find ../../D2A-CPG/libav_1 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libav_1.tfrecords libav 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/libav_labeler_1.pickle.gz ../../dataset/slicing-info/libav_labeler_1.csv
+
+transform-libav-0:
+	find ../../D2A-CPG/libav_0 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/libav_0.tfrecords libav 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/libav_labeler_0.pickle.gz ../../dataset/slicing-info/libav_labeler_0.csv
+
 transform-ffmpeg-1:
 	find ../../D2A-CPG/ffmpeg_1 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt ../../D2A-CPG/ffmpeg_1.tfrecords ffmpeg 1 ../../dataset/d2a/splits.csv ../../dataset/d2a/ffmpeg_labeler_1.pickle.gz ../../dataset/slicing-info/ffmpeg_labeler_1.csv
 
@@ -55,7 +61,7 @@ example-struct-alias: clean-example-struct-alias
 	llvm2cpg $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.bc --output=$(EXAMPLE_STRUCT_ALIAS_DIR)/combined.cpg.bin.zip
 	cd $(EXAMPLE_STRUCT_ALIAS_DIR) && joern --script joern_script && llvm-dis combined.bc
 	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_STRUCT_ALIAS_DIR)/graph $(EXAMPLE_STRUCT_ALIAS_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
-	python3 visualize_graph.py $(EXAMPLE_STRUCT_ALIAS_DIR)/graph
+	python3 feature_engineering.py $(EXAMPLE_STRUCT_ALIAS_DIR)/graph
 
 clean-example-arg-passing:
 	rm -rf $(EXAMPLE_ARG_PASSING_DIR)/main.bc $(EXAMPLE_ARG_PASSING_DIR)/add.bc $(EXAMPLE_ARG_PASSING_DIR)/combined.bc $(EXAMPLE_ARG_PASSING_DIR)/combined.cpg.bin.zip $(EXAMPLE_ARG_PASSING_DIR)/graph $(EXAMPLE_ARG_PASSING_DIR)/workspace $(EXAMPLE_ARG_PASSING_DIR)/out $(EXAMPLE_ARG_PASSING_DIR)/combined.ll
@@ -69,7 +75,7 @@ example-arg-passing: clean-example-arg-passing
 	llvm2cpg $(EXAMPLE_ARG_PASSING_DIR)/combined.bc --output=$(EXAMPLE_ARG_PASSING_DIR)/combined.cpg.bin.zip
 	cd $(EXAMPLE_ARG_PASSING_DIR) && joern --script joern_script && llvm-dis combined.bc
 	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_ARG_PASSING_DIR)/graph $(EXAMPLE_ARG_PASSING_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
-	python3 visualize_graph.py $(EXAMPLE_ARG_PASSING_DIR)/graph
+	python3 feature_engineering.py $(EXAMPLE_ARG_PASSING_DIR)/graph
 
 clean-example-global-vars:
 	rm -rf $(EXAMPLE_GLOBAL_VARS_DIR)/main.bc $(EXAMPLE_GLOBAL_VARS_DIR)/add.bc $(EXAMPLE_GLOBAL_VARS_DIR)/combined.bc $(EXAMPLE_GLOBAL_VARS_DIR)/combined.cpg.bin.zip $(EXAMPLE_GLOBAL_VARS_DIR)/graph $(EXAMPLE_GLOBAL_VARS_DIR)/workspace $(EXAMPLE_GLOBAL_VARS_DIR)/out $(EXAMPLE_GLOBAL_VARS_DIR)/combined.ll
@@ -83,9 +89,7 @@ example-global-vars: clean-example-global-vars
 	llvm2cpg $(EXAMPLE_GLOBAL_VARS_DIR)/combined.bc --output=$(EXAMPLE_GLOBAL_VARS_DIR)/combined.cpg.bin.zip
 	cd $(EXAMPLE_GLOBAL_VARS_DIR) && joern --script joern_script && llvm-dis combined.bc
 	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_GLOBAL_VARS_DIR)/graph $(EXAMPLE_GLOBAL_VARS_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
-	python3 visualize_graph.py $(EXAMPLE_GLOBAL_VARS_DIR)/graph
-
-python3.8 find_normalization_coefficients.py graph-d2a/httpd_0/ graph-d2a/httpd_1/ httpd d2a/splits.csv slicing-info/httpd_labeler_0.csv slicing-info/httpd_labeler_1.csv
+	python3 feature_engineering.py $(EXAMPLE_GLOBAL_VARS_DIR)/graph
 
 extract-norm-coeffs-libtiff:
 	python3 find_normalization_coefficients.py ../../D2A-CPG/libtiff_0 ../../D2A-CPG/libtiff_1 libtiff ../../dataset/d2a/splits.csv ../../dataset/slicing-info/libtiff_labeler_0.csv ../../dataset/slicing-info/libtiff_labeler_1.csv
