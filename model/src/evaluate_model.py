@@ -11,12 +11,16 @@ import os
 # Train script for mixed nodes models
 from mixed_nodes_model import preprocess
 
-
-def find_latest_model_dir(models_dir):
-  entries = os.listdir(models_dir)
-  entries_sorted = sorted(entries)
-  return os.path.join(models_dir, entries_sorted[-1])
-
+colors = {'httpd': 'red',
+          'libtiff': 'green',
+          'nginx': 'blue',
+          'combined': 'grey',
+          'libav': 'purple',
+          'Model 8': 'blue',
+          'Model 10': 'red',
+          'Model 13': 'green',
+          '3-soft-vote': 'purple',
+          '6-soft-vote': 'orange'}
 
 def construct_model_dir_from_id(models_dir, model_id):
   for entry in os.listdir(models_dir):
@@ -32,10 +36,23 @@ def extract_label(graph, label):
     return label
 
 
-def load_dataset(datasets_path, project):
+def load_dataset(graph_tensor_spec, datasets_path, project, data_type):
   # Read the dataset
-  val_ds = tf.data.TFRecordDataset([os.path.join(datasets_path, f'{project}_1.tfrecords.val'),
-                                    os.path.join(datasets_path, f'{project}_0.tfrecords.val')])
+  if project == 'combined':
+    val_ds = tf.data.TFRecordDataset([os.path.join(datasets_path, f'httpd_1.tfrecords.{data_type}'),
+                                      os.path.join(datasets_path, f'httpd_0.tfrecords.{data_type}'),
+                                      os.path.join(datasets_path, f'libtiff_1.tfrecords.{data_type}'),
+                                      os.path.join(datasets_path, f'libtiff_0.tfrecords.{data_type}'),
+                                      os.path.join(datasets_path, f'nginx_1.tfrecords.{data_type}'),
+                                      os.path.join(datasets_path, f'nginx_0.tfrecords.{data_type}')])
+  elif project == 'libav':
+    val_ds = tf.data.TFRecordDataset([os.path.join(datasets_path, f'libav_1.tfrecords.{data_type}'),
+                                      os.path.join(datasets_path, f'libav_0_0_90k.tfrecords.{data_type}'),
+                                      os.path.join(datasets_path, f'libav_0_90k_130k.tfrecords.{data_type}'),
+                                      os.path.join(datasets_path, f'libav_0_130k_all.tfrecords.{data_type}')])
+  else:
+    val_ds = tf.data.TFRecordDataset([os.path.join(datasets_path, f'{project}_1.tfrecords.{data_type}'),
+                                      os.path.join(datasets_path, f'{project}_0.tfrecords.{data_type}')])
   val_ds = val_ds.prefetch(buffer_size=tf.data.AUTOTUNE)
 
   # Batch the datasets
@@ -56,9 +73,9 @@ def load_dataset(datasets_path, project):
   return val_ds_batched_graphs, val_ds_batched_labels
 
 
-def plot_top_N_precision(labels_sorted_dict, models_dir):
-  fig, ax = plt.subplots()
-  colors = {'httpd': 'red', 'libtiff': 'green', 'nginx': 'blue'}
+def plot_top_N_precision(labels_sorted_dict, data_type):
+  _, ax = plt.subplots()
+
   for project, labels_sorted in labels_sorted_dict.items():
     color = colors[project]
     y = []
@@ -76,28 +93,27 @@ def plot_top_N_precision(labels_sorted_dict, models_dir):
     # Plot the graph
     ax.plot(x, y, label=project, color=color)
     for i, txt in enumerate(captions):
-      ax.text(x[i], y[i], txt, fontsize=8, color=color)
+      if x[i] == 5:
+        ax.text(x[i], y[i], txt, fontsize=10, color=color)
     plt.axhline(y=base_precision, color=color, linestyle=':')
-    plt.axvline(x=base_precision * 100, color=color, linestyle=':')
 
-  ax.set_title("Top N% precision")
+  plt.axvline(x=5, color='black', linestyle=':')
+  ax.set_title(f"Top N% Precision ({data_type})")
   ax.set_xlabel("Top N% of most likely TPs")
   ax.set_ylabel("TP percentage (Precision)")
   plt.legend()
-  plt.savefig(os.path.join(models_dir, 'Top_N_precisions.png'))
+  plt.savefig('Top_N_precisions.svg', format='svg')
   plt.show()
 
 
-def plot_AUC_curve(label_pair_dicts, models_dir):
+def plot_AUC_curve(label_pair_dicts, data_type):
   plt.figure()
-  colors = {'httpd': 'red', 'libtiff': 'green', 'nginx': 'blue'}
 
   for project, (label_pred, label_gt) in label_pair_dicts.items():
     color = colors[project]
 
-    fpr, tpr, _ = metrics.roc_curve(label_gt, label_pred)
-
     # Calculate the AUC
+    fpr, tpr, _ = metrics.roc_curve(label_gt, label_pred)
     roc_auc = metrics.auc(fpr, tpr)
 
     # Plot the ROC curve
@@ -108,48 +124,40 @@ def plot_AUC_curve(label_pair_dicts, models_dir):
   plt.ylim([0.0, 1.05])
   plt.xlabel('False Positive Rate')
   plt.ylabel('True Positive Rate')
-  plt.title('Receiver Operating Characteristic')
+  plt.title(f'Receiver Operating Characteristic ({data_type})')
   plt.legend(loc="lower right")
-  plt.savefig(os.path.join(models_dir, 'ROC_curves.png'))
+  plt.savefig('ROC_curves.svg', format='svg')
   plt.show()
 
 
-if __name__ == '__main__':
-  # Load args
-  schema_path = sys.argv[1]
-  datasets_path = sys.argv[2]
-  model_id = sys.argv[3]
-  saved_models_dir = 'saved_models'
-
-  if model_id == '--latest':
-    models_dir = find_latest_model_dir(saved_models_dir)
-  else:
-    models_dir = construct_model_dir_from_id(saved_models_dir, model_id)
-
-  # Load schema
-  graph_schema = tfgnn.read_schema(schema_path)
-  graph_tensor_spec = tfgnn.create_graph_spec_from_schema_pb(graph_schema)
-
+def scenario(schema_path, datasets_path, saved_models_dir, data_type, dataset):
   labels_sorted_dict = {}
   label_pairs_dict = {}
 
-  # Evalute each of the httpd, libtiff and nginx models
-  for model_dir in os.listdir(models_dir):
-    if model_dir.startswith('httpd_AUC_'):
-      project = 'httpd'
-    elif model_dir.startswith('libtiff_AUC_'):
-      project = 'libtiff'
-    elif model_dir.startswith('nginx_AUC_'):
-      project = 'nginx'
-    else:
-      continue
+  voting3_gt = {}
+  voting3_pred = {}
 
-    # Prepare data
-    val_ds_batched_graphs, val_ds_batched_labels = load_dataset(datasets_path, project)
+  voting6_gt = {}
+  voting6_pred = {}
 
-    # Load model
-    model = tf.keras.models.load_model(os.path.join(models_dir, model_dir))
+  for model_id in [8, 10, 13, 6, 11, 12]:
+    project = f'Model {model_id}'
+    model_dir = construct_model_dir_from_id(saved_models_dir, model_id)
 
+    # Load schema
+    graph_schema = tfgnn.read_schema(schema_path)
+    graph_tensor_spec = tfgnn.create_graph_spec_from_schema_pb(graph_schema)
+
+    # Get correct model path
+    for sub_model_dir in os.listdir(model_dir):
+      if sub_model_dir.startswith('combined_AUC_'):
+        model_dir = os.path.join(model_dir, sub_model_dir)
+        break
+
+    val_ds_batched_graphs, val_ds_batched_labels = load_dataset(graph_tensor_spec, datasets_path, dataset, data_type)
+
+    # Load model and make predictions
+    model = tf.keras.models.load_model(model_dir)
     label_pred = model.predict(val_ds_batched_graphs)
 
     # Convert tensors with batches to a simple list
@@ -160,10 +168,129 @@ if __name__ == '__main__':
     # Convert model predictions to a simple list
     label_pred = label_pred.flatten().tolist()
 
-    label_pairs_dict[project] = label_pred, label_gt
+    if model_id in [8, 10, 13]:
+      # Make a copy of results for 3-voting model
+      voting3_gt[model_id] = list(label_gt)
+      voting3_pred[model_id] = np.array(label_pred)
+
+    # Make a copy of results for 6-voting model
+    voting6_gt[model_id] = list(label_gt)
+    voting6_pred[model_id] = np.array(label_pred)
+
+    # Dont plot results for these models, they are used only for soft voting
+    if model_id in [6, 11, 12]:
+      continue
 
     # Sort it according to the highest probability to be TP (likeliest TP is first)
     labels_sorted_dict[project] = sorted(zip(label_pred, label_gt), key=lambda x: x[0], reverse=True)
+    label_pairs_dict[project] = label_pred, label_gt
 
-  plot_top_N_precision(labels_sorted_dict, models_dir)
-  plot_AUC_curve(label_pairs_dict, models_dir)
+  # Create soft 3-voting score
+  soft_vote3_pred = list(voting3_pred.values())
+  soft_vote3_pred = np.sum(soft_vote3_pred, axis=0).tolist()
+  labels_sorted_dict['3-soft-vote'] = sorted(zip(soft_vote3_pred, voting3_gt[8]), key=lambda x: x[0], reverse=True)
+  label_pairs_dict['3-soft-vote'] = soft_vote3_pred, voting3_gt[8]
+
+  # Create soft 6-voting score
+  soft_vote6_pred = list(voting6_pred.values())
+  soft_vote6_pred = np.sum(soft_vote6_pred, axis=0).tolist()
+  labels_sorted_dict['6-soft-vote'] = sorted(zip(soft_vote6_pred, voting6_gt[8]), key=lambda x: x[0], reverse=True)
+  label_pairs_dict['6-soft-vote'] = soft_vote6_pred, voting6_gt[8]
+
+  plot_top_N_precision(labels_sorted_dict, data_type)
+  plot_AUC_curve(label_pairs_dict, data_type)
+
+
+if __name__ == '__main__':
+  # Load args
+  schema_path = sys.argv[1]
+  datasets_path = sys.argv[2]
+  saved_models_dir = sys.argv[3]
+  model_id = sys.argv[4]
+  data_type = sys.argv[5] # test or val
+  saved_models_dir = 'saved_models'
+
+  if model_id in ['combined', 'httpd', 'libtiff', 'nginx', 'libav']:
+    # We run predefined scenario
+    scenario(schema_path, datasets_path, saved_models_dir, data_type, model_id)
+    exit()
+  else:
+    # Evaluate single models
+    model_id = int(model_id)
+
+  # Model 6 and higher are trained on combined data
+  if model_id < 6:
+    combined = False
+  else:
+    combined = True
+
+  model_dir = construct_model_dir_from_id(saved_models_dir, model_id)
+
+  # Load schema
+  graph_schema = tfgnn.read_schema(schema_path)
+  graph_tensor_spec = tfgnn.create_graph_spec_from_schema_pb(graph_schema)
+
+  if combined:
+    # Get correct model path
+    for sub_model_dir in os.listdir(model_dir):
+      if sub_model_dir.startswith('combined_AUC_'):
+        model_dir = os.path.join(model_dir, sub_model_dir)
+        break
+
+    val_ds_batched_graphs, val_ds_batched_labels = load_dataset(graph_tensor_spec, datasets_path, 'combined', data_type)
+
+    # Load model and make predictions
+    model = tf.keras.models.load_model(model_dir)
+    label_pred = model.predict(val_ds_batched_graphs)
+
+    # Convert tensors with batches to a simple list
+    label_gt = []
+    for batch in val_ds_batched_labels:
+      label_gt.extend(batch.numpy().tolist())
+
+    # Convert model predictions to a simple list
+    label_pred = label_pred.flatten().tolist()
+
+    # Sort it according to the highest probability to be TP (likeliest TP is first)
+    labels_sorted = sorted(zip(label_pred, label_gt), key=lambda x: x[0], reverse=True)
+
+    plot_top_N_precision({'combined': labels_sorted}, data_type)
+    plot_AUC_curve({'combined': (label_pred, label_gt)}, data_type)
+  else:
+    labels_sorted_dict = {}
+    label_pairs_dict = {}
+
+    for sub_model_dir in os.listdir(model_dir):
+      if sub_model_dir.startswith('httpd_AUC_'):
+        project = 'httpd'
+      elif sub_model_dir.startswith('libtiff_AUC_'):
+        project = 'libtiff'
+      elif sub_model_dir.startswith('nginx_AUC_'):
+        project = 'nginx'
+      else:
+        continue
+
+      print(f'Project: {project}')
+
+      # Prepare data
+      val_ds_batched_graphs, val_ds_batched_labels = load_dataset(graph_tensor_spec, datasets_path, project, data_type)
+
+      # Load model a make predictions
+      model = tf.keras.models.load_model(os.path.join(model_dir, sub_model_dir))
+      label_pred = model.predict(val_ds_batched_graphs)
+
+      # Convert tensors with batches to a simple list
+      label_gt = []
+      for batch in val_ds_batched_labels:
+        label_gt.extend(batch.numpy().tolist())
+
+      # Convert model predictions to a simple list
+      label_pred = label_pred.flatten().tolist()
+
+      label_pairs_dict[project] = label_pred, label_gt
+
+      # Sort it according to the highest probability to be TP (likeliest TP is first)
+      labels_sorted_dict[project] = sorted(zip(label_pred, label_gt), key=lambda x: x[0], reverse=True)
+
+    plot_top_N_precision(labels_sorted_dict, data_type)
+    plot_AUC_curve(label_pairs_dict, data_type)
