@@ -9,41 +9,30 @@ from tensorflow.keras import backend as K
 import numpy as np
 import json
 import os
-import functools
+import re
+
 
 # Hyperparameters (values not defined here have default values)
 hyperparameters = {
   'epochs': 200,
-  'learning_rate': 0.0002,
-  'early_stopping_patience': 10,
+  'learning_rate': 0.001, #0.00005,
+  'early_stopping_patience': 5,
   'batch_size': 6,
   'num_graph_updates': 9,
   'node_state_dim': 18,
   'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
-  # 'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
+  'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
   # 'argument_edge_dim': 2, # not used for now
-  'state_dropout_rate': 0.22,
+  'state_dropout_rate': 0.25,
   'edge_dropout_rate': 0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 1e-5, # e.g. 1e-5
-  'attention_type': 'gat_v2', # "none", "multi_head", or "gat_v2",
+  'attention_type': 'none', # "none", "multi_head", or "gat_v2",
   'attention_num_heads': 3, # 4 is default
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'We try model 13 and increase dropout and patience.' # description of changes since the last version
+  'note': 'Final model 10.' # description of changes since the last version
 }
-
-# Pozdeji zkusit attention
-# Zkusit prvni GNN vrstvu na dense misto dense vrstev next_state_type: Literal['dense', 'residual'] = "dense",
-
-# Its main architectural choices are:
-
-#    - how to aggregate the incoming messages from each node set:
-#         by element-wise averaging (reduce type "mean"),
-#         by a concatenation of the average with other fixed expressions (e.g., "mean|max", "mean|sum"), or
-#         with attention, that is, a trained, data-dependent weighting;
-#    - whether to use residual connections for updating node states;
-#    - if and how to normalize node states.
 
 
 # Define preprocess model which will ONLY extract labels out of graph
@@ -61,9 +50,6 @@ def preprocess(preproc_input_spec, ds_batched):
 
 # Encode input nodeset features into a single tensor (+ add some trainable parameters to the transformation)
 def set_initial_node_state(node_set, *, node_set_name):
-  # state_dims_by_node_set = {'METHOD_INFO': 32, 'TYPE': 16, 'AST_NODE': 16, 'LITERAL_VALUE': 32}
-  # state_dim = state_dims_by_node_set[node_set_name]
-
   features = node_set.features # Immutable view
 
   # Combine all features to a single vector (since all of them are float32 scalars)
@@ -91,13 +77,12 @@ def build_model(model_input_spec):
   graph = tfgnn.keras.layers.MapFeatures(
       node_sets_fn=set_initial_node_state,
       edge_sets_fn=drop_all_features)(graph)
-      # edge_sets_fn=encode_ARGUMENT_INDEX)(graph)
 
   # Layers of updates
   for i in range(hyperparameters['num_graph_updates']):
     graph = mt_albis.MtAlbisGraphUpdate(
         units=hyperparameters['node_state_dim'],
-        message_dim=hyperparameters['node_state_dim'],
+        message_dim=hyperparameters['message_dim'],
         receiver_tag=hyperparameters['receiver_tag'],
         # edge_feature_name='ARGUMENT_INDEX',
         node_set_names=None if i < hyperparameters['num_graph_updates']-1 else ["AST_NODE"],
@@ -137,14 +122,13 @@ def build_model(model_input_spec):
   return tf.keras.Model(inputs, y)
 
 
-def save_model(results, combined):
-  saved_models_dir = 'saved_models'
-  max_id = 1
+def save_model(models_dir, results, combined):
+  max_id = 0
 
   # Find latest (max) id
-  for entry in os.listdir(saved_models_dir):
-    relative_path = os.path.join(saved_models_dir, entry)
-    if os.path.isdir(relative_path):
+  for entry in os.listdir(models_dir):
+    relative_path = os.path.join(models_dir, entry)
+    if os.path.isdir(relative_path) and bool(re.match(r'^\d+_', entry)):
       id = int(entry.split('_')[0])
       max_id = max(max_id, id)
 
@@ -158,7 +142,7 @@ def save_model(results, combined):
   formatted_avg_val_auc = format(avg_val_auc, ".3f")
 
   # Make parent dir for all the models
-  models_parent_dir_name = f'{saved_models_dir}/{new_id}_AUC_{formatted_avg_val_auc}'
+  models_parent_dir_name = f'{models_dir}/{new_id}_AUC_{formatted_avg_val_auc}'
   os.makedirs(models_parent_dir_name)
 
   if combined:
@@ -200,24 +184,6 @@ def prepare_data(schema_path, project_path, project, dataset_len):
     train_ds_1 = tf.data.TFRecordDataset(train_ds_files_1, num_parallel_reads=3)
     train_ds_0 = tf.data.TFRecordDataset(train_ds_files_0, num_parallel_reads=3)
     val_ds = tf.data.TFRecordDataset(val_ds_files, num_parallel_reads=6)
-  elif project == 'libtiff+httpd':
-    train_ds_files_1 = [f'{project_path}/libtiff_1.tfrecords.train',
-                        f'{project_path}/httpd_1.tfrecords.train',
-                        f'{project_path}/libtiff_1.tfrecords.val',
-                        f'{project_path}/httpd_1.tfrecords.val',
-                        f'{project_path}/libtiff_1.tfrecords.test',
-                        f'{project_path}/httpd_1.tfrecords.test']
-    train_ds_files_0 = [f'{project_path}/libtiff_0.tfrecords.train',
-                        f'{project_path}/httpd_0.tfrecords.train',
-                        f'{project_path}/libtiff_0.tfrecords.val',
-                        f'{project_path}/httpd_0.tfrecords.val',
-                        f'{project_path}/libtiff_0.tfrecords.test',
-                        f'{project_path}/httpd_0.tfrecords.test']
-    train_ds_1 = tf.data.TFRecordDataset(train_ds_files_1, num_parallel_reads=6)
-    train_ds_0 = tf.data.TFRecordDataset(train_ds_files_0, num_parallel_reads=6)
-    val_ds_1 = tf.data.TFRecordDataset([f'{project_path}/nginx_1.tfrecords.val'])
-    val_ds_0 = tf.data.TFRecordDataset([f'{project_path}/nginx_0.tfrecords.val'])
-    val_ds = tf.data.Dataset.sample_from_datasets([val_ds_1, val_ds_0])
   else:
     train_ds_1 = tf.data.TFRecordDataset([f'{project_path}/{project}_1.tfrecords.train'])
     train_ds_0 = tf.data.TFRecordDataset([f'{project_path}/{project}_0.tfrecords.train'])
@@ -227,8 +193,8 @@ def prepare_data(schema_path, project_path, project, dataset_len):
   up_sample_coeff = train_negative_samples // train_positive_samples
   train_ds_1 = train_ds_1.repeat(up_sample_coeff)
 
-  # Interleav positive and negative samples
-  train_ds = tf.data.Dataset.sample_from_datasets([train_ds_0, train_ds_1])
+  # Interleave positive and negative samples
+  train_ds = tf.data.Dataset.sample_from_datasets([train_ds_0, train_ds_1], stop_on_empty_dataset=True)
 
   # Shuffle training samples
   buffer_size = 10_000 #train_negative_samples + up_sample_coeff * train_positive_samples # Ideally buffer_size == len(dataset)
@@ -264,14 +230,7 @@ def train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_
               tf.keras.metrics.AUC(),
               tf.keras.metrics.AUC(curve='PR', name='auc_pr')]
 
-  # Determine learning rate schedule - this might be problematic because of EarlyStopping
   steps_per_epoch = train_ds_len // hyperparameters['batch_size']
-  # learning_rate = tf.keras.optimizers.schedules.CosineDecay(hyperparameters['learning_rate'], steps_per_epoch*hyperparameters['epochs'])
-
-  # Adam with CosineDecay
-  # https://github.com/tensorflow/gnn/blob/main/tensorflow_gnn/models/mt_albis/README.md
-  # https://github.com/tensorflow/gnn/blob/main/tensorflow_gnn/runner/examples/ogbn/mag/train.py
-  # optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
   optimizer = tf.keras.optimizers.Adam(learning_rate=hyperparameters['learning_rate'])
 
@@ -286,8 +245,8 @@ def train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_
 
   # Train the model
   history = model.fit(train_ds_batched,
-                      steps_per_epoch=steps_per_epoch,
-                      epochs=hyperparameters['epochs'],
+                      steps_per_epoch=1,#steps_per_epoch,
+                      epochs=1,#hyperparameters['epochs'],
                       validation_data=val_ds_batched,
                       shuffle=True,
                       callbacks=[early_stopping])
@@ -298,23 +257,20 @@ if __name__ == '__main__':
   # Load args
   schema_path = sys.argv[1] # schemas/mixed_nodes/extended_cpg.pbtxt
   project_path = sys.argv[2] # ../D2A-CPG
+  models_dir = sys.argv[3] # saved_models
+  combined = (len(sys.argv) > 4 and sys.argv[4] == 'combined')
 
   dataset_len = {
     'libtiff': [7325, 371],
     'httpd': [7502, 149],
     'nginx': [13391, 319],
     'libtiff+httpd+nginx': [7325 + 7502 + 13391, 371 + 149 + 319],
-    'libtiff+httpd': [7325 + 1011 + 940 + 7502 + 1294 + 909, 371 + 47 + 41 + 149 + 24 + 20]
   }
 
-  # We do a form of k-validation - the same model architecture is tested on the following projects
-  projects = ['libtiff', 'httpd', 'nginx']
   results = {}
 
-  combined = True # Move this to args
   if combined:
     project = 'libtiff+httpd+nginx'
-    # project = 'libtiff+httpd'
 
     # Load, preprocess, balance and batch dataset
     model_input_spec_train, train_ds_batched, _, val_ds_batched = prepare_data(schema_path, project_path, project, dataset_len)
@@ -326,9 +282,10 @@ if __name__ == '__main__':
     results['combined'] = (model, max_val_auc)
 
     # Save combined model
-    save_model(results, combined=True)
+    save_model(models_dir, results, combined=True)
   else:
-    for project in projects:
+    # We do a form of k-validation - the same model architecture is tested on the following projects
+    for project in ['libtiff', 'httpd', 'nginx']:
       # Load, preprocess, balance and batch dataset
       model_input_spec_train, train_ds_batched, _, val_ds_batched = prepare_data(schema_path, project_path, project, dataset_len)
 
@@ -343,4 +300,4 @@ if __name__ == '__main__':
       K.clear_session()
 
     # Save models and it's hyperparameters (same hyperparameters for all saved models)
-    save_model(results, combined=False)
+    save_model(models_dir, results, combined=False)
