@@ -245,8 +245,8 @@ def train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_
 
   # Train the model
   history = model.fit(train_ds_batched,
-                      steps_per_epoch=1,#steps_per_epoch,
-                      epochs=1,#hyperparameters['epochs'],
+                      steps_per_epoch=steps_per_epoch,
+                      epochs=hyperparameters['epochs'],
                       validation_data=val_ds_batched,
                       shuffle=True,
                       callbacks=[early_stopping])
