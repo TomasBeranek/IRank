@@ -1,3 +1,16 @@
+# ******************************************************************************
+#  File:            find_unique_values.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for finding unique attribute values for node sets.
+# ******************************************************************************
+
+# Usage: python3 find_unique_values.py nodes_BLOCK
+#        python3 find_unique_values.py nodes_METHOD_PARAMETER_IN
+
 import os
 import sys
 import csv
@@ -79,51 +92,6 @@ def get_array_len(type_name):
 
 
 def print_type_names(type_names):
-    # Ziskano ze 77507 vzorku
-    # [4 x [15 x void (i8*, i64, i8*, i8*)*]]
-    # i32 (URLContext*, i8*, i32, AVDictionary**)*
-    # void (apr_array_header_t*)**
-    # u poli jen len? k cemu totiz bude hash typu? - pokud by se k nemu pristupovalo, tak dany access je call a jeho return hodnota bude spojena s vnitrnim typem...
-
-    # Hashovat pouze datovy typ bez pole a ukazatelu - aby vsechny 3 meli stejnou hodnotu v hash
-
-    # https://www.datacamp.com/tutorial/categorical-data -oduvodneni pro pozivam label encoding misto one-hot encoding:
-    # Comparison of One-hot and Label Encoding (najit odstavec a popsat v textu)
-
-    # Smazat?:
-    # void (metadata, metadata, metadata)
-    # metadata
-
-    # Normal:
-    # ANY     -melo by SNAD byt odstraneno protoze patri k BLOCK uzlum
-    # void    -same 0
-    # iN      -INT: N
-
-    # half    -FP: 1
-    # float   -FP: 2
-    # double  -FP: 3
-    # fp128   -FP: 4
-
-
-    # Pritomne default typy:
-    # void
-    # i1
-    # i8
-    # i16
-    # i24
-    # i32
-    # i40
-    # i48
-    # i64
-    # i88
-    # i96
-    # i104
-    # i112
-    # i128
-    # float
-    # double
-
-
     default_types = ['void',
                      'half',
                      'bfloat',
@@ -139,9 +107,6 @@ def print_type_names(type_names):
     max_LEN = max_PTR = 0
 
     for index, (name, cnt) in enumerate(type_names):
-        # if index > 1500:
-        #     break
-
         if index >= 0:
             _, PTR = count_pointers(name)
             _, LEN = get_array_len(name)
@@ -171,11 +136,6 @@ def print_type_names(type_names):
                     continue
                 else:
                     continue
-
-                # print('\n'*10)
-                # print(name)
-                # print(f"{type_of_type}\t\t({cnt})\t{index}".rjust(80))
-                # input()
 
     print(f"Pointers: {pointers_cnt}")
     print(f"Structs: {structs_cnt}")
@@ -235,8 +195,6 @@ def print_values_type_pairs(value_type_pairs):
 
     for value, type in value_type_pairs:
         cnt += 1
-
-        # metadata?
 
         # Missing type
         if not type:

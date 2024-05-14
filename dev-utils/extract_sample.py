@@ -1,10 +1,19 @@
+# ******************************************************************************
+#  File:            extract_sample.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for extracting and viewing individual D2A samples.
+# ******************************************************************************
+
 import pickle
 import sys
 import json
 import gzip
 import os
 import argparse
-from collections import Counter
 
 
 class BugTypeNotFound(Exception):

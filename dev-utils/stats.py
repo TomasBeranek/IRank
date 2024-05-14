@@ -1,6 +1,14 @@
+# ******************************************************************************
+#  File:            stats.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for printing statistics about D2A files.
+# ******************************************************************************
+
 import pickle
-import sys
-import json
 import gzip
 import os
 import argparse
@@ -24,14 +32,12 @@ def init_parser():
 def load_stats(file):
     global total_samples, negative_samples, positive_samples
 
-    # data = []
     bug_types = {}
 
     with gzip.open(file, mode = 'rb') as fp:
         while True:
             try:
                 item = pickle.load(fp)
-                # data.append(item)
             except EOFError:
                 break
 

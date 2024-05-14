@@ -1,3 +1,14 @@
+# ******************************************************************************
+#  File:            remove_invalid_symlinks.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for removal of invalid symlinks. The problem with
+#                   invalid symlinks has already been resolved.
+# ******************************************************************************
+
 import os
 import sys
 

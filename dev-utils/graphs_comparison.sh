@@ -1,6 +1,15 @@
 #!/bin/bash
 
-# Script for comparing old/new directories with generated graphs
+# ******************************************************************************
+#  File:            graph_comparison.sh
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for comparing old/new directories with generated
+#                   graphs.
+# ******************************************************************************
 
 # Check for the correct number of arguments
 if [ "$#" -ne 2 ]; then
