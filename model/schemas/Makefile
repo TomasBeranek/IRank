@@ -9,10 +9,6 @@ TFRECORDS_DIR = ../tfrecords
 
 all: experiment
 
-# This experiment contains all types of invalid nodes for demonstration
-experiment:
-	python3 feature_engineering.py experiment/sample_graph
-
 experiment2:
 	python3 feature_engineering.py $(GRAPH_DIR)/1
 
