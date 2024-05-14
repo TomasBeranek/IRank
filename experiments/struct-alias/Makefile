@@ -3,7 +3,7 @@
 # and in the graph, look for TYPE node 7 and MEMBER nodes 10 and 12. These
 # nodes together form the Point structurefrom the point.h file.
 
-all: example-struct-alias
+all: run
 
 clean:
 	rm -rf main.bc point.bc combined.bc combined.cpg.bin.zip graph workspace out combined.ll
