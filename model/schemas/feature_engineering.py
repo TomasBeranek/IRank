@@ -1,3 +1,14 @@
+# ******************************************************************************
+#  File:            feature_engineering.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for feature engineering which takes Graph D2A and
+#                   outputs TFRecords files.
+# ******************************************************************************
+
 import os
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -905,7 +916,6 @@ def encode_literal_value(value_type_pair):
             elif value == 'true':
                 value = 1
 
-        # int_size = int(type[1:]) # In bits
         int_size = 16
 
         # To keep enough precision for lower values we sacrifice precision in higher values
@@ -1406,7 +1416,7 @@ if __name__ == '__main__':
 
             # Remove previous results
             if os.path.exists(output_file):
-                os.remove(file)
+                os.remove(output_file)
 
             # Set normalization_coefficients - we do it globally because it is used across many functions
             norm_coeffs = norm_coeffs['nginx+libtiff+httpd']
@@ -1425,4 +1435,8 @@ if __name__ == '__main__':
 
                     # for inference we use LABEL to store report ID
                     LABEL = int(bug_id)
-                    save_sample(directory, graph_spec, output_file, splits, context_data)
+                    try:
+                        save_sample(directory, graph_spec, output_file, splits, context_data)
+                    except Exception as e:
+                        # If exception happens we want to continue for now
+                        print(f'WARNING: Exception: {e}')

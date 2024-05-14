@@ -1,3 +1,13 @@
+# ******************************************************************************
+#  File:            mixde_nodes_model.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for model training.
+# ******************************************************************************
+
 import tensorflow as tf
 import tensorflow_gnn as tfgnn
 import sys
@@ -12,14 +22,13 @@ import re
 # Hyperparameters (values not defined here have default values)
 hyperparameters = {
   'epochs': 200,
-  'learning_rate': 0.001, #0.00005,
+  'learning_rate': 0.001,
   'early_stopping_patience': 5,
   'batch_size': 6,
   'num_graph_updates': 9,
   'node_state_dim': 18,
   'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
   'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
-  # 'argument_edge_dim': 2, # not used for now
   'state_dropout_rate': 0.25,
   'edge_dropout_rate': 0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 1e-5, # e.g. 1e-5
@@ -81,7 +90,6 @@ def build_model(model_input_spec):
         units=hyperparameters['node_state_dim'],
         message_dim=hyperparameters['message_dim'],
         receiver_tag=hyperparameters['receiver_tag'],
-        # edge_feature_name='ARGUMENT_INDEX',
         node_set_names=None if i < hyperparameters['num_graph_updates']-1 else ["AST_NODE"],
         state_dropout_rate=hyperparameters['state_dropout_rate'],
         edge_dropout_rate=hyperparameters['edge_dropout_rate'],
@@ -194,7 +202,7 @@ def prepare_data(schema_path, project_path, project, dataset_len):
   train_ds = tf.data.Dataset.sample_from_datasets([train_ds_0, train_ds_1], stop_on_empty_dataset=True)
 
   # Shuffle training samples
-  buffer_size = 10_000 #train_negative_samples + up_sample_coeff * train_positive_samples # Ideally buffer_size == len(dataset)
+  buffer_size = 10_000
   train_ds = train_ds.shuffle(buffer_size)
   train_ds = train_ds.prefetch(buffer_size=tf.data.AUTOTUNE)
   val_ds = val_ds.prefetch(buffer_size=tf.data.AUTOTUNE)

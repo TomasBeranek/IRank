@@ -1,8 +1,16 @@
+# ******************************************************************************
+#  File:            evaluate_model.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for model testing.
+# ******************************************************************************
+
 import tensorflow as tf
 import tensorflow_gnn as tfgnn
 import sys
-from tensorflow_gnn import runner
-from tensorflow_gnn.models import mt_albis
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import metrics
@@ -10,6 +18,7 @@ import os
 
 # Train script for mixed nodes models
 from mixed_nodes_model import preprocess
+
 
 colors = {'httpd': 'red',
           'libtiff': 'green',
@@ -22,6 +31,7 @@ colors = {'httpd': 'red',
           '3-soft-vote': 'purple',
           '6-soft-vote': 'orange',
           'chatgpt': 'teal'}
+
 
 def construct_model_dir_from_id(models_dir, model_id):
   for entry in os.listdir(models_dir):
