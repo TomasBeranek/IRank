@@ -9,19 +9,19 @@
 run: FFmpeg
 
 FFmpeg:
-	python3 speed_test.py ../../projects/FFmpeg
+	python3 speed_test.py ../../dataset/projects/FFmpeg
 
 httpd:
-	python3 speed_test.py ../../projects/httpd
+	python3 speed_test.py ../../dataset/projects/httpd
 
 libav:
-	python3 speed_test.py ../../projects/libav
+	python3 speed_test.py ../../dataset/projects/libav
 
 libtiff:
-	python3 speed_test.py ../../projects/libtiff
+	python3 speed_test.py ../../dataset/projects/libtiff
 
 nginx:
-	python3 speed_test.py ../../projects/nginx
+	python3 speed_test.py ../../dataset/projects/nginx
 
 openssl:
-	python3 speed_test.py ../../projects/openssl
+	python3 speed_test.py ../../dataset/projects/openssl

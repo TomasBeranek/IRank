@@ -45,17 +45,17 @@ reset: clean
 experiment-1: reset
 	tree bitcode
 	# 1) Same samples: ['httpd_B_0', 'httpd_D_0', 'httpd_F_0', 'httpd_C_1']
-	python3 ../dev-tools/remove_duplicates.py --d2a-dir test-1 --bitcode-dir bitcode
+	python3 ../../dev-utils/remove_duplicates.py --d2a-dir test-1 --bitcode-dir bitcode
 	tree bitcode
 
 experiment-2: reset
 	tree bitcode
 	# 2) Same samples: ['httpd_B_0', 'httpd_E_0', 'httpd_F_0', 'httpd_C_1']
-	python3 ../dev-tools/remove_duplicates.py --d2a-dir test-2 --bitcode-dir bitcode
+	python3 ../../dev-utils/remove_duplicates.py --d2a-dir test-2 --bitcode-dir bitcode
 	tree bitcode
 
 experiment-3: reset
 	tree bitcode
 	# 3) Same samples: ['httpd_A_0', 'httpd_E_0', 'httpd_B_1', 'httpd_C_1']
-	python3 ../dev-tools/remove_duplicates.py --d2a-dir test-3 --bitcode-dir bitcode
+	python3 ../../dev-utils/remove_duplicates.py --d2a-dir test-3 --bitcode-dir bitcode
 	tree bitcode
