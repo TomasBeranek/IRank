@@ -1,0 +1,13 @@
+This experiment demonstrates that Infer consistently identifies the entry point
+function (the highest stored function in the Call Graph related to the error)
+in the 'procedure' attribute in the output report.json.
+
+All scenarios contain the 'main' function, which calls the 'f' function. There
+are three possible combinations of error occurrence and manifestation:
+
+    scenario1.c - the error starts in 'main' and manifests in 'f'.
+    scenario2.c - the error starts in 'f' and manifests in 'main'.
+    scenario3.c - the error starts and manifests in 'main', but 'f' has
+                  influence on the error manifestation.
+
+The files report1.json, report2.json, and report3.json show the outputs from Infer.

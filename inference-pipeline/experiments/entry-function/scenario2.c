@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int* f(int argc){
+int* f(){
   /********************** Start of the bug **********************/
   int* p;
   int x;
 
   // Nondeterministic if construct
-  if (argc > 1) {
+  if (getchar() > 1) {
     p = NULL;
   } else {
     p = &x;
@@ -20,7 +20,7 @@ int* f(int argc){
 int main(int argc, char const *argv[]) {
   int* a;
 
-  a = f(argc);
+  a = f();
 
   /****************** Manifestation of the bug ******************/
   int y = 2;

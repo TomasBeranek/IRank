@@ -1,12 +1,12 @@
-# This experiment shows, that llvm-slicer is capable of slicing only by given
-# file and line.
+# This experiment shows, that llvm-slicer is capable of slicing by given file
+# and line.
 
 # To run the experiment, run 'make dot', which creates two .svg LLVM graphs
 # -- all.svg (unsliced) and sliced.svg (sliced). In the experiment, we are slicing
 # according to line 24, so everything but part 1 and line 24 should be removed.
 # This can be checked by looking in all.svg/line_slicing_criteria.dot for two
 # multiplications ('mul' instructions) representing operations on the
-# lines 16 and 22. When the program is siced, these lines should be removed,
+# lines 16 and 22. When the program is sliced, these lines should be removed,
 # which can be confirmed by checking that there is no mul instruction in
 # sliced.svg/out.dot.
 
