@@ -138,6 +138,8 @@ then
       # first we need to remove the -o option so that the command generates .bc files instead
       original_args="$@"
       skip_next=false
+      is_compilation_command=false
+
       for arg do
         shift
         if [ "${skip_next}" = true ]
@@ -145,10 +147,22 @@ then
           skip_next=false
           continue
         fi
+
         # we have found '-o' option -- skip it and the next one
         [ "${arg}" = "-o" ] && skip_next=true && continue
         set -- "$@" "${arg}"
+
+        # It is compilation command
+        if [ "${arg}" = "-c" ]; then
+          is_compilation_command=true
+        fi
       done
+
+      # we quit if it isnt compile command
+      if [ "${is_compilation_command}" = false ]; then
+        unlock
+        break
+      fi
 
       if clang-original -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin "$@" 1>&2
       then
