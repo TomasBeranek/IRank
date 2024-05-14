@@ -323,38 +323,38 @@ def create_directional_graph(node_data, edge_data):
 def plot_graph(G):
     # Define a node color mapping
     node_color_map = {
-            # 'METHOD': 'red',
-            # 'METHOD_PARAMETER_IN': 'blue',
-            # 'METHOD_RETURN': 'blue',
-            # 'MEMBER': 'blue',
-            # 'TYPE': 'green',
-            # 'TYPE_DECL': 'blue', # Needs to be removed carefully
-            # 'BLOCK': 'blue',
-            # 'CALL': 'black',
-            # 'FIELD_IDENTIFIER': 'green',
-            # 'IDENTIFIER': 'red',
-            # 'LITERAL': 'purple',
-            # 'LOCAL': 'blue',
-            # 'METHOD_REF': 'blue',
-            # 'RETURN': 'blue',
-            # 'UNKNOWN': 'blue',
-            # # Splitted nodes
-            # 'METHOD_INFO': 'orange',
-            # 'LITERAL_VALUE': 'purple',
+        'METHOD': 'red',
+        'METHOD_PARAMETER_IN': 'blue',
+        'METHOD_RETURN': 'green',
+        'MEMBER': 'purple',
+        'TYPE': 'orange',
+        'TYPE_DECL': 'brown',
+        'BLOCK': 'pink',
+        'CALL': 'black',
+        'FIELD_IDENTIFIER': 'gray',
+        'IDENTIFIER': 'cyan',
+        'LITERAL': 'magenta',
+        'LOCAL': 'yellow',
+        'METHOD_REF': 'lime',
+        'RETURN': 'navy',
+        'UNKNOWN': 'teal',
+        # Splitted nodes
+        'METHOD_INFO': 'olive',
+        'LITERAL_VALUE': 'maroon'
     }
 
     # Define a edge color mapping
     edge_color_map = {
-        # 'AST': 'green',
-        # 'CALL': 'purple',
+        'AST': 'green',
+        'CALL': 'blue',
         'CDG': 'red',
-        # 'CFG': 'blue',
-        # 'ARGUMENT': 'red',
-        # 'REF': 'purple',
-        # 'EVAL_TYPE': 'red',
-        # 'CONSISTS_OF': 'red',
-        # 'LITERAL_VALUE_LINK': 'purple',
-        # 'METHOD_INFO_LINK': 'orange',
+        'CFG': 'purple',
+        'ARGUMENT': 'orange',
+        'REF': 'yellow',
+        'EVAL_TYPE': 'cyan',
+        'CONSISTS_OF': 'magenta',
+        'LITERAL_VALUE_LINK': 'lime',
+        'METHOD_INFO_LINK': 'navy'
     }
 
     # Get types of nodes/edges
