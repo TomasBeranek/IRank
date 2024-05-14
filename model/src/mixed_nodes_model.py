@@ -22,22 +22,22 @@ import re
 # Hyperparameters (values not defined here have default values)
 hyperparameters = {
   'epochs': 200,
-  'learning_rate': 0.001,
-  'early_stopping_patience': 5,
+  'learning_rate': 0.0001,
+  'early_stopping_patience': 15,
   'batch_size': 6,
   'num_graph_updates': 9,
   'node_state_dim': 18,
   'receiver_tag': tfgnn.TARGET, # tfgnn.TARGET (along edge direction) or tfgnn.SOURCE (against edge direction)
-  'message_dim': 'node_state_dim', # set to the same value as 'node_state_dim'
-  'state_dropout_rate': 0.25,
+  'message_dim': 18, # set to the same value as 'node_state_dim'
+  'state_dropout_rate': 0.2,
   'edge_dropout_rate': 0, # 0 (to emulate VanillaMPNN) or same as 'state_dropout_rate'
   'l2_regularization': 1e-5, # e.g. 1e-5
   'attention_type': 'none', # "none", "multi_head", or "gat_v2",
-  'attention_num_heads': 3, # 4 is default
+  'attention_num_heads': 4, # 4 is default
   'simple_conv_reduce_type': 'mean|sum', # 'mean', 'mean|sum', ...
   'normalization_type': 'layer', # 'layer', 'batch', or 'none'
   'next_state_type': 'residual', # 'residual' or 'dense' - Input layer must have same size of HIDDEN_STATE as units for 'residual'
-  'note': 'Final model 10.' # description of changes since the last version
+  'note': 'Model 8' # description of changes since the last version
 }
 
 
