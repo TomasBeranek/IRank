@@ -1,17 +1,11 @@
-# Pipeline programs
-code-extraction/cpg/
-code-extraction/dg/
-code-extraction/joern/
-code-extraction/llvm2cpg/
+# Pipeline tools
+code-extraction/*
 
-# Example
-code-extraction/example/*
-!code-extraction/example/main.c
-!code-extraction/example/add_one.c
-!code-extraction/example/Makefile
-
-# Pipeline
-code-extraction/testing/
+# Inference  pipeline
+inference-pipeline/example/*
+!inference-pipeline/example/main.c
+!inference-pipeline/example/add_one.c
+!inference-pipeline/example/Makefile
 
 # D2A
 dataset/d2a/
