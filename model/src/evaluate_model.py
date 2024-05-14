@@ -20,7 +20,8 @@ colors = {'httpd': 'red',
           'Model 10': 'red',
           'Model 13': 'green',
           '3-soft-vote': 'purple',
-          '6-soft-vote': 'orange'}
+          '6-soft-vote': 'orange',
+          'chatgpt': 'teal'}
 
 def construct_model_dir_from_id(models_dir, model_id):
   for entry in os.listdir(models_dir):
@@ -47,9 +48,9 @@ def load_dataset(graph_tensor_spec, datasets_path, project, data_type):
                                       os.path.join(datasets_path, f'nginx_0.tfrecords.{data_type}')])
   elif project == 'libav':
     val_ds = tf.data.TFRecordDataset([os.path.join(datasets_path, f'libav_1.tfrecords.{data_type}'),
-                                      os.path.join(datasets_path, f'libav_0_0_90k.tfrecords.{data_type}'),
-                                      os.path.join(datasets_path, f'libav_0_90k_130k.tfrecords.{data_type}'),
-                                      os.path.join(datasets_path, f'libav_0_130k_all.tfrecords.{data_type}')])
+                                      os.path.join(datasets_path, f'libav_0.tfrecords.{data_type}')])
+  elif project == 'chatgpt':
+    val_ds = tf.data.TFRecordDataset([os.path.join(datasets_path, f'libtiff-chatgpt.tfrecords.test')])
   else:
     val_ds = tf.data.TFRecordDataset([os.path.join(datasets_path, f'{project}_1.tfrecords.{data_type}'),
                                       os.path.join(datasets_path, f'{project}_0.tfrecords.{data_type}')])
@@ -75,8 +76,9 @@ def load_dataset(graph_tensor_spec, datasets_path, project, data_type):
 
 def plot_top_N_precision(labels_sorted_dict, data_type):
   _, ax = plt.subplots()
-
+  print('Top N% Precision')
   for project, labels_sorted in labels_sorted_dict.items():
+    print(f'\t{project}')
     color = colors[project]
     y = []
     x = list(range(2, 101)) # Calculate percentages from 2% to 100%
@@ -86,27 +88,24 @@ def plot_top_N_precision(labels_sorted_dict, data_type):
 
     for percentage in x:
       top_items_cnt = round(len(labels_sorted) * (percentage / 100))
-      TP_percentage = sum(labels_sorted[:top_items_cnt]) / top_items_cnt
+      TP_count = sum(labels_sorted[:top_items_cnt])
+      TP_percentage = TP_count / top_items_cnt
       y.append(TP_percentage)
-      captions.append(top_items_cnt)
+      print(f'\t\t{percentage} % ({top_items_cnt}): Precision: {round(TP_percentage, 2)} Number of TPs: {TP_count}')
 
     # Plot the graph
     ax.plot(x, y, label=project, color=color)
-    for i, txt in enumerate(captions):
-      if x[i] == 5:
-        ax.text(x[i], y[i], txt, fontsize=10, color=color)
     plt.axhline(y=base_precision, color=color, linestyle=':')
 
-  plt.axvline(x=5, color='black', linestyle=':')
   ax.set_title(f"Top N% Precision ({data_type})")
-  ax.set_xlabel("Top N% of most likely TPs")
-  ax.set_ylabel("TP percentage (Precision)")
+  ax.set_xlabel("Top N% Samples")
+  ax.set_ylabel("Precision")
   plt.legend()
   plt.savefig('Top_N_precisions.svg', format='svg')
   plt.show()
 
 
-def plot_AUC_curve(label_pair_dicts, data_type):
+def plot_ROC_curve(label_pair_dicts, data_type):
   plt.figure()
 
   for project, (label_pred, label_gt) in label_pair_dicts.items():
@@ -197,8 +196,19 @@ def scenario(schema_path, datasets_path, saved_models_dir, data_type, dataset):
   labels_sorted_dict['6-soft-vote'] = sorted(zip(soft_vote6_pred, voting6_gt[8]), key=lambda x: x[0], reverse=True)
   label_pairs_dict['6-soft-vote'] = soft_vote6_pred, voting6_gt[8]
 
-  plot_top_N_precision(labels_sorted_dict, data_type)
-  plot_AUC_curve(label_pairs_dict, data_type)
+  if dataset == 'chatgpt':
+      # Drop all results except 6-soft-vote
+      label_pairs_dict = {k: v for k, v in label_pairs_dict.items() if k == '6-soft-vote'}
+
+      # ChatGPT results
+      label_pairs_dict['chatgpt'] = ([0.95, 0.95, 1, 1, 0.85, 0.8, 0.9, 0.8, 0.82, 0.95, 1, 0.95, 0.9, 0.95, 0.95, 1, 0.95, 1, 0.95, 0.85],
+                                     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+      plot_ROC_curve(label_pairs_dict, f'{data_type}-{dataset}')
+      return
+
+  plot_top_N_precision(labels_sorted_dict, f'{data_type}-{dataset}')
+  plot_ROC_curve(label_pairs_dict, f'{data_type}-{dataset}')
 
 
 if __name__ == '__main__':
@@ -210,7 +220,7 @@ if __name__ == '__main__':
   data_type = sys.argv[5] # test or val
   saved_models_dir = 'saved_models'
 
-  if model_id in ['combined', 'httpd', 'libtiff', 'nginx', 'libav']:
+  if model_id in ['combined', 'httpd', 'libtiff', 'nginx', 'libav', 'chatgpt']:
     # We run predefined scenario
     scenario(schema_path, datasets_path, saved_models_dir, data_type, model_id)
     exit()
@@ -255,7 +265,7 @@ if __name__ == '__main__':
     labels_sorted = sorted(zip(label_pred, label_gt), key=lambda x: x[0], reverse=True)
 
     plot_top_N_precision({'combined': labels_sorted}, data_type)
-    plot_AUC_curve({'combined': (label_pred, label_gt)}, data_type)
+    plot_ROC_curve({'combined': (label_pred, label_gt)}, data_type)
   else:
     labels_sorted_dict = {}
     label_pairs_dict = {}
@@ -293,4 +303,4 @@ if __name__ == '__main__':
       labels_sorted_dict[project] = sorted(zip(label_pred, label_gt), key=lambda x: x[0], reverse=True)
 
     plot_top_N_precision(labels_sorted_dict, data_type)
-    plot_AUC_curve(label_pairs_dict, data_type)
+    plot_ROC_curve(label_pairs_dict, data_type)
