@@ -1,9 +1,19 @@
+# ******************************************************************************
+#  File:            generate_bitcode.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for generating LLVM bitcode from D2A and original
+#                   project repositories.
+# ******************************************************************************
+
 import argparse
 import subprocess
 import os
 import gzip
 import pickle
-import json
 import sys
 import shutil
 from tqdm import tqdm
@@ -42,7 +52,6 @@ def init_parser():
     parser.add_argument('-o', '--output-dir', metavar='DIR', required=True, type=str, help='output directory with bitcode files')
     parser.add_argument('-c', '--commit', metavar='HASH', type=str, help='abbreviated hash of a commit to start with')
     parser.add_argument('--project', choices=['httpd', 'nginx', 'libtiff', 'ffmpeg', 'libav', 'openssl'], required=True, type=str, help="project name")
-    # parser.add_argument('--include', required=True, type=str, help="path to 'include/' dir for specified project")
 
     return parser
 
@@ -223,9 +232,6 @@ def files_updated(tracked_files, hash, prev_hash):
     if prev_hash is None:
         # We are at the first commit -> we need to create the headers for the first time
         return True
-
-    # Just for testing
-    # git diff --quiet 9fa142563c3bcddafcb892d59c458c87ec278a16 e86620ff6bb77998fde00f7033d283f23184b6fc -- include/ap_config_auto.h include/ap_config_layout.h modules/slotmem/mod_slotmem_shm.c
 
     # Check if any of tracked files changed between these two commits
     completed_process = subprocess.run(['git', 'diff', '--quiet', hash, prev_hash, '--'] + tracked_files)
@@ -583,9 +589,3 @@ if __name__ == '__main__':
             print(f"{OK}SUCCESS{ENDC}: construction_phase_d2a.py: all {success_samples} samples successfully compiled!", file=sys.stderr)
         else:
             print(f"{NOTE}NOTE{ENDC}: construction_phase_d2a.py: no samples compiled!", file=sys.stderr)
-
-    # git checkout branchname       - to lastest commit in given branch
-    # git checkout hash             - to given commit
-    # git clean -df                 - to remove untracked files (.bc files)
-    # git reset --hard HEAD         - hard reset of repo - restore tracked files and remove untracked
-    # git rev-parse 6231d0983b      - to get whole hash from its abbreviated version

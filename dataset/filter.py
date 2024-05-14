@@ -1,11 +1,20 @@
+# ******************************************************************************
+#  File:            filter.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for filtering out unsupported error types and
+#                   unnecessary attributes.
+# ******************************************************************************
+
 import pickle
 import sys
-import json
 import gzip
 import os
 import argparse
 from tqdm import tqdm
-from collections import Counter
 
 
 # Colors for command line
@@ -29,6 +38,7 @@ SUPPORTED=[ 'INTEGER_OVERFLOW_L5',
             'NULL_DEREFERENCE',
             'BUFFER_OVERRUN_L1',
             'INTEGER_OVERFLOW_L1']
+
 
 def init_parser():
     parser = argparse.ArgumentParser(description='Filter out non-supported bug types (defined in the script). It also removes information not needed for the pipeline.')
@@ -59,20 +69,8 @@ def filter_file(file, new_file):
             sample.pop('bug_loc_trace_index')
             sample.pop('sample_type')
             sample['commit'].pop('changes')
-            # sample.pop('trace')
-             # TODO: this might be useful for further optimiziation -- compile only
-             # functions listed here + possible conditional compilation
-             # NOTE: only compilation of these function can't be done because
-             # we need the rest of the file (with respect to conditional compilation)
-             # so best approach would be to remove everything that is not in these
-             # functions in final CPG (using DG or pre-processing in python -- nodes
-             # should contain location in original files)
             sample.pop('functions')
             sample.pop('zipped_bug_report')
-
-            # Pretty print JSON
-            # json_formatted = json.dumps(sample, indent=4)
-            # print(json_formatted)
 
             # Save sample to a new file
             pickle.dump(sample, f_out)

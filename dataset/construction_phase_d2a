@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# ******************************************************************************
+#  File:            construction_phase_d2a
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for generating Graph D2A from LLVM bitcode.
+# ******************************************************************************
+
 script=$(readlink -f "$0")
 export script_dir=$(dirname "$script")
 export script_name=$(basename "$script")
