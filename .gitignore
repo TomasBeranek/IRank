@@ -5,6 +5,7 @@ code-extraction/*
 inference-pipeline/example/*
 !inference-pipeline/example/main.c
 !inference-pipeline/example/add_one.c
+!inference-pipeline/example/add_one.h
 !inference-pipeline/example/Makefile
 
 # D2A
