@@ -41,3 +41,6 @@ model/schemes/unique_type_names.pickle
 
 # Models
 model/saved_models/
+
+# Python Cache
+**/__pycache__/
