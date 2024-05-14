@@ -6,7 +6,9 @@
 # incomplete, even though the documentation says that everything is saved when
 # the script exits (not true).
 
-# The experiment is successful if the command ends without error.
+# The experiment is successful if the command ends without error -- the graphs
+# from the batch mode are the same as the graphs from the single mode.
+
 # To run the experiment: 'make' or 'make experiment'.
 
 # Slicing info for the bitcode:

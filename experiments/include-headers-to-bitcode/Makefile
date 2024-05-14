@@ -1,7 +1,7 @@
 # This experiment shows:
 # 	1) the bitcode generation property - header files are present in the
 #			 generated bitcode of the source '.c' files
-# 	2) llvm-slicer is able to slicer according to the criteria present in the
+# 	2) llvm-slicer is able to slice according to the criteria present in the
 #			 given header files
 
 # Only point 2) alone accounts for 144,971 (~11%) of all samples - it needs to be handled.
@@ -26,8 +26,6 @@
 
 
 # The following are examples of real samples representing cases 1) and 2).
-
-# V .h je implementace funkce, která volá nějaké funkce z .c. Při zavolaní jsou však předány takové parametry, které způsobí přístup za hranice pole. Reálná chyba nastane tudíž v .c, ale je zahlášena v .h (jakožto top-level funkce).
 
 
 # Case 1) - we slice by '.c', but we need code from '.h'.
