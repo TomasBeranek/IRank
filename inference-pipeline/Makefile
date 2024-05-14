@@ -1,12 +1,12 @@
 # ******************************************************************************
-#  File: 						Makefile
+#  File:            Makefile
 #  Master's Thesis: Evaluating Reliability of Static Analysis Results
 #                   Using Machine Learning
-#  Author: 					Beranek Tomas (xberan46)
-#  Date: 						14.5.2024
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
 #  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
-#  Description:			The Makefile for installing the compiler wrapper and
-#										running an experiment to demonstrate the inference pipeline.
+#  Description:     The Makefile for installing the compiler wrapper and
+#                   running an experiment to demonstrate the inference pipeline.
 # ******************************************************************************
 
 COMPILERS = 8cc 9cc ack c++ ccomp chibicc clang clang++ cproc g++ gcc icc icpc lacc lcc openCC opencc pcc scc sdcc tcc vc x86_64-redhat-linux-c++ x86_64-redhat-linux-g++ x86_64-redhat-linux-gcc x86_64-redhat-linux-gcc-10
