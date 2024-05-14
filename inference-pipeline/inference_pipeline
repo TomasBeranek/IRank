@@ -20,7 +20,7 @@ criteria_extraction_script="${script_dir}/slicing_criteria_extraction.py"
 joern_cpg_bin="${infer_dir}/workspace/sliced.cpg.bin.zip/cpg.bin"
 bitcode_dir="${infer_dir}/bitcode"
 raw_expg_dir="${infer_dir}/raw-ecpg"
-tfgnn_schema="../model/schemas/mixed_nodes/extended_cpg.pbtxt"
+tfgnn_schema="../model/schemas/extended_cpg.pbtxt"
 tfrecord_file="${infer_dir}/graphs.tfrecords"
 model_dir="../model/saved_models/8_AUC_0.818/combined_AUC_0.818"
 

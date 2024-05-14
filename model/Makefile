@@ -1,4 +1,4 @@
-SCHEMA_PATH=schemas/mixed_nodes/extended_cpg.pbtxt
+SCHEMA_PATH=schemas/extended_cpg.pbtxt
 MODELS_DIR=saved_models
 DATASET_DIR=tfrecords
 ID ?= 1
