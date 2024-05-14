@@ -5,12 +5,9 @@ EXAMPLE_GLOBAL_VARS_DIR = $(EXAMPLES_DIR)/global-vars
 GRAPH_DIR = ../../dataset/graph-d2a
 TFRECORDS_DIR = ../tfrecords
 
-.PHONY: experiment all
+.PHONY: all
 
-all: experiment
-
-experiment2:
-	python3 feature_engineering.py $(GRAPH_DIR)/1
+all: transform-libtiff-1
 
 # Use this as: 'time make measure-time'
 measure-time:
