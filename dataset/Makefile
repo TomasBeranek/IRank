@@ -62,11 +62,13 @@ graph-ffmpeg-0:
 	./construction_phase_d2a $(GRAPH_DIR)/ffmpeg_0 $(SLICING_INFO_DIR)/ffmpeg_labeler_0.csv $(BITCODE_DIR)/ffmpeg_0
 
 remove-duplicates:
-	python3 remove_duplicates.py --d2a-dir d2a --bitcode-dir d2a-bitcode
+	python3 ../dev-utils/remove_duplicates.py --d2a-dir d2a --bitcode-dir d2a-bitcode
 
-# remove symlinks with non-existent targets (removed 877 invalid links from original bitcode)
 remove-invalid-symlinks:
-	python3 remove_invalid_symlinks.py d2a-bitcode
+	python3 ../dev-utils/remove_invalid_symlinks.py d2a-bitcode
+
+stats:
+	python3 ../dev-utils/stats.py -d d2a
 
 # Removes specified already generated samples
 remove-samples:
