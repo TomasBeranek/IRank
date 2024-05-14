@@ -218,7 +218,6 @@ if __name__ == '__main__':
   saved_models_dir = sys.argv[3]
   model_id = sys.argv[4]
   data_type = sys.argv[5] # test or val
-  saved_models_dir = 'saved_models'
 
   if model_id in ['combined', 'httpd', 'libtiff', 'nginx', 'libav', 'chatgpt']:
     # We run predefined scenario
