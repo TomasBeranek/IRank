@@ -149,8 +149,8 @@ def find_context_normalization_coefficients(train_ids, slicing_info_TP_file, sli
 
 
 if __name__ == '__main__':
-    path_to_project_FP = sys.argv[1] # ../../D2A-CPG/libtiff_0
-    path_to_project_TP = sys.argv[2] # ../../D2A-CPG/libtiff_1
+    path_to_project_FP = sys.argv[1] # ../../dataset/graph-d2a/libtiff_0
+    path_to_project_TP = sys.argv[2] # ../../dataset/graph-d2a/libtiff_1
     project = sys.argv[3] # libtiff, openssl, ...
     splits_path = sys.argv[4] # ../../dataset/d2a/splits.csv
     slicing_info_FP_file = sys.argv[5] # ../../dataset/slicing-info/libtiff_labeler_0.csv

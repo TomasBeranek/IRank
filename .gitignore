@@ -11,13 +11,11 @@ inference-pipeline/example/*
 # D2A
 dataset/d2a/
 dataset/d2a-filtered/
-dataset/testing/
-dataset/projects/
-dataset/slicing-info/
 dataset/d2a-bitcode
-
-# Default output dir
-D2A-CPG/
+dataset/slicing-info/
+dataset/graph-d2a/
+dataset/projects/
+model/tfrecords/
 
 # Experiments
 dataset/experiments/include-headers-to-bitcode/*

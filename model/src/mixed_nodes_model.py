@@ -253,7 +253,7 @@ def train_model(model_input_spec_train, train_ds_batched, val_ds_batched, train_
 if __name__ == '__main__':
   # Load args
   schema_path = sys.argv[1] # schemas/mixed_nodes/extended_cpg.pbtxt
-  project_path = sys.argv[2] # ../D2A-CPG
+  project_path = sys.argv[2] # ../dataset/graph-d2a
   models_dir = sys.argv[3] # saved_models
   combined = (len(sys.argv) > 4 and sys.argv[4] == 'combined')
 

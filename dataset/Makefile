@@ -1,4 +1,4 @@
-GRAPH_DIR = ../D2A-CPG
+GRAPH_DIR = graph-d2a
 SLICING_INFO_DIR = slicing-info
 BITCODE_DIR = d2a-bitcode
 
@@ -69,7 +69,3 @@ remove-invalid-symlinks:
 
 stats:
 	python3 ../dev-utils/stats.py -d d2a
-
-# Removes specified already generated samples
-remove-samples:
-	awk -F, 'NR>=10 && NR<=50 {print "rm -rf ../D2A-CPG/httpd_1/"$$2}' $(SLICING_INFO_DIR)/httpd_labeler_1.csv | sh

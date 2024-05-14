@@ -1,6 +1,6 @@
 SCHEMA_PATH=schemas/mixed_nodes/extended_cpg.pbtxt
 MODELS_DIR=saved_models
-DATASET_DIR=../D2A-CPG
+DATASET_DIR=tfrecords
 ID ?= 1
 
 all: train-model

@@ -280,7 +280,7 @@ if __name__ == '__main__':
         print('Usage: python find_unique_values.py <partial_filename>|--save-type-names|--print-type-names')
         sys.exit(1)
 
-    directory = '../../D2A-CPG/'  # Script needs to be in model/schemas/ or change accordingly
+    directory = '../dataset/graph-d2a/'  # Script needs to be in dev-utils/ or change accordingly
 
     # We need to increase possible size of CSV cell - for array literals, array types etc.
     csv.field_size_limit(sys.maxsize)
