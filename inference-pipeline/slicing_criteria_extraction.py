@@ -1,8 +1,13 @@
-#!/usr/bin/env python3.9
-
-# The program takes as the only argument the name of the file with the Infer
-# output in json format. The program processes and deletes the first report
-# in the file.
+# ******************************************************************************
+#  File: 			slicing_criteria_extraction.py
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author: 			Beranek Tomas (xberan46)
+#  Date: 			14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Script for extracting slicing criteria from an Infer report
+#                   or from D2A.
+# ******************************************************************************
 
 # Meaning of error codes:
 #   0 -- Ok. The file might be empty, but in JSON format (not considered as an error).
@@ -25,6 +30,10 @@ WARNING = '\033[93m'
 ERROR = '\033[91m'
 ENDC = '\033[0m'
 
+# Debug option - a number of reports to print (of each type)
+DEBUG = 0
+DEBUG_TYPES = {}
+
 
 def init_parser():
     parser = argparse.ArgumentParser(description='Extract slicing criteria from Infer\'s output for LLVM slicer (DG) tool. The output is written to stdout in CSV format "status,bug_id,slicing_criteria". If a bug has an unsupported type, then the bug will be skipped (nothing is written to stdout).')
@@ -46,9 +55,6 @@ def location_from_bug_trace(report):
 def is_header(file):
     return file.endswith('.h')
 
-# Debug option - a number of reports to print (of each type)
-DEBUG = 0
-DEBUG_TYPES = {}
 
 def init_debug():
     global DEBUG_TYPES
@@ -427,9 +433,6 @@ if __name__ == "__main__":
                 print(f'{ERROR}ERROR{ENDC}: slicing_criteria_extraction.py: file "{args.file}" in not in JSON format!', file=sys.stderr)
                 exit(7)
 
-    # Print output header
-    # print(f'status,bug_id,entry_function,file,line,variable')
-
     if not reports:
         # The report is empty, but in JSON format
         exit(0)
@@ -451,7 +454,6 @@ if __name__ == "__main__":
 
         if status == 5:
             # 5 means an unsupported bug type --> don't print anything
-            # print(f'{status},{bug_id},{bug_type}')
             infer_bug_id += 1
             continue
 
@@ -474,20 +476,5 @@ if __name__ == "__main__":
             # Status should be 1 which means internal error -- the script tries
             # to at least extract entry, file and line
             print(f'{status},{bug_id},{entry},{file},{fun},{line},')
-
-        # 'adjusted_bug_loc' should be now the same as extracted bug location
-        # Extracting slicing criteria works identically as in D2A -- this is needed for real-world programs
-        # if report['adjusted_bug_loc']:
-        #     if os.path.basename(report['adjusted_bug_loc']['file']) == file and report['adjusted_bug_loc']['line'] == int(line):
-        #          print(f'{OK}OK{ENDC}', file=sys.stderr)
-        #     else:
-        #          print(f'{ERROR}ERROR{ENDC}', file=sys.stderr)
-        #          exit(1)
-        # else:
-        #     if os.path.basename(report['file']) == file and report['line'] == int(line):
-        #          print(f'{OK}OK{ENDC}', file=sys.stderr)
-        #     else:
-        #          print(f'{ERROR}ERROR{ENDC}', file=sys.stderr)
-        #          exit(1)
 
         infer_bug_id += 1
