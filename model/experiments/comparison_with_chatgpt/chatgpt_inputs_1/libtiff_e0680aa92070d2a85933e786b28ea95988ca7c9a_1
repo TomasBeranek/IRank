@@ -1,0 +1,492 @@
+{
+    "label_source": "auto_labeler",
+    "bug_type": "BUFFER_OVERRUN_U5",
+    "project": "libtiff",
+    "bug_info": {
+        "qualifier": "Offset: [-oo, +oo] (\u21d0 [-oo, +oo] + 5) Size: [0, +oo] by call to `TIFFReadEncodedStrip`.",
+        "file": "libtiff/tif_getimage.c",
+        "procedure": "gtStripSeparate",
+        "line": 1091,
+        "column": 24,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_getimage.c/#L1091"
+    },
+    "adjusted_bug_loc": {
+        "file": "libtiff/tif_swab.c",
+        "line": 292,
+        "column": 3,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_swab.c/#L292"
+    },
+    "bug_loc_trace_index": 10,
+    "versions": {
+        "before": "b9b93f661ed56fda222ce686a6e6ef03ee84bc3d",
+        "after": "371ad2658c189329d9b34707d36894dfda3905a0"
+    },
+    "sample_type": "before_fix",
+    "trace": [
+        {
+            "idx": 0,
+            "level": 0,
+            "description": "Unknown value from: non-const function",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_getimage.c",
+            "loc": "1119:3",
+            "func_name": "gtStripSeparate",
+            "func_key": "libtiff/tif_getimage.c@1002:1-1143:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_getimage.c/#L1119"
+        },
+        {
+            "idx": 1,
+            "level": 0,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_getimage.c",
+            "loc": "1061:25",
+            "func_name": "gtStripSeparate",
+            "func_key": "libtiff/tif_getimage.c@1002:1-1143:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_getimage.c/#L1061"
+        },
+        {
+            "idx": 2,
+            "level": 1,
+            "description": "Parameter `*tif->tif_rawdata`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_read.c",
+            "loc": "561:1",
+            "func_name": "_TIFFReadEncodedStripAndAllocBuffer",
+            "func_key": "libtiff/tif_read.c@561:1-596:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_read.c/#L561"
+        },
+        {
+            "idx": 3,
+            "level": 0,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_getimage.c",
+            "loc": "1091:24",
+            "func_name": "gtStripSeparate",
+            "func_key": "libtiff/tif_getimage.c@1002:1-1143:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_getimage.c/#L1091"
+        },
+        {
+            "idx": 4,
+            "level": 1,
+            "description": "Parameter `*tif->tif_rawdata`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_read.c",
+            "loc": "516:1",
+            "func_name": "TIFFReadEncodedStrip",
+            "func_key": "libtiff/tif_read.c@516:1-553:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_read.c/#L516"
+        },
+        {
+            "idx": 5,
+            "level": 1,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_read.c",
+            "loc": "547:7",
+            "func_name": "TIFFReadEncodedStrip",
+            "func_key": "libtiff/tif_read.c@516:1-553:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_read.c/#L547"
+        },
+        {
+            "idx": 6,
+            "level": 2,
+            "description": "Parameter `*tif->tif_rawdata`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_read.c",
+            "loc": "770:1",
+            "func_name": "TIFFFillStrip",
+            "func_key": "libtiff/tif_read.c@770:1-961:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_read.c/#L770"
+        },
+        {
+            "idx": 7,
+            "level": 2,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_read.c",
+            "loc": "957:5",
+            "func_name": "TIFFFillStrip",
+            "func_key": "libtiff/tif_read.c@770:1-961:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_read.c/#L957"
+        },
+        {
+            "idx": 8,
+            "level": 0,
+            "description": "<Length trace>",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_swab.c",
+            "loc": "283:1",
+            "func_name": "TIFFReverseBits",
+            "func_key": "libtiff/tif_swab.c@283:1-301:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_swab.c/#L283"
+        },
+        {
+            "idx": 9,
+            "level": 3,
+            "description": "Parameter `*cp`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_swab.c",
+            "loc": "283:1",
+            "func_name": "TIFFReverseBits",
+            "func_key": "libtiff/tif_swab.c@283:1-301:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_swab.c/#L283"
+        },
+        {
+            "idx": 10,
+            "level": 3,
+            "description": "Array access: Offset: [-oo, +oo] (\u21d0 [-oo, +oo] + 5) Size: [0, +oo] by call to `TIFFReadEncodedStrip` ",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_swab.c",
+            "loc": "292:3",
+            "func_name": "TIFFReverseBits",
+            "func_key": "libtiff/tif_swab.c@283:1-301:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_swab.c/#L292"
+        }
+    ],
+    "functions": {
+        "libtiff/tif_getimage.c@1002:1-1143:2": {
+            "file": "libtiff/tif_getimage.c",
+            "loc": "1002:1-1143:2",
+            "name": "gtStripSeparate",
+            "touched_by_commit": false,
+            "code": "static int\ngtStripSeparate(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)\n{\n\tTIFF* tif = img->tif;\n\ttileSeparateRoutine put = img->put.separate;\n\tunsigned char *buf = NULL;\n\tunsigned char *p0 = NULL, *p1 = NULL, *p2 = NULL, *pa = NULL;\n\tuint32 row, y, nrow, rowstoread;\n\ttmsize_t pos;\n\ttmsize_t scanline;\n\tuint32 rowsperstrip, offset_row;\n\tuint32 imagewidth = img->width;\n\ttmsize_t stripsize;\n\ttmsize_t bufsize;\n\tint32 fromskew, toskew;\n\tint alpha = img->alpha;\n\tint ret = 1, flip;\n        uint16 colorchannels;\n\n\tstripsize = TIFFStripSize(tif);  \n\tbufsize = TIFFSafeMultiply(tmsize_t,alpha?4:3,stripsize);\n\tif (bufsize == 0) {\n\t\tTIFFErrorExt(tif->tif_clientdata, TIFFFileName(tif), \"Integer overflow in %s\", \"gtStripSeparate\");\n\t\treturn (0);\n\t}\n\n\tflip = setorientation(img);\n\tif (flip & FLIP_VERTICALLY) {\n\t\ty = h - 1;\n\t\ttoskew = -(int32)(w + w);\n\t}\n\telse {\n\t\ty = 0;\n\t\ttoskew = -(int32)(w - w);\n\t}\n\n        switch( img->photometric )\n        {\n          case PHOTOMETRIC_MINISWHITE:\n          case PHOTOMETRIC_MINISBLACK:\n          case PHOTOMETRIC_PALETTE:\n            colorchannels = 1;\n            break;\n\n          default:\n            colorchannels = 3;\n            break;\n        }\n\n\tTIFFGetFieldDefaulted(tif, TIFFTAG_ROWSPERSTRIP, &rowsperstrip);\n\tscanline = TIFFScanlineSize(tif);  \n\tfromskew = (w < imagewidth ? imagewidth - w : 0);\n\tfor (row = 0; row < h; row += nrow)\n\t{\n\t\trowstoread = rowsperstrip - (row + img->row_offset) % rowsperstrip;\n\t\tnrow = (row + rowstoread > h ? h - row : rowstoread);\n\t\toffset_row = row + img->row_offset;\n                if( buf == NULL )\n                {\n                    if (_TIFFReadEncodedStripAndAllocBuffer(\n                            tif, TIFFComputeStrip(tif, offset_row, 0),\n                            (void**) &buf, bufsize,\n                            ((row + img->row_offset)%rowsperstrip + nrow) * scanline)==(tmsize_t)(-1)\n                        && (buf == NULL || img->stoponerr))\n                    {\n                            ret = 0;\n                            break;\n                    }\n                    p0 = buf;\n                    if( colorchannels == 1 )\n                    {\n                        p2 = p1 = p0;\n                        pa = (alpha?(p0+3*stripsize):NULL);\n                    }\n                    else\n                    {\n                        p1 = p0 + stripsize;\n                        p2 = p1 + stripsize;\n                        pa = (alpha?(p2+stripsize):NULL);\n                    }\n                }\n\t\telse if (TIFFReadEncodedStrip(tif, TIFFComputeStrip(tif, offset_row, 0),\n\t\t    p0, ((row + img->row_offset)%rowsperstrip + nrow) * scanline)==(tmsize_t)(-1)\n\t\t    && img->stoponerr)\n\t\t{\n\t\t\tret = 0;\n\t\t\tbreak;\n\t\t}\n\t\tif (colorchannels > 1 \n                    && TIFFReadEncodedStrip(tif, TIFFComputeStrip(tif, offset_row, 1),\n                                            p1, ((row + img->row_offset)%rowsperstrip + nrow) * scanline) == (tmsize_t)(-1)\n\t\t    && img->stoponerr)\n\t\t{\n\t\t\tret = 0;\n\t\t\tbreak;\n\t\t}\n\t\tif (colorchannels > 1 \n                    && TIFFReadEncodedStrip(tif, TIFFComputeStrip(tif, offset_row, 2),\n                                            p2, ((row + img->row_offset)%rowsperstrip + nrow) * scanline) == (tmsize_t)(-1)\n\t\t    && img->stoponerr)\n\t\t{\n\t\t\tret = 0;\n\t\t\tbreak;\n\t\t}\n\t\tif (alpha)\n\t\t{\n\t\t\tif (TIFFReadEncodedStrip(tif, TIFFComputeStrip(tif, offset_row, colorchannels),\n\t\t\t    pa, ((row + img->row_offset)%rowsperstrip + nrow) * scanline)==(tmsize_t)(-1)\n\t\t\t    && img->stoponerr)\n\t\t\t{\n\t\t\t\tret = 0;\n\t\t\t\tbreak;\n\t\t\t}\n\t\t}\n\n\t\tpos = ((row + img->row_offset) % rowsperstrip) * scanline + \\\n\t\t\t((tmsize_t) img->col_offset * img->samplesperpixel);\n\t\t(*put)(img, raster+y*w, 0, y, w, nrow, fromskew, toskew, p0 + pos, p1 + pos,\n\t\t    p2 + pos, (alpha?(pa+pos):NULL));\n\t\ty += ((flip & FLIP_VERTICALLY) ? -(int32) nrow : (int32) nrow);\n\t}\n\n\tif (flip & FLIP_HORIZONTALLY) {\n\t\tuint32 line;\n\n\t\tfor (line = 0; line < h; line++) {\n\t\t\tuint32 *left = raster + (line * w);\n\t\t\tuint32 *right = left + w - 1;\n\n\t\t\twhile ( left < right ) {\n\t\t\t\tuint32 temp = *left;\n\t\t\t\t*left = *right;\n\t\t\t\t*right = temp;\n\t\t\t\tleft++;\n\t\t\t\tright--;\n\t\t\t}\n\t\t}\n\t}\n\n\t_TIFFfree(buf);\n\treturn (ret);\n}"
+        },
+        "libtiff/tif_read.c@561:1-596:2": {
+            "file": "libtiff/tif_read.c",
+            "loc": "561:1-596:2",
+            "name": "_TIFFReadEncodedStripAndAllocBuffer",
+            "touched_by_commit": false,
+            "code": "tmsize_t\n_TIFFReadEncodedStripAndAllocBuffer(TIFF* tif, uint32 strip,\n                                    void **buf, tmsize_t bufsizetoalloc,\n                                    tmsize_t size_to_read)\n{\n    tmsize_t this_stripsize;\n    uint16 plane;\n\n    if( *buf != NULL )\n    {\n        return TIFFReadEncodedStrip(tif, strip, *buf, size_to_read);\n    }\n\n    this_stripsize=TIFFReadEncodedStripGetStripSize(tif, strip, &plane);\n    if (this_stripsize==((tmsize_t)(-1)))\n            return((tmsize_t)(-1));\n\n    if ((size_to_read!=(tmsize_t)(-1))&&(size_to_read<this_stripsize))\n            this_stripsize=size_to_read;\n    if (!TIFFFillStrip(tif,strip))\n            return((tmsize_t)(-1));\n\n    *buf = _TIFFmalloc(bufsizetoalloc);\n    if (*buf == NULL) {\n            TIFFErrorExt(tif->tif_clientdata, TIFFFileName(tif), \"No space for strip buffer\");\n            return((tmsize_t)(-1));\n    }\n    _TIFFmemset(*buf, 0, bufsizetoalloc);\n\n    if ((*tif->tif_decodestrip)(tif,*buf,this_stripsize,plane)<=0)\n            return((tmsize_t)(-1));\n    (*tif->tif_postdecode)(tif,*buf,this_stripsize);\n    return(this_stripsize);\n\n\n}"
+        },
+        "libtiff/tif_read.c@516:1-553:2": {
+            "file": "libtiff/tif_read.c",
+            "loc": "516:1-553:2",
+            "name": "TIFFReadEncodedStrip",
+            "touched_by_commit": false,
+            "code": "tmsize_t\nTIFFReadEncodedStrip(TIFF* tif, uint32 strip, void* buf, tmsize_t size)\n{\n\tstatic const char module[] = \"TIFFReadEncodedStrip\";\n\tTIFFDirectory *td = &tif->tif_dir;\n\ttmsize_t stripsize;\n\tuint16 plane;\n\n\tstripsize=TIFFReadEncodedStripGetStripSize(tif, strip, &plane);\n\tif (stripsize==((tmsize_t)(-1)))\n\t\treturn((tmsize_t)(-1));\n\n    /* shortcut to avoid an extra memcpy() */\n    if( td->td_compression == COMPRESSION_NONE &&\n        size!=(tmsize_t)(-1) && size >= stripsize &&\n        !isMapped(tif) &&\n        ((tif->tif_flags&TIFF_NOREADRAW)==0) )\n    {\n        if (TIFFReadRawStrip1(tif, strip, buf, stripsize, module) != stripsize)\n            return ((tmsize_t)(-1));\n\n        if (!isFillOrder(tif, td->td_fillorder) &&\n            (tif->tif_flags & TIFF_NOBITREV) == 0)\n            TIFFReverseBits(buf,stripsize);\n\n        (*tif->tif_postdecode)(tif,buf,stripsize);\n        return (stripsize);\n    }\n\n\tif ((size!=(tmsize_t)(-1))&&(size<stripsize))\n\t\tstripsize=size;\n\tif (!TIFFFillStrip(tif,strip))\n\t\treturn((tmsize_t)(-1));\n\tif ((*tif->tif_decodestrip)(tif,buf,stripsize,plane)<=0)\n\t\treturn((tmsize_t)(-1));\n\t(*tif->tif_postdecode)(tif,buf,stripsize);\n\treturn(stripsize);\n}"
+        },
+        "libtiff/tif_read.c@770:1-961:2": {
+            "file": "libtiff/tif_read.c",
+            "loc": "770:1-961:2",
+            "name": "TIFFFillStrip",
+            "touched_by_commit": true,
+            "code": "int\nTIFFFillStrip(TIFF* tif, uint32 strip)\n{\n\tstatic const char module[] = \"TIFFFillStrip\";\n\tTIFFDirectory *td = &tif->tif_dir;\n\n        if (!_TIFFFillStriles( tif ) || !tif->tif_dir.td_stripbytecount)\n            return 0;\n\n\tif ((tif->tif_flags&TIFF_NOREADRAW)==0)\n\t{\n\t\tuint64 bytecount = td->td_stripbytecount[strip];\n\t\tif ((int64)bytecount <= 0) {\n#if defined(__WIN32__) && (defined(_MSC_VER) || defined(__MINGW32__))\n\t\t\tTIFFErrorExt(tif->tif_clientdata, module,\n\t\t\t\t\"Invalid strip byte count %I64u, strip %lu\",\n\t\t\t\t     (unsigned __int64) bytecount,\n\t\t\t\t     (unsigned long) strip);\n#else\n\t\t\tTIFFErrorExt(tif->tif_clientdata, module,\n\t\t\t\t\"Invalid strip byte count %llu, strip %lu\",\n\t\t\t\t     (unsigned long long) bytecount,\n\t\t\t\t     (unsigned long) strip);\n#endif\n\t\t\treturn (0);\n\t\t}\n\n\t\t/* To avoid excessive memory allocations: */\n\t\t/* Byte count should normally not be larger than a number of */\n\t\t/* times the uncompressed size plus some margin */\n                if( bytecount > 1024 * 1024 )\n                {\n\t\t\t/* 10 and 4096 are just values that could be adjusted. */\n\t\t\t/* Hopefully they are safe enough for all codecs */\n\t\t\ttmsize_t stripsize = TIFFStripSize(tif);\n\t\t\tif( stripsize != 0 &&\n\t\t\t    (bytecount - 4096) / 10 > (uint64)stripsize  )\n\t\t\t{\n\t\t\t\tuint64 newbytecount = (uint64)stripsize * 10 + 4096;\n\t\t\t\tif( (int64)newbytecount >= 0 )\n\t\t\t\t{\n#if defined(__WIN32__) && (defined(_MSC_VER) || defined(__MINGW32__))\n\t\t\t\t\tTIFFWarningExt(tif->tif_clientdata, module,\n\t\t\t\t\t  \"Too large strip byte count %I64u, strip %lu. Limiting to %I64u\",\n\t\t\t\t\t     (unsigned __int64) bytecount,\n\t\t\t\t\t     (unsigned long) strip,\n\t\t\t\t\t     (unsigned __int64) newbytecount);\n#else\n\t\t\t\t\tTIFFErrorExt(tif->tif_clientdata, module,\n\t\t\t\t\t  \"Too large strip byte count %llu, strip %lu. Limiting to %llu\",\n\t\t\t\t\t     (unsigned long long) bytecount,\n\t\t\t\t\t     (unsigned long) strip,\n\t\t\t\t\t     (unsigned long long) newbytecount);\n#endif\n\t\t\t\t\tbytecount = newbytecount;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\tif (isMapped(tif)) {\n\t\t\t/*\n\t\t\t * We must check for overflow, potentially causing\n\t\t\t * an OOB read. Instead of simple\n\t\t\t *\n\t\t\t *  td->td_stripoffset[strip]+bytecount > tif->tif_size\n\t\t\t *\n\t\t\t * comparison (which can overflow) we do the following\n\t\t\t * two comparisons:\n\t\t\t */\n\t\t\tif (bytecount > (uint64)tif->tif_size ||\n\t\t\t    td->td_stripoffset[strip] > (uint64)tif->tif_size - bytecount) {\n\t\t\t\t/*\n\t\t\t\t * This error message might seem strange, but\n\t\t\t\t * it's what would happen if a read were done\n\t\t\t\t * instead.\n\t\t\t\t */\n#if defined(__WIN32__) && (defined(_MSC_VER) || defined(__MINGW32__))\n\t\t\t\tTIFFErrorExt(tif->tif_clientdata, module,\n\n\t\t\t\t\t\"Read error on strip %lu; \"\n\t\t\t\t\t\"got %I64u bytes, expected %I64u\",\n\t\t\t\t\t(unsigned long) strip,\n\t\t\t\t\t(unsigned __int64) tif->tif_size - td->td_stripoffset[strip],\n\t\t\t\t\t(unsigned __int64) bytecount);\n#else\n\t\t\t\tTIFFErrorExt(tif->tif_clientdata, module,\n\n\t\t\t\t\t\"Read error on strip %lu; \"\n\t\t\t\t\t\"got %llu bytes, expected %llu\",\n\t\t\t\t\t(unsigned long) strip,\n\t\t\t\t\t(unsigned long long) tif->tif_size - td->td_stripoffset[strip],\n\t\t\t\t\t(unsigned long long) bytecount);\n#endif\n\t\t\t\ttif->tif_curstrip = NOSTRIP;\n\t\t\t\treturn (0);\n\t\t\t}\n\t\t}\n\n\t\tif (isMapped(tif) &&\n\t\t    (isFillOrder(tif, td->td_fillorder)\n\t\t    || (tif->tif_flags & TIFF_NOBITREV))) {\n\t\t\t/*\n\t\t\t * The image is mapped into memory and we either don't\n\t\t\t * need to flip bits or the compression routine is\n\t\t\t * going to handle this operation itself.  In this\n\t\t\t * case, avoid copying the raw data and instead just\n\t\t\t * reference the data from the memory mapped file\n\t\t\t * image.  This assumes that the decompression\n\t\t\t * routines do not modify the contents of the raw data\n\t\t\t * buffer (if they try to, the application will get a\n\t\t\t * fault since the file is mapped read-only).\n\t\t\t */\n\t\t\tif ((tif->tif_flags & TIFF_MYBUFFER) && tif->tif_rawdata) {\n\t\t\t\t_TIFFfree(tif->tif_rawdata);\n\t\t\t\ttif->tif_rawdata = NULL;\n\t\t\t\ttif->tif_rawdatasize = 0;\n\t\t\t}\n\t\t\ttif->tif_flags &= ~TIFF_MYBUFFER;\n\t\t\ttif->tif_rawdatasize = (tmsize_t)bytecount;\n\t\t\ttif->tif_rawdata = tif->tif_base + (tmsize_t)td->td_stripoffset[strip];\n                        tif->tif_rawdataoff = 0;\n                        tif->tif_rawdataloaded = (tmsize_t) bytecount;\n\n\t\t\t/* \n\t\t\t * When we have tif_rawdata reference directly into the memory mapped file\n\t\t\t * we need to be pretty careful about how we use the rawdata.  It is not\n\t\t\t * a general purpose working buffer as it normally otherwise is.  So we\n\t\t\t * keep track of this fact to avoid using it improperly.\n\t\t\t */\n\t\t\ttif->tif_flags |= TIFF_BUFFERMMAP;\n\t\t} else {\n\t\t\t/*\n\t\t\t * Expand raw data buffer, if needed, to hold data\n\t\t\t * strip coming from file (perhaps should set upper\n\t\t\t * bound on the size of a buffer we'll use?).\n\t\t\t */\n\t\t\ttmsize_t bytecountm;\n\t\t\tbytecountm=(tmsize_t)bytecount;\n\t\t\tif ((uint64)bytecountm!=bytecount)\n\t\t\t{\n\t\t\t\tTIFFErrorExt(tif->tif_clientdata,module,\"Integer overflow\");\n\t\t\t\treturn(0);\n\t\t\t}\n\t\t\tif (bytecountm > tif->tif_rawdatasize) {\n\t\t\t\ttif->tif_curstrip = NOSTRIP;\n\t\t\t\tif ((tif->tif_flags & TIFF_MYBUFFER) == 0) {\n\t\t\t\t\tTIFFErrorExt(tif->tif_clientdata, module,\n\t\t\t\t\t    \"Data buffer too small to hold strip %lu\",\n\t\t\t\t\t    (unsigned long) strip);\n\t\t\t\t\treturn (0);\n\t\t\t\t}\n\t\t\t}\n\t\t\tif (tif->tif_flags&TIFF_BUFFERMMAP) {\n\t\t\t\ttif->tif_curstrip = NOSTRIP;\n\t\t\t\ttif->tif_rawdata = NULL;\n\t\t\t\ttif->tif_rawdatasize = 0;\n\t\t\t\ttif->tif_flags &= ~TIFF_BUFFERMMAP;\n\t\t\t}\n\n\t\t\tif( isMapped(tif) )\n\t\t\t{\n\t\t\t\tif (bytecountm > tif->tif_rawdatasize &&\n\t\t\t\t    !TIFFReadBufferSetup(tif, 0, bytecountm))\n\t\t\t\t{\n\t\t\t\t\treturn (0);\n\t\t\t\t}\n\t\t\t\tif (TIFFReadRawStrip1(tif, strip, tif->tif_rawdata,\n\t\t\t\t    bytecountm, module) != bytecountm)\n\t\t\t\t{\n\t\t\t\t\treturn (0);\n\t\t\t\t}\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tif (TIFFReadRawStripOrTile2(tif, strip, 1,\n\t\t\t\t    bytecountm, module) != bytecountm)\n\t\t\t\t{\n\t\t\t\t\treturn (0);\n\t\t\t\t}\n\t\t\t}\n\n\n                        tif->tif_rawdataoff = 0;\n                        tif->tif_rawdataloaded = bytecountm;\n                        \n\t\t\tif (!isFillOrder(tif, td->td_fillorder) &&\n\t\t\t    (tif->tif_flags & TIFF_NOBITREV) == 0)\n\t\t\t\tTIFFReverseBits(tif->tif_rawdata, bytecountm);\n                }\n\t}\n\treturn (TIFFStartStrip(tif, strip));\n}"
+        },
+        "libtiff/tif_swab.c@283:1-301:2": {
+            "file": "libtiff/tif_swab.c",
+            "loc": "283:1-301:2",
+            "name": "TIFFReverseBits",
+            "touched_by_commit": false,
+            "code": "void\nTIFFReverseBits(uint8* cp, tmsize_t n)  \n{\n\tfor (; n > 8; n -= 8) {\n\t\tcp[0] = TIFFBitRevTable[cp[0]];\n\t\tcp[1] = TIFFBitRevTable[cp[1]];\n\t\tcp[2] = TIFFBitRevTable[cp[2]];\n\t\tcp[3] = TIFFBitRevTable[cp[3]];\n\t\tcp[4] = TIFFBitRevTable[cp[4]];\n\t\tcp[5] = TIFFBitRevTable[cp[5]];\n\t\tcp[6] = TIFFBitRevTable[cp[6]];\n\t\tcp[7] = TIFFBitRevTable[cp[7]];\n\t\tcp += 8;\n\t}\n\twhile (n-- > 0) {\n\t\t*cp = TIFFBitRevTable[*cp];\n\t\tcp++;\n\t}\n}"
+        }
+    },
+    "commit": {
+        "url": "https://gitlab.com/libtiff/libtiff/commit/371ad2658c189329d9b34707d36894dfda3905a0",
+        "changes": [
+            {
+                "before": ".gitignore",
+                "after": ".gitignore",
+                "changes": [
+                    "68,0^^69,1"
+                ]
+            },
+            {
+                "before": "CMakeLists.txt",
+                "after": "CMakeLists.txt",
+                "changes": [
+                    "626,1^^626,1"
+                ]
+            },
+            {
+                "before": "configure.ac",
+                "after": "configure.ac",
+                "changes": [
+                    "1073,2^^1073,1",
+                    "1079,1^^1078,1",
+                    "1083,1^^1082,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dir.c",
+                "after": "libtiff/tif_dir.c",
+                "changes": [
+                    "1021,1^^1021,1",
+                    "1026,1^^1026,1",
+                    "1285,2^^1285,3",
+                    "1299,1^^1299,0",
+                    "1302,1^^1301,0",
+                    "1389,0^^1389,1",
+                    "1390,0^^1391,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dir.h",
+                "after": "libtiff/tif_dir.h",
+                "changes": [
+                    "100,2^^100,4",
+                    "103,1^^105,1",
+                    "106,1^^107,0"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dirread.c",
+                "after": "libtiff/tif_dirread.c",
+                "changes": [
+                    "3538,0^^3539,35",
+                    "3873,1^^3907,0",
+                    "3876,2^^3910,1",
+                    "3879,5^^3912,10",
+                    "3885,3^^3922,0",
+                    "3891,1^^3925,0",
+                    "3894,2^^3928,1",
+                    "3897,5^^3930,10",
+                    "3903,3^^3940,0",
+                    "4133,21^^4167,0",
+                    "4157,3^^4171,1",
+                    "4171,2^^4183,2",
+                    "4175,3^^4187,3",
+                    "4192,1^^4203,0",
+                    "4206,0^^4218,2",
+                    "4212,2^^4225,1",
+                    "4218,2^^4230,2",
+                    "4225,2^^4237,2",
+                    "4245,5^^4257,3",
+                    "4259,2^^4268,0",
+                    "4505,3^^4513,3",
+                    "4510,1^^4518,1",
+                    "4555,1^^4563,1",
+                    "4564,2^^4572,2",
+                    "4570,1^^4578,1",
+                    "4575,1^^4583,1",
+                    "5747,3^^5755,3",
+                    "5766,4^^5774,5",
+                    "5770,0^^5780,2",
+                    "5792,1^^5803,1",
+                    "5798,1^^5809,1",
+                    "5873,1^^5884,1",
+                    "5893,1^^5904,1",
+                    "5901,1^^5912,1",
+                    "5905,2^^5916,2",
+                    "5929,3^^5940,3",
+                    "5938,0^^5950,48",
+                    "5939,0^^5999,38",
+                    "5941,3^^6038,48",
+                    "5946,1^^6088,4",
+                    "5948,8^^6093,24",
+                    "5956,0^^6118,60",
+                    "5958,2^^6179,3",
+                    "5961,1^^6183,2",
+                    "5962,0^^6186,4",
+                    "5964,3^^6191,14",
+                    "5968,1^^6206,6",
+                    "5969,0^^6213,18",
+                    "5971,2^^6232,5",
+                    "5974,2^^6238,8",
+                    "5977,9^^6247,14",
+                    "5987,4^^6262,13",
+                    "5992,1^^6276,52"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dirwrite.c",
+                "after": "libtiff/tif_dirwrite.c",
+                "changes": [
+                    "195,1^^195,1",
+                    "530,1^^530,1",
+                    "535,1^^535,1",
+                    "543,1^^543,1",
+                    "554,2^^554,2",
+                    "560,1^^560,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_jpeg.c",
+                "after": "libtiff/tif_jpeg.c",
+                "changes": [
+                    "782,0^^783,1",
+                    "784,5^^785,1",
+                    "807,1^^804,1",
+                    "809,1^^806,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_ojpeg.c",
+                "after": "libtiff/tif_ojpeg.c",
+                "changes": [
+                    "993,1^^992,0",
+                    "1992,5^^1990,0",
+                    "2001,1^^1995,1",
+                    "2003,0^^1998,1",
+                    "2006,1^^2001,1",
+                    "2010,5^^2005,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_open.c",
+                "after": "libtiff/tif_open.c",
+                "changes": [
+                    "183,0^^184,2",
+                    "264,0^^267,7",
+                    "265,0^^275,8"
+                ]
+            },
+            {
+                "before": "libtiff/tif_print.c",
+                "after": "libtiff/tif_print.c",
+                "changes": [
+                    "655,2^^654,0",
+                    "668,2^^666,2",
+                    "673,2^^671,2"
+                ]
+            },
+            {
+                "before": "libtiff/tif_read.c",
+                "after": "libtiff/tif_read.c",
+                "changes": [
+                    "178,4^^178,1",
+                    "188,1^^185,1",
+                    "232,1^^229,1",
+                    "249,1^^246,1",
+                    "252,1^^249,1",
+                    "291,1^^288,1",
+                    "350,3^^347,1",
+                    "405,1^^400,1",
+                    "602,5^^596,0",
+                    "611,1^^601,1",
+                    "637,2^^627,2",
+                    "682,2^^671,0",
+                    "687,1^^675,1",
+                    "741,1^^729,1",
+                    "776,3^^763,0",
+                    "781,1^^766,1",
+                    "834,1^^819,1",
+                    "840,1^^825,1",
+                    "852,1^^837,1",
+                    "860,1^^845,1",
+                    "889,1^^874,1",
+                    "1104,5^^1088,0",
+                    "1113,1^^1093,1",
+                    "1143,1^^1123,1",
+                    "1145,1^^1125,1",
+                    "1201,1^^1181,1",
+                    "1223,3^^1202,0",
+                    "1228,1^^1205,1",
+                    "1281,1^^1258,1",
+                    "1287,1^^1264,1",
+                    "1316,1^^1293,1",
+                    "1443,3^^1419,0",
+                    "1466,1^^1440,1",
+                    "1483,3^^1456,0",
+                    "1516,1^^1487,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_strip.c",
+                "after": "libtiff/tif_strip.c",
+                "changes": [
+                    "150,2^^150,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_write.c",
+                "after": "libtiff/tif_write.c",
+                "changes": [
+                    "131,1^^131,1",
+                    "134,1^^134,1",
+                    "186,1^^186,1",
+                    "190,1^^190,1",
+                    "538,1^^538,1",
+                    "541,1^^541,1",
+                    "544,1^^544,1",
+                    "550,2^^550,2",
+                    "611,1^^611,1",
+                    "685,1^^685,1",
+                    "687,1^^687,1",
+                    "698,3^^698,3",
+                    "702,1^^702,1",
+                    "721,1^^721,1",
+                    "724,3^^724,3",
+                    "735,1^^735,1",
+                    "748,1^^748,1",
+                    "752,1^^752,1",
+                    "757,2^^757,2",
+                    "775,1^^775,1",
+                    "777,1^^777,1"
+                ]
+            },
+            {
+                "before": "libtiff/tiffio.h",
+                "after": "libtiff/tiffio.h",
+                "changes": [
+                    "490,0^^491,5"
+                ]
+            },
+            {
+                "before": "libtiff/tiffiop.h",
+                "after": "libtiff/tiffiop.h",
+                "changes": [
+                    "129,0^^130,2"
+                ]
+            },
+            {
+                "before": "man/TIFFOpen.3tiff",
+                "after": "man/TIFFOpen.3tiff",
+                "changes": [
+                    "209,0^^210,15"
+                ]
+            },
+            {
+                "before": "test/CMakeLists.txt",
+                "after": "test/CMakeLists.txt",
+                "changes": [
+                    "190,0^^191,3"
+                ]
+            },
+            {
+                "before": "test/Makefile.am",
+                "after": "test/Makefile.am",
+                "changes": [
+                    "66,1^^66,1",
+                    "204,0^^205,2"
+                ]
+            },
+            {
+                "before": "test/defer_strile_loading.c",
+                "after": "test/defer_strile_loading.c",
+                "changes": [
+                    "0,0^^1,256"
+                ]
+            }
+        ]
+    },
+    "compiler_args": {
+        "libtiff/tif_getimage.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC",
+        "libtiff/tif_read.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC",
+        "libtiff/tif_swab.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC"
+    },
+    "zipped_bug_report": "H4sIAHBjQ18C/7VWW0/bWBB+xr9i0KqpbZw0duI4MYQKEEhIUakoVFqxNByc42DV8bF8gWYrnvd1f+P+kp05tnMjpuzDOlJ8LjNzZr75Zo5/Mx3HUsLgPgt8/wP+jac8C2Zsyluea7YHpgs8SUTiwnHu+zyBi0ec5xFc2wrAhe+nPHPhpimEAXtC3IL6z19/r873wNbgS/AnR6l2uXY/B4+FIWQC7q7Oz84uOZucRp6Y8MmXLAniu5ZS65JpDtyOC9fR90g8RfDIwpyDn4iZC5GImp6I0gz8PPKyQEQKijst2NmJRQpDUNVEPKFHwWzaPMThWEj/NXgHOEtjnqR0vAY6pB6LwiDiKP0HWemTlR1VzWYpxjJGHWnEE2FpBHXkSspmccjJVhz84KG2T9oD0lb1OM80FaUMSFia8WRvrj8ZgKjMDcBBhE4YMpb0O8dRJop33EYvMAIcmeUIsS+eb2jeapN5msVWJamyMH5gH9WY7eFccz9dj0aadMYySXoOe4SHHwYxNOBsdP55/PX08ur85Gg0+l2Dj9BUgyjrWJr0ClxYnaKdesr0TNeyXTjBBCtm28bQN5/AV+E+92E4BHILNJTrtV/K/aR18+V6YQPU8TbuHEWTozAUXkFXVYFXn290hNV6VQYjNICOOhEzzCCXx6hytUj9WOatrRlkrPO6MfVRBBNd16CBCBgEA/HJWMczwZgQSxuhxPr7zBI240gXuNNxt3koRdjThGXsDuOzJcY6/qioUkj4NA9ZAtvQUTVCTif0dwv0yYAEX/8gh4h3xXFlARJtIEpvAZxE9AKzXFIGZE0Z0sYvwKkewgh0XSJUOVNBlQlGpxnKq03L6i4Y2JfF94yjgawTYg6WrUi8BxZFHAE7BBNou4ZqjcZ2KN/IC1MzlF9ycGC9DZnqiU2jtpu9W+1luC8rdqWlaVR4y0amNk0qwEGnaiIYb9HJMhGLCLu9tp2dZu9N7DS7kp1sJvIoA6SEgOyBQ57ypJnmcRwGfELJRfK0pLy9IKPZqyEjNfWtOaljn6SUDuuMopcmzWF3/7k9yK7jOiWVULCLvkkCqaS7O1xHUWs05PqBPFNal+a7PYJ2sTikv3254ZTmdsnvsyAMlxwqbiJN2aAKacm7KOFZnkTqhgeF2UHl5TIjE04oFUalfYJi4ZIRhwyJcTBsb8+147TfkmsAp9eX2eY/YhZhVgxgKUTc42nKkjldafAgwolkgDz9fQqk3Sq1B1XuceJguWIOlbXoad0skr/EqybrWilv1WV3YDuuvcguwMC25TUvUxKkdMBFMsGmJk1nEwx4MvZxVdAq9vBGqSYTLItHXeDih2yaQtE7xp8ujs+vLk+/ytpra6Wa/DTZ2SmYjN9VKT8OslTdhBaviXmG+cP6mckMbzCCTPVf9o/ncovY8Lwef/rE7jF+q9+htB6MeDTNHiBLmMcPFauPAD/jC3HDf+wLVDxKeZzV71a1t/SYUO/j/ROvVFekAanbL8BfP3yVU158V0ZX+lBNyJNqvObPKgi0+V98q3TqPRxY9Kl5lCRsDswjErv/2yfvwp/ilvLim84tfrKSLIaBAV2x+5DfyPXb/YWwWQp3a4S7q8JWKWzXCNtL4U1ki+sBZXo1ur3Vg7qlsFMj7JDwv2exjVp7DAAA"
+}

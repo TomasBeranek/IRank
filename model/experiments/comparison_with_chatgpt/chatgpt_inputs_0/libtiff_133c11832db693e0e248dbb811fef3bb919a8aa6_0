@@ -1,0 +1,455 @@
+{
+    "label_source": "auto_labeler",
+    "bug_type": "NULL_DEREFERENCE",
+    "project": "libtiff",
+    "bug_info": {
+        "qualifier": "pointer `sect_buff` last assigned on line 7185 could be null and is dereferenced by call to `_TIFFmemset()` at line 7190, column 7.",
+        "file": "tools/tiffcrop.c",
+        "procedure": "createImageSection",
+        "line": 7190,
+        "column": 7,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7190"
+    },
+    "adjusted_bug_loc": null,
+    "bug_loc_trace_index": -1,
+    "versions": {
+        "before": "b69a1998bedfabc32cd541408bffdef05bd01e45",
+        "after": "519b72700430b84c99db73a832c4c58f3e52ebcd"
+    },
+    "sample_type": "before_fix",
+    "trace": [
+        {
+            "idx": 0,
+            "level": 0,
+            "description": "start of procedure createImageSection()",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7162:1",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7162"
+        },
+        {
+            "idx": 1,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7165:3",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7165"
+        },
+        {
+            "idx": 2,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7166:3",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7166"
+        },
+        {
+            "idx": 3,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7167:3",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7167"
+        },
+        {
+            "idx": 4,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7169:3",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7169"
+        },
+        {
+            "idx": 5,
+            "level": 0,
+            "description": "Taking false branch",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7171:8",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7171"
+        },
+        {
+            "idx": 6,
+            "level": 0,
+            "description": "Taking true branch",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7179:9",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7179"
+        },
+        {
+            "idx": 7,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7181:7",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7181"
+        },
+        {
+            "idx": 8,
+            "level": 1,
+            "description": "start of procedure _TIFFrealloc()",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "265:1",
+            "func_name": "_TIFFrealloc",
+            "func_key": "libtiff/tif_unix.c@265:1-269:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L265"
+        },
+        {
+            "idx": 9,
+            "level": 1,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "268:2",
+            "func_name": "_TIFFrealloc",
+            "func_key": "libtiff/tif_unix.c@265:1-269:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L268"
+        },
+        {
+            "idx": 10,
+            "level": 1,
+            "description": "return from a call to _TIFFrealloc",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "269:1",
+            "func_name": "_TIFFrealloc",
+            "func_key": "libtiff/tif_unix.c@265:1-269:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L269"
+        },
+        {
+            "idx": 11,
+            "level": 0,
+            "description": "Taking true branch",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7182:12",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7182"
+        },
+        {
+            "idx": 12,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7184:2",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7184"
+        },
+        {
+            "idx": 13,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7185:9",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7185"
+        },
+        {
+            "idx": 14,
+            "level": 1,
+            "description": "start of procedure _TIFFmalloc()",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "253:1",
+            "func_name": "_TIFFmalloc",
+            "func_key": "libtiff/tif_unix.c@253:1-257:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L253"
+        },
+        {
+            "idx": 15,
+            "level": 1,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "256:2",
+            "func_name": "_TIFFmalloc",
+            "func_key": "libtiff/tif_unix.c@253:1-257:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L256"
+        },
+        {
+            "idx": 16,
+            "level": 1,
+            "description": "return from a call to _TIFFmalloc",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "257:1",
+            "func_name": "_TIFFmalloc",
+            "func_key": "libtiff/tif_unix.c@253:1-257:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L257"
+        },
+        {
+            "idx": 17,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7190:7",
+            "func_name": "createImageSection",
+            "func_key": "tools/tiffcrop.c@7162:1-7203:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7190"
+        },
+        {
+            "idx": 18,
+            "level": 1,
+            "description": "start of procedure _TIFFmemset()",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "271:1",
+            "func_name": "_TIFFmemset",
+            "func_key": "libtiff/tif_unix.c@271:1-275:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L271"
+        },
+        {
+            "idx": 19,
+            "level": 1,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "274:2",
+            "func_name": "_TIFFmemset",
+            "func_key": "libtiff/tif_unix.c@271:1-275:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L274"
+        },
+        {
+            "idx": 20,
+            "level": 1,
+            "description": "return from a call to _TIFFmemset",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "275:1",
+            "func_name": "_TIFFmemset",
+            "func_key": "libtiff/tif_unix.c@271:1-275:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L275"
+        }
+    ],
+    "functions": {
+        "tools/tiffcrop.c@7162:1-7203:4": {
+            "file": "tools/tiffcrop.c",
+            "loc": "7162:1-7203:4",
+            "name": "createImageSection",
+            "touched_by_commit": false,
+            "code": "static int\ncreateImageSection(uint32 sectsize, unsigned char **sect_buff_ptr)\n  {\n  unsigned  char *sect_buff = NULL;\n  unsigned  char *new_buff  = NULL;\n  static    uint32  prev_sectsize = 0;\n  \n  sect_buff = *sect_buff_ptr;\n\n  if (!sect_buff)\n    {\n    sect_buff = (unsigned char *)_TIFFmalloc(sectsize);\n    *sect_buff_ptr = sect_buff;\n    _TIFFmemset(sect_buff, 0, sectsize);\n    }\n  else\n    {\n    if (prev_sectsize < sectsize)\n      {\n      new_buff = _TIFFrealloc(sect_buff, sectsize);\n      if (!new_buff)\n        {\n\tfree (sect_buff);\n        sect_buff = (unsigned char *)_TIFFmalloc(sectsize);\n        }\n      else\n        sect_buff = new_buff;\n\n      _TIFFmemset(sect_buff, 0, sectsize);\n      }\n    }\n\n  if (!sect_buff)\n    {\n    TIFFError(\"createImageSection\", \"Unable to allocate/reallocate section buffer\");\n    return (-1);\n    }\n  prev_sectsize = sectsize;\n  *sect_buff_ptr = sect_buff;\n\n  return (0);\n  }"
+        },
+        "libtiff/tif_unix.c@265:1-269:2": {
+            "file": "libtiff/tif_unix.c",
+            "loc": "265:1-269:2",
+            "name": "_TIFFrealloc",
+            "touched_by_commit": false,
+            "code": "void*\n_TIFFrealloc(void* p, tmsize_t s)\n{\n\treturn (realloc(p, (size_t) s));\n}"
+        },
+        "libtiff/tif_unix.c@253:1-257:2": {
+            "file": "libtiff/tif_unix.c",
+            "loc": "253:1-257:2",
+            "name": "_TIFFmalloc",
+            "touched_by_commit": false,
+            "code": "void*\n_TIFFmalloc(tmsize_t s)\n{\n\treturn (malloc((size_t) s));\n}"
+        },
+        "libtiff/tif_unix.c@271:1-275:2": {
+            "file": "libtiff/tif_unix.c",
+            "loc": "271:1-275:2",
+            "name": "_TIFFmemset",
+            "touched_by_commit": false,
+            "code": "void\n_TIFFmemset(void* p, int v, tmsize_t c)\n{\n\tmemset(p, v, (size_t) c);\n}"
+        }
+    },
+    "commit": {
+        "url": "https://gitlab.com/libtiff/libtiff/commit/519b72700430b84c99db73a832c4c58f3e52ebcd",
+        "changes": [
+            {
+                "before": "ChangeLog",
+                "after": "ChangeLog",
+                "changes": [
+                    "2,0^^3,13"
+                ]
+            },
+            {
+                "before": "configure",
+                "after": "configure",
+                "changes": [
+                    "787,1^^786,0",
+                    "834,1^^832,0",
+                    "837,3^^834,0",
+                    "16927,1^^16921,0",
+                    "16928,0^^16923,9",
+                    "16929,0^^16933,2",
+                    "16954,1^^16959,9"
+                ]
+            },
+            {
+                "before": "configure.ac",
+                "after": "configure.ac",
+                "changes": [
+                    "251,1^^250,0",
+                    "252,0^^252,9",
+                    "253,0^^262,2",
+                    "268,1^^278,9"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dumpmode.c",
+                "after": "libtiff/tif_dumpmode.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "83,1^^83,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_luv.c",
+                "after": "libtiff/tif_luv.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "227,1^^227,1",
+                    "285,1^^285,1",
+                    "350,1^^350,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_lzw.c",
+                "after": "libtiff/tif_lzw.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "552,1^^552,1",
+                    "756,1^^756,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_print.c",
+                "after": "libtiff/tif_print.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "96,1^^96,1",
+                    "104,1^^104,1",
+                    "110,1^^110,1",
+                    "215,1^^215,1",
+                    "521,1^^521,1",
+                    "634,1^^634,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_read.c",
+                "after": "libtiff/tif_read.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "125,1^^125,1",
+                    "377,1^^377,1",
+                    "404,1^^404,1",
+                    "455,1^^455,1",
+                    "494,1^^494,1",
+                    "540,1^^540,1",
+                    "673,1^^673,1",
+                    "702,1^^702,1",
+                    "779,1^^779,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_strip.c",
+                "after": "libtiff/tif_strip.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "155,1^^155,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_thunder.c",
+                "after": "libtiff/tif_thunder.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "146,1^^146,1"
+                ]
+            },
+            {
+                "before": "tools/tiff2pdf.c",
+                "after": "tools/tiff2pdf.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "3681,1^^3681,1"
+                ]
+            },
+            {
+                "before": "tools/tiffdump.c",
+                "after": "tools/tiffdump.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "83,1^^83,1",
+                    "339,1^^339,1",
+                    "386,1^^386,1"
+                ]
+            }
+        ]
+    },
+    "compiler_args": {
+        "tools/tiffcrop.c": "-DHAVE_CONFIG_H -I<$repo$>/tools -I<$repo$>/libtiff",
+        "libtiff/tif_unix.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC"
+    },
+    "zipped_bug_report": "H4sIAHFjQ18C/7VX34+bOBB+bv6KOfUliVZsgBADvT7dqVKlqi/Xe22WJWaLjh+RMdv7of3fb8aAY7Imm6RbpAg7zIy/bzzfGN76frCeyboumluZZ1kq6r2TxsyNVjFwIWoRw+e2KOB3LniGvyrlM4B9nVeSC7hreCq3922W3UGRNBKSpskfKr6DuoIirzgwNwwgrdtiB/ccKgqVVDvIG9gdIuKzfyBN8Jms4W775eOHDyUvGy7niztI5BApWt1gqKItK2DOzIZ648VuDI1MhIQ6g72oMXgrOKSCJ5J/LJMH/gdCzutqvpih/coBurkO3C7hN2UECRAhZIdgvosc/6lx+aZzIzgJyLzksLwlV8+h9WSeAqYEU0PXV3rgO7ZVW7TyPRWtyf/lN9BWfcbSb4mA5VJndLuXQmFcOxjyPzvfIPZj+BmrUWwaaYfeQzvAe/j856dP73rKPemNzafi3zsX7YOWjCz7zJFPhxS3jD9uB7xov3pnJ74ZiF+M93yUI2bn40XjkIztwNkA/NXhXgRyxK2Di4NI+RsYxgUysRfRQOmKHJ2zqImVdYplLjnlGcx/0cYLKzrmxmEMX5K/8uoBsqRoONyLpEq/nbX0CwuCeSl4nqPGVJDM78Zm/PmRABdds8PWV6fzIUULe55ZFEeaiRStQYSpzHMkR5PQwBB1YwI+3oZfdVc4oqF4hCunn1GU0B1muureg0KOLUdDVw9u4AUWoRszVS3nQXstKM8IekMctadDMLWg72hTbLtFfk8EiMW2rfK/kYWHfdd+zoyQUGI96sxPaoCdSt1R+I91vlvONBz6F0U+clYmsL8BWRKFrYSmi4dbPYUqjL0YrohGAyyaN4LLVlQwH7zQft6ZL9B+YSqRXKKemZKIHVFEeerDZqIu8ewcznkT31VQNIADJIWE7m6XY3sF4kuCNyGk1ym2E+UFx9fXZxWHcyyVN5ngHA4LTMlprfb8goKeDG8CCg4e17QvjLA5RHiyIw+onZ0P78dRWRI/QolzNsxVL7XWdOCf0n5pSD/A8nnLq12eqZnX1Wbg2/QfrJ1RgCOdBsGk6oPNoPqzYtBgYwistz2h84D1Og/CKZ0H7AWdl1rmF6HQaxtowj6N0QmJ49dLd8iEob1kBnmosorUCR9p6ZsfIIbAVycPlEj3CiqkqFfjkz1f+FJyqob6b5/nTdZsbaO+5zkjV93u8Q0MHo2un6qg9GYyUU1sPVTTVTFpQPLtfdD60Wjc6XFpsWBgt5kqLRa8VFpqqcsg6IUNKJs+v6zP7/+hfDR4Gw8AAA=="
+}

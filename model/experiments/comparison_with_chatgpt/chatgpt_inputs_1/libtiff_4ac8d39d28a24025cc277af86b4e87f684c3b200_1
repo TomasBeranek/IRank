@@ -1,0 +1,462 @@
+{
+    "label_source": "auto_labeler",
+    "bug_type": "INTEGER_OVERFLOW_L5",
+    "project": "libtiff",
+    "bug_info": {
+        "qualifier": "([0, +oo] \u00d7 8):signed64 by call to `TIFFWriteTile`.",
+        "file": "tools/tiffcp.c",
+        "procedure": "writeBufferToContigTiles",
+        "line": 1593,
+        "column": 8,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/tools/tiffcp.c/#L1593"
+    },
+    "adjusted_bug_loc": {
+        "file": "libtiff/tif_aux.c",
+        "line": 66,
+        "column": 2,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_aux.c/#L66"
+    },
+    "bug_loc_trace_index": 20,
+    "versions": {
+        "before": "c9cb49177b1193668d63f788b2b5e30b13b28a2e",
+        "after": "1b5e3b6a23827c33acf19ad50ce5ce78f12b3773"
+    },
+    "sample_type": "before_fix",
+    "trace": [
+        {
+            "idx": 0,
+            "level": 0,
+            "description": "Parameter `out->tif_dir.td_nstrips`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcp.c",
+            "loc": "1556:1",
+            "func_name": "writeBufferToContigTiles",
+            "func_key": "tools/tiffcp.c@1556:1-1607:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/tools/tiffcp.c/#L1556"
+        },
+        {
+            "idx": 1,
+            "level": 0,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcp.c",
+            "loc": "1593:8",
+            "func_name": "writeBufferToContigTiles",
+            "func_key": "tools/tiffcp.c@1556:1-1607:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/tools/tiffcp.c/#L1593"
+        },
+        {
+            "idx": 2,
+            "level": 1,
+            "description": "Parameter `tif->tif_dir.td_nstrips`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_write.c",
+            "loc": "363:1",
+            "func_name": "TIFFWriteTile",
+            "func_key": "libtiff/tif_write.c@363:1-376:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_write.c/#L363"
+        },
+        {
+            "idx": 3,
+            "level": 1,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_write.c",
+            "loc": "374:10",
+            "func_name": "TIFFWriteTile",
+            "func_key": "libtiff/tif_write.c@363:1-376:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_write.c/#L374"
+        },
+        {
+            "idx": 4,
+            "level": 2,
+            "description": "Parameter `tif->tif_dir.td_nstrips`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_write.c",
+            "loc": "390:1",
+            "func_name": "TIFFWriteEncodedTile",
+            "func_key": "libtiff/tif_write.c@390:1-491:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_write.c/#L390"
+        },
+        {
+            "idx": 5,
+            "level": 2,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_write.c",
+            "loc": "398:7",
+            "func_name": "TIFFWriteEncodedTile",
+            "func_key": "libtiff/tif_write.c@390:1-491:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_write.c/#L398"
+        },
+        {
+            "idx": 6,
+            "level": 3,
+            "description": "Parameter `tif->tif_dir.td_nstrips`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_write.c",
+            "loc": "564:1",
+            "func_name": "TIFFWriteCheck",
+            "func_key": "libtiff/tif_write.c@564:1-644:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_write.c/#L564"
+        },
+        {
+            "idx": 7,
+            "level": 3,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_write.c",
+            "loc": "578:9",
+            "func_name": "TIFFWriteCheck",
+            "func_key": "libtiff/tif_write.c@564:1-644:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_write.c/#L578"
+        },
+        {
+            "idx": 8,
+            "level": 4,
+            "description": "Parameter `tif->tif_dir.td_nstrips`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "6276:1",
+            "func_name": "_TIFFFillStriles",
+            "func_key": "libtiff/tif_dirread.c@6276:1-6279:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_dirread.c/#L6276"
+        },
+        {
+            "idx": 9,
+            "level": 4,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "6278:12",
+            "func_name": "_TIFFFillStriles",
+            "func_key": "libtiff/tif_dirread.c@6276:1-6279:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_dirread.c/#L6278"
+        },
+        {
+            "idx": 10,
+            "level": 5,
+            "description": "Parameter `tif->tif_dir.td_nstrips`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "6281:1",
+            "func_name": "_TIFFFillStrilesInternal",
+            "func_key": "libtiff/tif_dirread.c@6281:1-6341:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_dirread.c/#L6281"
+        },
+        {
+            "idx": 11,
+            "level": 5,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "6309:10",
+            "func_name": "_TIFFFillStrilesInternal",
+            "func_key": "libtiff/tif_dirread.c@6281:1-6341:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_dirread.c/#L6309"
+        },
+        {
+            "idx": 12,
+            "level": 6,
+            "description": "Parameter `nstrips`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "5632:1",
+            "func_name": "TIFFFetchStripThing",
+            "func_key": "libtiff/tif_dirread.c@5632:1-5676:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_dirread.c/#L5632"
+        },
+        {
+            "idx": 13,
+            "level": 6,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "5664:24",
+            "func_name": "TIFFFetchStripThing",
+            "func_key": "libtiff/tif_dirread.c@5632:1-5676:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_dirread.c/#L5664"
+        },
+        {
+            "idx": 14,
+            "level": 7,
+            "description": "Parameter `elem_size`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_aux.c",
+            "loc": "84:1",
+            "func_name": "_TIFFCheckMalloc",
+            "func_key": "libtiff/tif_aux.c@84:1-88:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_aux.c/#L84"
+        },
+        {
+            "idx": 15,
+            "level": 7,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_aux.c",
+            "loc": "87:9",
+            "func_name": "_TIFFCheckMalloc",
+            "func_key": "libtiff/tif_aux.c@84:1-88:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_aux.c/#L87"
+        },
+        {
+            "idx": 16,
+            "level": 0,
+            "description": "<LHS trace>",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_aux.c",
+            "loc": "61:1",
+            "func_name": "_TIFFCheckRealloc",
+            "func_key": "libtiff/tif_aux.c@61:1-82:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_aux.c/#L61"
+        },
+        {
+            "idx": 17,
+            "level": 8,
+            "description": "Parameter `nmemb`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_aux.c",
+            "loc": "61:1",
+            "func_name": "_TIFFCheckRealloc",
+            "func_key": "libtiff/tif_aux.c@61:1-82:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_aux.c/#L61"
+        },
+        {
+            "idx": 18,
+            "level": 0,
+            "description": "<RHS trace>",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_aux.c",
+            "loc": "61:1",
+            "func_name": "_TIFFCheckRealloc",
+            "func_key": "libtiff/tif_aux.c@61:1-82:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_aux.c/#L61"
+        },
+        {
+            "idx": 19,
+            "level": 8,
+            "description": "Parameter `elem_size`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_aux.c",
+            "loc": "61:1",
+            "func_name": "_TIFFCheckRealloc",
+            "func_key": "libtiff/tif_aux.c@61:1-82:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_aux.c/#L61"
+        },
+        {
+            "idx": 20,
+            "level": 8,
+            "description": "Binary operation: ([0, +oo] \u00d7 8):signed64 by call to `TIFFWriteTile` ",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_aux.c",
+            "loc": "66:2",
+            "func_name": "_TIFFCheckRealloc",
+            "func_key": "libtiff/tif_aux.c@61:1-82:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/c9cb49177b1193668d63f788b2b5e30b13b28a2e/libtiff/tif_aux.c/#L66"
+        }
+    ],
+    "functions": {
+        "tools/tiffcp.c@1556:1-1607:2": {
+            "file": "tools/tiffcp.c",
+            "loc": "1556:1-1607:2",
+            "name": "writeBufferToContigTiles",
+            "touched_by_commit": false,
+            "code": "DECLAREwriteFunc(writeBufferToContigTiles)\n{\n\tuint32 imagew = TIFFScanlineSize(out);\n\tuint32 tilew  = TIFFTileRowSize(out);\n\tint iskew = imagew - tilew;\n\ttsize_t tilesize = TIFFTileSize(out);\n\ttdata_t obuf;\n\tuint8* bufp = (uint8*) buf;\n\tuint32 tl, tw;\n\tuint32 row;\n\n\t(void) spp;\n\n\tobuf = _TIFFmalloc(TIFFTileSize(out));\n\tif (obuf == NULL)\n\t\treturn 0;\n\t_TIFFmemset(obuf, 0, tilesize);\n\t(void) TIFFGetField(out, TIFFTAG_TILELENGTH, &tl);\n\t(void) TIFFGetField(out, TIFFTAG_TILEWIDTH, &tw);\n\tfor (row = 0; row < imagelength; row += tilelength) {\n\t\tuint32 nrow = (row+tl > imagelength) ? imagelength-row : tl;\n\t\tuint32 colb = 0;\n\t\tuint32 col;\n\n\t\tfor (col = 0; col < imagewidth && colb < imagew; col += tw) {\n\t\t\t/*\n\t\t\t * Tile is clipped horizontally.  Calculate\n\t\t\t * visible portion and skewing factors.\n\t\t\t */\n\t\t\tif (colb + tilew > imagew) {\n\t\t\t\tuint32 width = imagew - colb;\n\t\t\t\tint oskew = tilew - width;\n\t\t\t\tcpStripToTile(obuf, bufp + colb, nrow, width,\n\t\t\t\t    oskew, oskew + iskew);\n\t\t\t} else\n\t\t\t\tcpStripToTile(obuf, bufp + colb, nrow, tilew,\n\t\t\t\t    0, iskew);\n\t\t\tif (TIFFWriteTile(out, obuf, col, row, 0, 0) < 0) {\n\t\t\t\tTIFFError(TIFFFileName(out),\n\t\t\t\t    \"Error, can't write tile at %lu %lu\",\n\t\t\t\t    (unsigned long) col,\n\t\t\t\t    (unsigned long) row);\n\t\t\t\t_TIFFfree(obuf);\n\t\t\t\treturn 0;\n\t\t\t}\n\t\t\tcolb += tilew;\n\t\t}\n\t\tbufp += nrow * imagew;\n\t}\n\t_TIFFfree(obuf);\n\treturn 1;\n}"
+        },
+        "libtiff/tif_write.c@363:1-376:2": {
+            "file": "libtiff/tif_write.c",
+            "loc": "363:1-376:2",
+            "name": "TIFFWriteTile",
+            "touched_by_commit": false,
+            "code": "tmsize_t\nTIFFWriteTile(TIFF* tif, void* buf, uint32 x, uint32 y, uint32 z, uint16 s)\n{\n\tif (!TIFFCheckTile(tif, x, y, z, s))\n\t\treturn ((tmsize_t)(-1));\n\t/*\n\t * NB: A tile size of -1 is used instead of tif_tilesize knowing\n\t *     that TIFFWriteEncodedTile will clamp this to the tile size.\n\t *     This is done because the tile size may not be defined until\n\t *     after the output buffer is setup in TIFFWriteBufferSetup.\n\t */\n\treturn (TIFFWriteEncodedTile(tif,\n\t    TIFFComputeTile(tif, x, y, z, s), buf, (tmsize_t)(-1)));\n}"
+        },
+        "libtiff/tif_write.c@390:1-491:2": {
+            "file": "libtiff/tif_write.c",
+            "loc": "390:1-491:2",
+            "name": "TIFFWriteEncodedTile",
+            "touched_by_commit": false,
+            "code": "tmsize_t\nTIFFWriteEncodedTile(TIFF* tif, uint32 tile, void* data, tmsize_t cc)\n{\n\tstatic const char module[] = \"TIFFWriteEncodedTile\";\n\tTIFFDirectory *td;\n\tuint16 sample;\n        uint32 howmany32;\n\n\tif (!WRITECHECKTILES(tif, module))\n\t\treturn ((tmsize_t)(-1));\n\ttd = &tif->tif_dir;\n\tif (tile >= td->td_nstrips) {\n\t\tTIFFErrorExt(tif->tif_clientdata, module, \"Tile %lu out of range, max %lu\",\n\t\t    (unsigned long) tile, (unsigned long) td->td_nstrips);\n\t\treturn ((tmsize_t)(-1));\n\t}\n\t/*\n\t * Handle delayed allocation of data buffer.  This\n\t * permits it to be sized more intelligently (using\n\t * directory information).\n\t */\n\tif (!BUFFERCHECK(tif))\n\t\treturn ((tmsize_t)(-1));\n\n        tif->tif_flags |= TIFF_BUF4WRITE;\n\ttif->tif_curtile = tile;\n\n        if( !_TIFFReserveLargeEnoughWriteBuffer(tif, tile) ) {\n            return ((tmsize_t)(-1));\n        }\n\n\ttif->tif_rawcc = 0;\n\ttif->tif_rawcp = tif->tif_rawdata;\n\n\t/* \n\t * Compute tiles per row & per column to compute\n\t * current row and column\n\t */\n        howmany32=TIFFhowmany_32(td->td_imagelength, td->td_tilelength);\n        if (howmany32 == 0) {\n                 TIFFErrorExt(tif->tif_clientdata,module,\"Zero tiles\");\n                return ((tmsize_t)(-1));\n        }\n\ttif->tif_row = (tile % howmany32) * td->td_tilelength;\n        howmany32=TIFFhowmany_32(td->td_imagewidth, td->td_tilewidth);\n        if (howmany32 == 0) {\n                 TIFFErrorExt(tif->tif_clientdata,module,\"Zero tiles\");\n                return ((tmsize_t)(-1));\n        }\n\ttif->tif_col = (tile % howmany32) * td->td_tilewidth;\n\n\tif ((tif->tif_flags & TIFF_CODERSETUP) == 0) {\n\t\tif (!(*tif->tif_setupencode)(tif))\n\t\t\treturn ((tmsize_t)(-1));\n\t\ttif->tif_flags |= TIFF_CODERSETUP;\n\t}\n\ttif->tif_flags &= ~TIFF_POSTENCODE;\n\n\t/*\n\t * Clamp write amount to the tile size.  This is mostly\n\t * done so that callers can pass in some large number\n\t * (e.g. -1) and have the tile size used instead.\n\t */\n\tif ( cc < 1 || cc > tif->tif_tilesize)\n\t\tcc = tif->tif_tilesize;\n\n    /* shortcut to avoid an extra memcpy() */\n    if( td->td_compression == COMPRESSION_NONE )\n    {\n        /* swab if needed - note that source buffer will be altered */\n        tif->tif_postdecode( tif, (uint8*) data, cc );\n\n        if (!isFillOrder(tif, td->td_fillorder) &&\n            (tif->tif_flags & TIFF_NOBITREV) == 0)\n            TIFFReverseBits((uint8*) data, cc);\n\n        if (cc > 0 &&\n            !TIFFAppendToStrip(tif, tile, (uint8*) data, cc))\n            return ((tmsize_t) -1);\n        return (cc);\n    }\n\n    sample = (uint16)(tile/td->td_stripsperimage);\n    if (!(*tif->tif_preencode)(tif, sample))\n        return ((tmsize_t)(-1));\n    /* swab if needed - note that source buffer will be altered */\n    tif->tif_postdecode( tif, (uint8*) data, cc );\n\n    if (!(*tif->tif_encodetile)(tif, (uint8*) data, cc, sample))\n            return ((tmsize_t) -1);\n    if (!(*tif->tif_postencode)(tif))\n            return ((tmsize_t)(-1));\n    if (!isFillOrder(tif, td->td_fillorder) &&\n        (tif->tif_flags & TIFF_NOBITREV) == 0)\n            TIFFReverseBits((uint8*)tif->tif_rawdata, tif->tif_rawcc);\n    if (tif->tif_rawcc > 0 && !TIFFAppendToStrip(tif, tile,\n        tif->tif_rawdata, tif->tif_rawcc))\n            return ((tmsize_t)(-1));\n    tif->tif_rawcc = 0;\n    tif->tif_rawcp = tif->tif_rawdata;\n    return (cc);\n}"
+        },
+        "libtiff/tif_write.c@564:1-644:2": {
+            "file": "libtiff/tif_write.c",
+            "loc": "564:1-644:2",
+            "name": "TIFFWriteCheck",
+            "touched_by_commit": false,
+            "code": "int\nTIFFWriteCheck(TIFF* tif, int tiles, const char* module)\n{\n\tif (tif->tif_mode == O_RDONLY) {\n\t\tTIFFErrorExt(tif->tif_clientdata, module, \"File not open for writing\");\n\t\treturn (0);\n\t}\n\tif (tiles ^ isTiled(tif)) {\n\t\tTIFFErrorExt(tif->tif_clientdata, module, tiles ?\n\t\t    \"Can not write tiles to a striped image\" :\n\t\t    \"Can not write scanlines to a tiled image\");\n\t\treturn (0);\n\t}\n\n        _TIFFFillStriles( tif );\n        \n\t/*\n\t * On the first write verify all the required information\n\t * has been setup and initialize any data structures that\n\t * had to wait until directory information was set.\n\t * Note that a lot of our work is assumed to remain valid\n\t * because we disallow any of the important parameters\n\t * from changing after we start writing (i.e. once\n\t * TIFF_BEENWRITING is set, TIFFSetField will only allow\n\t * the image's length to be changed).\n\t */\n\tif (!TIFFFieldSet(tif, FIELD_IMAGEDIMENSIONS)) {\n\t\tTIFFErrorExt(tif->tif_clientdata, module,\n\t\t    \"Must set \\\"ImageWidth\\\" before writing data\");\n\t\treturn (0);\n\t}\n\tif (tif->tif_dir.td_samplesperpixel == 1) {\n\t\t/* \n\t\t * Planarconfiguration is irrelevant in case of single band\n\t\t * images and need not be included. We will set it anyway,\n\t\t * because this field is used in other parts of library even\n\t\t * in the single band case.\n\t\t */\n\t\tif (!TIFFFieldSet(tif, FIELD_PLANARCONFIG))\n                    tif->tif_dir.td_planarconfig = PLANARCONFIG_CONTIG;\n\t} else {\n\t\tif (!TIFFFieldSet(tif, FIELD_PLANARCONFIG)) {\n\t\t\tTIFFErrorExt(tif->tif_clientdata, module,\n\t\t\t    \"Must set \\\"PlanarConfiguration\\\" before writing data\");\n\t\t\treturn (0);\n\t\t}\n\t}\n\tif (tif->tif_dir.td_stripoffset_p == NULL && !TIFFSetupStrips(tif)) {\n\t\ttif->tif_dir.td_nstrips = 0;\n\t\tTIFFErrorExt(tif->tif_clientdata, module, \"No space for %s arrays\",\n\t\t    isTiled(tif) ? \"tile\" : \"strip\");\n\t\treturn (0);\n\t}\n\tif (isTiled(tif))\n\t{\n\t\ttif->tif_tilesize = TIFFTileSize(tif);\n\t\tif (tif->tif_tilesize == 0)\n\t\t\treturn (0);\n\t}\n\telse\n\t\ttif->tif_tilesize = (tmsize_t)(-1);\n\ttif->tif_scanlinesize = TIFFScanlineSize(tif);\n\tif (tif->tif_scanlinesize == 0)\n\t\treturn (0);\n\ttif->tif_flags |= TIFF_BEENWRITING;\n\n        if( tif->tif_dir.td_stripoffset_entry.tdir_tag != 0 &&\n            tif->tif_dir.td_stripoffset_entry.tdir_count == 0 &&\n            tif->tif_dir.td_stripoffset_entry.tdir_type == 0 &&\n            tif->tif_dir.td_stripoffset_entry.tdir_offset.toff_long8 == 0 &&\n            tif->tif_dir.td_stripbytecount_entry.tdir_tag != 0 &&\n            tif->tif_dir.td_stripbytecount_entry.tdir_count == 0 &&\n            tif->tif_dir.td_stripbytecount_entry.tdir_type == 0 &&\n            tif->tif_dir.td_stripbytecount_entry.tdir_offset.toff_long8 == 0 &&\n            !(tif->tif_flags & TIFF_DIRTYDIRECT)  )\n        {\n            TIFFForceStrileArrayWriting(tif);\n        }\n\n\treturn (1);\n}"
+        },
+        "libtiff/tif_dirread.c@6276:1-6279:2": {
+            "file": "libtiff/tif_dirread.c",
+            "loc": "6276:1-6279:2",
+            "name": "_TIFFFillStriles",
+            "touched_by_commit": false,
+            "code": "int _TIFFFillStriles( TIFF *tif )\n{\n    return _TIFFFillStrilesInternal( tif, 1 );\n}"
+        },
+        "libtiff/tif_dirread.c@6281:1-6341:2": {
+            "file": "libtiff/tif_dirread.c",
+            "loc": "6281:1-6341:2",
+            "name": "_TIFFFillStrilesInternal",
+            "touched_by_commit": false,
+            "code": "static int _TIFFFillStrilesInternal( TIFF *tif, int loadStripByteCount )\n{\n    register TIFFDirectory *td = &tif->tif_dir;\n    int return_value = 1;\n\n    /* Do not do anything if TIFF_DEFERSTRILELOAD is not set */\n    if( !(tif->tif_flags&TIFF_DEFERSTRILELOAD) || (tif->tif_flags&TIFF_CHOPPEDUPARRAYS) != 0 )\n        return 1;\n\n    if( tif->tif_flags&TIFF_LAZYSTRILELOAD )\n    {\n        /* In case of lazy loading, reload completely the arrays */\n        _TIFFfree(td->td_stripoffset_p);\n        _TIFFfree(td->td_stripbytecount_p);\n        td->td_stripoffset_p = NULL;\n        td->td_stripbytecount_p = NULL;\n        td->td_stripoffsetbyteallocsize = 0;\n        tif->tif_flags &= ~TIFF_LAZYSTRILELOAD;\n    }\n\n    /* If stripoffset array is already loaded, exit with success */\n    if( td->td_stripoffset_p != NULL )\n            return 1;\n\n    /* If tdir_count was cancelled, then we already got there, but in error */\n    if( td->td_stripoffset_entry.tdir_count == 0 )\n            return 0;\n\n    if (!TIFFFetchStripThing(tif,&(td->td_stripoffset_entry),\n                                td->td_nstrips,&td->td_stripoffset_p))\n    {\n            return_value = 0;\n    }\n\n    if (loadStripByteCount &&\n        !TIFFFetchStripThing(tif,&(td->td_stripbytecount_entry),\n                                td->td_nstrips,&td->td_stripbytecount_p))\n    {\n            return_value = 0;\n    }\n\n    _TIFFmemset( &(td->td_stripoffset_entry), 0, sizeof(TIFFDirEntry));\n    _TIFFmemset( &(td->td_stripbytecount_entry), 0, sizeof(TIFFDirEntry));\n\n#ifdef STRIPBYTECOUNTSORTED_UNUSED\n    if (tif->tif_dir.td_nstrips > 1 && return_value == 1 ) {\n            uint32 strip;\n\n            tif->tif_dir.td_stripbytecountsorted = 1;\n            for (strip = 1; strip < tif->tif_dir.td_nstrips; strip++) {\n                    if (tif->tif_dir.td_stripoffset_p[strip - 1] >\n                        tif->tif_dir.td_stripoffset_p[strip]) {\n                            tif->tif_dir.td_stripbytecountsorted = 0;\n                            break;\n                    }\n            }\n    }\n#endif\n\n    return return_value;\n}"
+        },
+        "libtiff/tif_dirread.c@5632:1-5676:2": {
+            "file": "libtiff/tif_dirread.c",
+            "loc": "5632:1-5676:2",
+            "name": "TIFFFetchStripThing",
+            "touched_by_commit": false,
+            "code": "static int\nTIFFFetchStripThing(TIFF* tif, TIFFDirEntry* dir, uint32 nstrips, uint64** lpp)\n{\n\tstatic const char module[] = \"TIFFFetchStripThing\";\n\tenum TIFFReadDirEntryErr err;\n\tuint64* data;\n\terr=TIFFReadDirEntryLong8ArrayWithLimit(tif,dir,&data,nstrips);\n\tif (err!=TIFFReadDirEntryErrOk)\n\t{\n\t\tconst TIFFField* fip = TIFFFieldWithTag(tif,dir->tdir_tag); \n\t\tTIFFReadDirEntryOutputErr(tif,err,module,fip ? fip->field_name : \"unknown tagname\",0);\n\t\treturn(0);\n\t}\n\tif (dir->tdir_count<(uint64)nstrips)\n\t{\n\t\tuint64* resizeddata;\n\t\tconst TIFFField* fip = TIFFFieldWithTag(tif,dir->tdir_tag);\n\t\tconst char* pszMax = getenv(\"LIBTIFF_STRILE_ARRAY_MAX_RESIZE_COUNT\");\n\t\tuint32 max_nstrips = 1000000;\n\t\tif( pszMax )\n\t\t\tmax_nstrips = (uint32) atoi(pszMax);\n\t\tTIFFReadDirEntryOutputErr(tif,TIFFReadDirEntryErrCount,\n\t\t            module,\n\t\t            fip ? fip->field_name : \"unknown tagname\",\n\t\t            ( nstrips <= max_nstrips ) );\n\n\t\tif( nstrips > max_nstrips )\n\t\t{\n\t\t\t_TIFFfree(data);\n\t\t\treturn(0);\n\t\t}\n\n\t\tresizeddata=(uint64*)_TIFFCheckMalloc(tif,nstrips,sizeof(uint64),\"for strip array\");\n\t\tif (resizeddata==0) {\n\t\t\t_TIFFfree(data);\n\t\t\treturn(0);\n\t\t}\n                _TIFFmemcpy(resizeddata,data,(uint32)dir->tdir_count*sizeof(uint64));\n                _TIFFmemset(resizeddata+(uint32)dir->tdir_count,0,(nstrips-(uint32)dir->tdir_count)*sizeof(uint64));\n\t\t_TIFFfree(data);\n\t\tdata=resizeddata;\n\t}\n\t*lpp=data;\n\treturn(1);\n}"
+        },
+        "libtiff/tif_aux.c@84:1-88:2": {
+            "file": "libtiff/tif_aux.c",
+            "loc": "84:1-88:2",
+            "name": "_TIFFCheckMalloc",
+            "touched_by_commit": false,
+            "code": "void*\n_TIFFCheckMalloc(TIFF* tif, tmsize_t nmemb, tmsize_t elem_size, const char* what)\n{\n\treturn _TIFFCheckRealloc(tif, NULL, nmemb, elem_size, what);  \n}"
+        },
+        "libtiff/tif_aux.c@61:1-82:2": {
+            "file": "libtiff/tif_aux.c",
+            "loc": "61:1-82:2",
+            "name": "_TIFFCheckRealloc",
+            "touched_by_commit": true,
+            "code": "void*\n_TIFFCheckRealloc(TIFF* tif, void* buffer,\n\t\t  tmsize_t nmemb, tmsize_t elem_size, const char* what)\n{\n\tvoid* cp = NULL;\n\ttmsize_t bytes = nmemb * elem_size;\n\n\t/*\n\t * XXX: Check for integer overflow.\n\t */\n\tif (nmemb && elem_size && bytes / elem_size == nmemb)\n\t\tcp = _TIFFrealloc(buffer, bytes);\n\n\tif (cp == NULL) {\n\t\tTIFFErrorExt(tif->tif_clientdata, tif->tif_name,\n\t\t\t     \"Failed to allocate memory for %s \"\n\t\t\t     \"(%ld elements of %ld bytes each)\",\n\t\t\t     what,(long) nmemb, (long) elem_size);\n\t}\n\n\treturn cp;\n}"
+        }
+    },
+    "commit": {
+        "url": "https://gitlab.com/libtiff/libtiff/commit/1b5e3b6a23827c33acf19ad50ce5ce78f12b3773",
+        "changes": [
+            {
+                "before": "libtiff/tif_aux.c",
+                "after": "libtiff/tif_aux.c",
+                "changes": [
+                    "60,0^^61,38",
+                    "66,2^^104,1",
+                    "69,1^^106,1",
+                    "71,2^^108,4"
+                ]
+            },
+            {
+                "before": "libtiff/tif_getimage.c",
+                "after": "libtiff/tif_getimage.c",
+                "changes": [
+                    "758,1^^758,1",
+                    "760,1^^759,0",
+                    "1022,1^^1021,1",
+                    "1024,1^^1022,0"
+                ]
+            },
+            {
+                "before": "libtiff/tif_luv.c",
+                "after": "libtiff/tif_luv.c",
+                "changes": [
+                    "1272,4^^1271,0",
+                    "1279,3^^1275,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_pixarlog.c",
+                "after": "libtiff/tif_pixarlog.c",
+                "changes": [
+                    "637,3^^636,0",
+                    "643,4^^640,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_read.c",
+                "after": "libtiff/tif_read.c",
+                "changes": [
+                    "32,3^^31,0",
+                    "51,0^^49,2",
+                    "730,17^^729,2",
+                    "767,1^^751,1",
+                    "794,1^^778,1",
+                    "1184,4^^1168,2",
+                    "1206,1^^1188,1",
+                    "1233,1^^1215,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_strip.c",
+                "after": "libtiff/tif_strip.c",
+                "changes": [
+                    "132,1^^131,0",
+                    "134,7^^133,1",
+                    "213,1^^205,0",
+                    "215,7^^207,1",
+                    "332,1^^317,0",
+                    "334,6^^319,1",
+                    "368,1^^347,0",
+                    "370,7^^349,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_tile.c",
+                "after": "libtiff/tif_tile.c",
+                "changes": [
+                    "184,1^^183,0",
+                    "186,7^^185,1",
+                    "251,1^^243,0",
+                    "253,7^^245,1",
+                    "275,1^^260,0",
+                    "277,7^^262,1"
+                ]
+            },
+            {
+                "before": "libtiff/tiffiop.h",
+                "after": "libtiff/tiffiop.h",
+                "changes": [
+                    "79,0^^80,3",
+                    "264,1^^267,1",
+                    "373,0^^377,2"
+                ]
+            }
+        ]
+    },
+    "compiler_args": {
+        "tools/tiffcp.c": "-DHAVE_CONFIG_H -I<$repo$>/tools -I<$repo$>/libtiff",
+        "libtiff/tif_write.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC",
+        "libtiff/tif_dirread.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC",
+        "libtiff/tif_aux.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC"
+    },
+    "zipped_bug_report": "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"
+}

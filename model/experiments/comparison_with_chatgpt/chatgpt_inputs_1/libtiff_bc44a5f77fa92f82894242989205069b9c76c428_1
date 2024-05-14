@@ -1,0 +1,531 @@
+{
+    "label_source": "auto_labeler",
+    "bug_type": "BUFFER_OVERRUN_L4",
+    "project": "libtiff",
+    "bug_info": {
+        "qualifier": "Offset: [1080, +oo] (\u21d0 1080 + [0, +oo]) Size: [1081, +oo] by call to `TIFFOpen`.",
+        "file": "tools/tiffgt.c",
+        "procedure": "prevImage",
+        "line": 274,
+        "column": 15,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/tools/tiffgt.c/#L274"
+    },
+    "adjusted_bug_loc": {
+        "file": "libtiff/tif_open.c",
+        "line": 124,
+        "column": 2,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_open.c/#L124"
+    },
+    "bug_loc_trace_index": 13,
+    "versions": {
+        "before": "b9b93f661ed56fda222ce686a6e6ef03ee84bc3d",
+        "after": "371ad2658c189329d9b34707d36894dfda3905a0"
+    },
+    "sample_type": "before_fix",
+    "trace": [
+        {
+            "idx": 0,
+            "level": 0,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffgt.c",
+            "loc": "274:15",
+            "func_name": "prevImage",
+            "func_key": "tools/tiffgt.c@265:1-278:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/tools/tiffgt.c/#L274"
+        },
+        {
+            "idx": 1,
+            "level": 1,
+            "description": "Parameter `name->strlen`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "222:1",
+            "func_name": "TIFFOpen",
+            "func_key": "libtiff/tif_unix.c@222:1-252:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_unix.c/#L222"
+        },
+        {
+            "idx": 2,
+            "level": 1,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "248:8",
+            "func_name": "TIFFOpen",
+            "func_key": "libtiff/tif_unix.c@222:1-252:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_unix.c/#L248"
+        },
+        {
+            "idx": 3,
+            "level": 2,
+            "description": "Parameter `name->strlen`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "202:1",
+            "func_name": "TIFFFdOpen",
+            "func_key": "libtiff/tif_unix.c@202:1-217:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_unix.c/#L202"
+        },
+        {
+            "idx": 4,
+            "level": 2,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "209:8",
+            "func_name": "TIFFFdOpen",
+            "func_key": "libtiff/tif_unix.c@202:1-217:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_unix.c/#L209"
+        },
+        {
+            "idx": 5,
+            "level": 0,
+            "description": "<Offset trace>",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_open.c",
+            "loc": "70:1",
+            "func_name": "TIFFClientOpen",
+            "func_key": "libtiff/tif_open.c@70:1-485:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_open.c/#L70"
+        },
+        {
+            "idx": 6,
+            "level": 3,
+            "description": "Parameter `name->strlen`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_open.c",
+            "loc": "70:1",
+            "func_name": "TIFFClientOpen",
+            "func_key": "libtiff/tif_open.c@70:1-485:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_open.c/#L70"
+        },
+        {
+            "idx": 7,
+            "level": 0,
+            "description": "<Length trace>",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_open.c",
+            "loc": "70:1",
+            "func_name": "TIFFClientOpen",
+            "func_key": "libtiff/tif_open.c@70:1-485:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_open.c/#L70"
+        },
+        {
+            "idx": 8,
+            "level": 3,
+            "description": "Parameter `name->strlen`",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_open.c",
+            "loc": "70:1",
+            "func_name": "TIFFClientOpen",
+            "func_key": "libtiff/tif_open.c@70:1-485:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_open.c/#L70"
+        },
+        {
+            "idx": 9,
+            "level": 3,
+            "description": "Call",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_open.c",
+            "loc": "117:16",
+            "func_name": "TIFFClientOpen",
+            "func_key": "libtiff/tif_open.c@70:1-485:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_open.c/#L117"
+        },
+        {
+            "idx": 10,
+            "level": 4,
+            "description": "Assignment",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "312:17",
+            "func_name": "_TIFFmalloc",
+            "func_key": "libtiff/tif_unix.c@308:1-315:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_unix.c/#L312"
+        },
+        {
+            "idx": 11,
+            "level": 3,
+            "description": "Assignment",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_open.c",
+            "loc": "117:2",
+            "func_name": "TIFFClientOpen",
+            "func_key": "libtiff/tif_open.c@70:1-485:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_open.c/#L117"
+        },
+        {
+            "idx": 12,
+            "level": 3,
+            "description": "Assignment",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_open.c",
+            "loc": "123:2",
+            "func_name": "TIFFClientOpen",
+            "func_key": "libtiff/tif_open.c@70:1-485:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_open.c/#L123"
+        },
+        {
+            "idx": 13,
+            "level": 3,
+            "description": "Array access: Offset: [1080, +oo] (\u21d0 1080 + [0, +oo]) Size: [1081, +oo] by call to `TIFFOpen` ",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_open.c",
+            "loc": "124:2",
+            "func_name": "TIFFClientOpen",
+            "func_key": "libtiff/tif_open.c@70:1-485:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_open.c/#L124"
+        }
+    ],
+    "functions": {
+        "tools/tiffgt.c@265:1-278:2": {
+            "file": "tools/tiffgt.c",
+            "loc": "265:1-278:2",
+            "name": "prevImage",
+            "touched_by_commit": false,
+            "code": "static int\nprevImage(void)\n{\n        if (fileindex > 0)\n                fileindex--;\n        else if (tif)\n                return fileindex;\n        if (tif)\n                TIFFClose(tif);\n        tif = TIFFOpen(filelist[fileindex], \"r\");\n        if (tif == NULL)\n                return -1;\n        return fileindex;\n}"
+        },
+        "libtiff/tif_unix.c@222:1-252:2": {
+            "file": "libtiff/tif_unix.c",
+            "loc": "222:1-252:2",
+            "name": "TIFFOpen",
+            "touched_by_commit": false,
+            "code": "TIFF*\nTIFFOpen(const char* name, const char* mode)\n{\n\tstatic const char module[] = \"TIFFOpen\";\n\tint m, fd;\n\tTIFF* tif;\n\n\tm = _TIFFgetMode(mode, module);\n\tif (m == -1)\n\t\treturn ((TIFF*)0);\n\n/* for cygwin and mingw */\n#ifdef O_BINARY\n\tm |= O_BINARY;\n#endif\n\n\tfd = open(name, m, 0666);\n\tif (fd < 0) {\n\t\tif (errno > 0 && strerror(errno) != NULL ) {\n\t\t\tTIFFErrorExt(0, module, \"%s: %s\", name, strerror(errno) );\n\t\t} else {\n\t\t\tTIFFErrorExt(0, module, \"%s: Cannot open\", name);\n\t\t}\n\t\treturn ((TIFF *)0);\n\t}\n\n\ttif = TIFFFdOpen((int)fd, name, mode);\n\tif(!tif)\n\t\tclose(fd);\n\treturn tif;\n}"
+        },
+        "libtiff/tif_unix.c@202:1-217:2": {
+            "file": "libtiff/tif_unix.c",
+            "loc": "202:1-217:2",
+            "name": "TIFFFdOpen",
+            "touched_by_commit": false,
+            "code": "TIFF*\nTIFFFdOpen(int fd, const char* name, const char* mode)\n{\n\tTIFF* tif;\n\n\tfd_as_handle_union_t fdh;\n\tfdh.fd = fd;\n\ttif = TIFFClientOpen(name, mode,\n\t    fdh.h,\n\t    _tiffReadProc, _tiffWriteProc,\n\t    _tiffSeekProc, _tiffCloseProc, _tiffSizeProc,\n\t    _tiffMapProc, _tiffUnmapProc);\n\tif (tif)\n\t\ttif->tif_fd = fd;\n\treturn (tif);\n}"
+        },
+        "libtiff/tif_open.c@70:1-485:2": {
+            "file": "libtiff/tif_open.c",
+            "loc": "70:1-485:2",
+            "name": "TIFFClientOpen",
+            "touched_by_commit": true,
+            "code": "TIFF*\nTIFFClientOpen(\n\tconst char* name, const char* mode,\n\tthandle_t clientdata,\n\tTIFFReadWriteProc readproc,\n\tTIFFReadWriteProc writeproc,\n\tTIFFSeekProc seekproc,\n\tTIFFCloseProc closeproc,\n\tTIFFSizeProc sizeproc,\n\tTIFFMapFileProc mapproc,\n\tTIFFUnmapFileProc unmapproc\n)\n{\n\tstatic const char module[] = \"TIFFClientOpen\";\n\tTIFF *tif;\n\tint m;\n\tconst char* cp;\n\n\t/* The following are configuration checks. They should be redundant, but should not\n\t * compile to any actual code in an optimised release build anyway. If any of them\n\t * fail, (makefile-based or other) configuration is not correct */\n\tassert(sizeof(uint8)==1);\n\tassert(sizeof(int8)==1);\n\tassert(sizeof(uint16)==2);\n\tassert(sizeof(int16)==2);\n\tassert(sizeof(uint32)==4);\n\tassert(sizeof(int32)==4);\n\tassert(sizeof(uint64)==8);\n\tassert(sizeof(int64)==8);\n\tassert(sizeof(tmsize_t)==sizeof(void*));\n\t{\n\t\tunion{\n\t\t\tuint8 a8[2];\n\t\t\tuint16 a16;\n\t\t} n;\n\t\tn.a8[0]=1;\n\t\tn.a8[1]=0;\n\t\t#ifdef WORDS_BIGENDIAN\n\t\tassert(n.a16==256);\n\t\t#else\n\t\tassert(n.a16==1);\n\t\t#endif\n\t}\n\n\tm = _TIFFgetMode(mode, module);\n\tif (m == -1)\n\t\tgoto bad2;\n\ttif = (TIFF *)_TIFFmalloc((tmsize_t)(sizeof (TIFF) + strlen(name) + 1));\n\tif (tif == NULL) {\n\t\tTIFFErrorExt(clientdata, module, \"%s: Out of memory (TIFF structure)\", name);\n\t\tgoto bad2;\n\t}\n\t_TIFFmemset(tif, 0, sizeof (*tif));\n\ttif->tif_name = (char *)tif + sizeof (TIFF);\n\tstrcpy(tif->tif_name, name);\n\ttif->tif_mode = m &~ (O_CREAT|O_TRUNC);\n\ttif->tif_curdir = (uint16) -1;\t\t/* non-existent directory */\n\ttif->tif_curoff = 0;\n\ttif->tif_curstrip = (uint32) -1;\t/* invalid strip */\n\ttif->tif_row = (uint32) -1;\t\t/* read/write pre-increment */\n\ttif->tif_clientdata = clientdata;\n\tif (!readproc || !writeproc || !seekproc || !closeproc || !sizeproc) {\n\t\tTIFFErrorExt(clientdata, module,\n\t\t    \"One of the client procedures is NULL pointer.\");\n\t\tgoto bad2;\n\t}\n\ttif->tif_readproc = readproc;\n\ttif->tif_writeproc = writeproc;\n\ttif->tif_seekproc = seekproc;\n\ttif->tif_closeproc = closeproc;\n\ttif->tif_sizeproc = sizeproc;\n\tif (mapproc)\n\t\ttif->tif_mapproc = mapproc;\n\telse\n\t\ttif->tif_mapproc = _tiffDummyMapProc;\n\tif (unmapproc)\n\t\ttif->tif_unmapproc = unmapproc;\n\telse\n\t\ttif->tif_unmapproc = _tiffDummyUnmapProc;\n\t_TIFFSetDefaultCompressionState(tif);    /* setup default state */\n\t/*\n\t * Default is to return data MSB2LSB and enable the\n\t * use of memory-mapped files and strip chopping when\n\t * a file is opened read-only.\n\t */\n\ttif->tif_flags = FILLORDER_MSB2LSB;\n\tif (m == O_RDONLY )\n\t\ttif->tif_flags |= TIFF_MAPPED;\n\n\t#ifdef STRIPCHOP_DEFAULT\n\tif (m == O_RDONLY || m == O_RDWR)\n\t\ttif->tif_flags |= STRIPCHOP_DEFAULT;\n\t#endif\n\n\t/*\n\t * Process library-specific flags in the open mode string.\n\t * The following flags may be used to control intrinsic library\n\t * behaviour that may or may not be desirable (usually for\n\t * compatibility with some application that claims to support\n\t * TIFF but only supports some brain dead idea of what the\n\t * vendor thinks TIFF is):\n\t *\n\t * 'l' use little-endian byte order for creating a file\n\t * 'b' use big-endian byte order for creating a file\n\t * 'L' read/write information using LSB2MSB bit order\n\t * 'B' read/write information using MSB2LSB bit order\n\t * 'H' read/write information using host bit order\n\t * 'M' enable use of memory-mapped files when supported\n\t * 'm' disable use of memory-mapped files\n\t * 'C' enable strip chopping support when reading\n\t * 'c' disable strip chopping support\n\t * 'h' read TIFF header only, do not load the first IFD\n\t * '4' ClassicTIFF for creating a file (default)\n\t * '8' BigTIFF for creating a file\n\t *\n\t * The use of the 'l' and 'b' flags is strongly discouraged.\n\t * These flags are provided solely because numerous vendors,\n\t * typically on the PC, do not correctly support TIFF; they\n\t * only support the Intel little-endian byte order.  This\n\t * support is not configured by default because it supports\n\t * the violation of the TIFF spec that says that readers *MUST*\n\t * support both byte orders.  It is strongly recommended that\n\t * you not use this feature except to deal with busted apps\n\t * that write invalid TIFF.  And even in those cases you should\n\t * bang on the vendors to fix their software.\n\t *\n\t * The 'L', 'B', and 'H' flags are intended for applications\n\t * that can optimize operations on data by using a particular\n\t * bit order.  By default the library returns data in MSB2LSB\n\t * bit order for compatibility with older versions of this\n\t * library.  Returning data in the bit order of the native CPU\n\t * makes the most sense but also requires applications to check\n\t * the value of the FillOrder tag; something they probably do\n\t * not do right now.\n\t *\n\t * The 'M' and 'm' flags are provided because some virtual memory\n\t * systems exhibit poor behaviour when large images are mapped.\n\t * These options permit clients to control the use of memory-mapped\n\t * files on a per-file basis.\n\t *\n\t * The 'C' and 'c' flags are provided because the library support\n\t * for chopping up large strips into multiple smaller strips is not\n\t * application-transparent and as such can cause problems.  The 'c'\n\t * option permits applications that only want to look at the tags,\n\t * for example, to get the unadulterated TIFF tag information.\n\t */\n\tfor (cp = mode; *cp; cp++)\n\t\tswitch (*cp) {\n\t\t\tcase 'b':\n\t\t\t\t#ifndef WORDS_BIGENDIAN\n\t\t\t\tif (m&O_CREAT)\n\t\t\t\t\ttif->tif_flags |= TIFF_SWAB;\n\t\t\t\t#endif\n\t\t\t\tbreak;\n\t\t\tcase 'l':\n\t\t\t\t#ifdef WORDS_BIGENDIAN\n\t\t\t\tif ((m&O_CREAT))\n\t\t\t\t\ttif->tif_flags |= TIFF_SWAB;\n\t\t\t\t#endif\n\t\t\t\tbreak;\n\t\t\tcase 'B':\n\t\t\t\ttif->tif_flags = (tif->tif_flags &~ TIFF_FILLORDER) |\n\t\t\t\t    FILLORDER_MSB2LSB;\n\t\t\t\tbreak;\n\t\t\tcase 'L':\n\t\t\t\ttif->tif_flags = (tif->tif_flags &~ TIFF_FILLORDER) |\n\t\t\t\t    FILLORDER_LSB2MSB;\n\t\t\t\tbreak;\n\t\t\tcase 'H':\n\t\t\t\ttif->tif_flags = (tif->tif_flags &~ TIFF_FILLORDER) |\n\t\t\t\t    HOST_FILLORDER;\n\t\t\t\tbreak;\n\t\t\tcase 'M':\n\t\t\t\tif (m == O_RDONLY)\n\t\t\t\t\ttif->tif_flags |= TIFF_MAPPED;\n\t\t\t\tbreak;\n\t\t\tcase 'm':\n\t\t\t\tif (m == O_RDONLY)\n\t\t\t\t\ttif->tif_flags &= ~TIFF_MAPPED;\n\t\t\t\tbreak;\n\t\t\tcase 'C':\n\t\t\t\tif (m == O_RDONLY)\n\t\t\t\t\ttif->tif_flags |= TIFF_STRIPCHOP;\n\t\t\t\tbreak;\n\t\t\tcase 'c':\n\t\t\t\tif (m == O_RDONLY)\n\t\t\t\t\ttif->tif_flags &= ~TIFF_STRIPCHOP;\n\t\t\t\tbreak;\n\t\t\tcase 'h':\n\t\t\t\ttif->tif_flags |= TIFF_HEADERONLY;\n\t\t\t\tbreak;\n\t\t\tcase '8':\n\t\t\t\tif (m&O_CREAT)\n\t\t\t\t\ttif->tif_flags |= TIFF_BIGTIFF;\n\t\t\t\tbreak;\n\t\t}\n\t/*\n\t * Read in TIFF header.\n\t */\n\tif ((m & O_TRUNC) ||\n\t    !ReadOK(tif, &tif->tif_header, sizeof (TIFFHeaderClassic))) {\n\t\tif (tif->tif_mode == O_RDONLY) {\n\t\t\tTIFFErrorExt(tif->tif_clientdata, name,\n\t\t\t    \"Cannot read TIFF header\");\n\t\t\tgoto bad;\n\t\t}\n\t\t/*\n\t\t * Setup header and write.\n\t\t */\n\t\t#ifdef WORDS_BIGENDIAN\n\t\ttif->tif_header.common.tiff_magic = (tif->tif_flags & TIFF_SWAB)\n\t\t    ? TIFF_LITTLEENDIAN : TIFF_BIGENDIAN;\n\t\t#else\n\t\ttif->tif_header.common.tiff_magic = (tif->tif_flags & TIFF_SWAB)\n\t\t    ? TIFF_BIGENDIAN : TIFF_LITTLEENDIAN;\n\t\t#endif\n\t\tif (!(tif->tif_flags&TIFF_BIGTIFF))\n\t\t{\n\t\t\ttif->tif_header.common.tiff_version = TIFF_VERSION_CLASSIC;\n\t\t\ttif->tif_header.classic.tiff_diroff = 0;\n\t\t\tif (tif->tif_flags & TIFF_SWAB)\n\t\t\t\tTIFFSwabShort(&tif->tif_header.common.tiff_version);\n\t\t\ttif->tif_header_size = sizeof(TIFFHeaderClassic);\n\t\t}\n\t\telse\n\t\t{\n\t\t\ttif->tif_header.common.tiff_version = TIFF_VERSION_BIG;\n\t\t\ttif->tif_header.big.tiff_offsetsize = 8;\n\t\t\ttif->tif_header.big.tiff_unused = 0;\n\t\t\ttif->tif_header.big.tiff_diroff = 0;\n\t\t\tif (tif->tif_flags & TIFF_SWAB)\n\t\t\t{\n\t\t\t\tTIFFSwabShort(&tif->tif_header.common.tiff_version);\n\t\t\t\tTIFFSwabShort(&tif->tif_header.big.tiff_offsetsize);\n\t\t\t}\n\t\t\ttif->tif_header_size = sizeof (TIFFHeaderBig);\n\t\t}\n\t\t/*\n\t\t * The doc for \"fopen\" for some STD_C_LIBs says that if you\n\t\t * open a file for modify (\"+\"), then you must fseek (or\n\t\t * fflush?) between any freads and fwrites.  This is not\n\t\t * necessary on most systems, but has been shown to be needed\n\t\t * on Solaris.\n\t\t */\n\t\tTIFFSeekFile( tif, 0, SEEK_SET );\n\t\tif (!WriteOK(tif, &tif->tif_header, (tmsize_t)(tif->tif_header_size))) {\n\t\t\tTIFFErrorExt(tif->tif_clientdata, name,\n\t\t\t    \"Error writing TIFF header\");\n\t\t\tgoto bad;\n\t\t}\n\t\t/*\n\t\t * Setup the byte order handling.\n\t\t */\n\t\tif (tif->tif_header.common.tiff_magic == TIFF_BIGENDIAN) {\n\t\t\t#ifndef WORDS_BIGENDIAN\n\t\t\ttif->tif_flags |= TIFF_SWAB;\n\t\t\t#endif\n\t\t} else {\n\t\t\t#ifdef WORDS_BIGENDIAN\n\t\t\ttif->tif_flags |= TIFF_SWAB;\n\t\t\t#endif\n\t\t}\n\t\t/*\n\t\t * Setup default directory.\n\t\t */\n\t\tif (!TIFFDefaultDirectory(tif))\n\t\t\tgoto bad;\n\t\ttif->tif_diroff = 0;\n\t\ttif->tif_dirlist = NULL;\n\t\ttif->tif_dirlistsize = 0;\n\t\ttif->tif_dirnumber = 0;\n\t\treturn (tif);\n\t}\n\t/*\n\t * Setup the byte order handling.\n\t */\n\tif (tif->tif_header.common.tiff_magic != TIFF_BIGENDIAN &&\n\t    tif->tif_header.common.tiff_magic != TIFF_LITTLEENDIAN\n\t    #if MDI_SUPPORT\n\t    &&\n\t    #if HOST_BIGENDIAN\n\t    tif->tif_header.common.tiff_magic != MDI_BIGENDIAN\n\t    #else\n\t    tif->tif_header.common.tiff_magic != MDI_LITTLEENDIAN\n\t    #endif\n\t    ) {\n\t\tTIFFErrorExt(tif->tif_clientdata, name,\n\t\t    \"Not a TIFF or MDI file, bad magic number %d (0x%x)\",\n\t    #else\n\t    ) {\n\t\tTIFFErrorExt(tif->tif_clientdata, name,\n\t\t    \"Not a TIFF file, bad magic number %d (0x%x)\",\n\t    #endif\n\t\t    tif->tif_header.common.tiff_magic,\n\t\t    tif->tif_header.common.tiff_magic);\n\t\tgoto bad;\n\t}\n\tif (tif->tif_header.common.tiff_magic == TIFF_BIGENDIAN) {\n\t\t#ifndef WORDS_BIGENDIAN\n\t\ttif->tif_flags |= TIFF_SWAB;\n\t\t#endif\n\t} else {\n\t\t#ifdef WORDS_BIGENDIAN\n\t\ttif->tif_flags |= TIFF_SWAB;\n\t\t#endif\n\t}\n\tif (tif->tif_flags & TIFF_SWAB) \n\t\tTIFFSwabShort(&tif->tif_header.common.tiff_version);\n\tif ((tif->tif_header.common.tiff_version != TIFF_VERSION_CLASSIC)&&\n\t    (tif->tif_header.common.tiff_version != TIFF_VERSION_BIG)) {\n\t\tTIFFErrorExt(tif->tif_clientdata, name,\n\t\t    \"Not a TIFF file, bad version number %d (0x%x)\",\n\t\t    tif->tif_header.common.tiff_version,\n\t\t    tif->tif_header.common.tiff_version);\n\t\tgoto bad;\n\t}\n\tif (tif->tif_header.common.tiff_version == TIFF_VERSION_CLASSIC)\n\t{\n\t\tif (tif->tif_flags & TIFF_SWAB)\n\t\t\tTIFFSwabLong(&tif->tif_header.classic.tiff_diroff);\n\t\ttif->tif_header_size = sizeof(TIFFHeaderClassic);\n\t}\n\telse\n\t{\n\t\tif (!ReadOK(tif, ((uint8*)(&tif->tif_header) + sizeof(TIFFHeaderClassic)), (sizeof(TIFFHeaderBig)-sizeof(TIFFHeaderClassic))))\n\t\t{\n\t\t\tTIFFErrorExt(tif->tif_clientdata, name,\n\t\t\t    \"Cannot read TIFF header\");\n\t\t\tgoto bad;\n\t\t}\n\t\tif (tif->tif_flags & TIFF_SWAB)\n\t\t{\n\t\t\tTIFFSwabShort(&tif->tif_header.big.tiff_offsetsize);\n\t\t\tTIFFSwabLong8(&tif->tif_header.big.tiff_diroff);\n\t\t}\n\t\tif (tif->tif_header.big.tiff_offsetsize != 8)\n\t\t{\n\t\t\tTIFFErrorExt(tif->tif_clientdata, name,\n\t\t\t    \"Not a TIFF file, bad BigTIFF offsetsize %d (0x%x)\",\n\t\t\t    tif->tif_header.big.tiff_offsetsize,\n\t\t\t    tif->tif_header.big.tiff_offsetsize);\n\t\t\tgoto bad;\n\t\t}\n\t\tif (tif->tif_header.big.tiff_unused != 0)\n\t\t{\n\t\t\tTIFFErrorExt(tif->tif_clientdata, name,\n\t\t\t    \"Not a TIFF file, bad BigTIFF unused %d (0x%x)\",\n\t\t\t    tif->tif_header.big.tiff_unused,\n\t\t\t    tif->tif_header.big.tiff_unused);\n\t\t\tgoto bad;\n\t\t}\n\t\ttif->tif_header_size = sizeof(TIFFHeaderBig);\n\t\ttif->tif_flags |= TIFF_BIGTIFF;\n\t}\n\ttif->tif_flags |= TIFF_MYBUFFER;\n\ttif->tif_rawcp = tif->tif_rawdata = 0;\n\ttif->tif_rawdatasize = 0;\n        tif->tif_rawdataoff = 0;\n        tif->tif_rawdataloaded = 0;\n\n\tswitch (mode[0]) {\n\t\tcase 'r':\n\t\t\tif (!(tif->tif_flags&TIFF_BIGTIFF))\n\t\t\t\ttif->tif_nextdiroff = tif->tif_header.classic.tiff_diroff;\n\t\t\telse\n\t\t\t\ttif->tif_nextdiroff = tif->tif_header.big.tiff_diroff;\n\t\t\t/*\n\t\t\t * Try to use a memory-mapped file if the client\n\t\t\t * has not explicitly suppressed usage with the\n\t\t\t * 'm' flag in the open mode (see above).\n\t\t\t */\n\t\t\tif (tif->tif_flags & TIFF_MAPPED)\n\t\t\t{\n\t\t\t\ttoff_t n;\n\t\t\t\tif (TIFFMapFileContents(tif,(void**)(&tif->tif_base),&n))\n\t\t\t\t{\n\t\t\t\t\ttif->tif_size=(tmsize_t)n;\n\t\t\t\t\tassert((toff_t)tif->tif_size==n);\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t\ttif->tif_flags &= ~TIFF_MAPPED;\n\t\t\t}\n\t\t\t/*\n\t\t\t * Sometimes we do not want to read the first directory (for example,\n\t\t\t * it may be broken) and want to proceed to other directories. I this\n\t\t\t * case we use the TIFF_HEADERONLY flag to open file and return\n\t\t\t * immediately after reading TIFF header.\n\t\t\t */\n\t\t\tif (tif->tif_flags & TIFF_HEADERONLY)\n\t\t\t\treturn (tif);\n\n\t\t\t/*\n\t\t\t * Setup initial directory.\n\t\t\t */\n\t\t\tif (TIFFReadDirectory(tif)) {\n\t\t\t\ttif->tif_rawcc = (tmsize_t)-1;\n\t\t\t\ttif->tif_flags |= TIFF_BUFFERSETUP;\n\t\t\t\treturn (tif);\n\t\t\t}\n\t\t\tbreak;\n\t\tcase 'a':\n\t\t\t/*\n\t\t\t * New directories are automatically append\n\t\t\t * to the end of the directory chain when they\n\t\t\t * are written out (see TIFFWriteDirectory).\n\t\t\t */\n\t\t\tif (!TIFFDefaultDirectory(tif))\n\t\t\t\tgoto bad;\n\t\t\treturn (tif);\n\t}\nbad:\n\ttif->tif_mode = O_RDONLY;\t/* XXX avoid flush */\n        TIFFCleanup(tif);\nbad2:\n\treturn ((TIFF*)0);\n}"
+        },
+        "libtiff/tif_unix.c@308:1-315:2": {
+            "file": "libtiff/tif_unix.c",
+            "loc": "308:1-315:2",
+            "name": "_TIFFmalloc",
+            "touched_by_commit": false,
+            "code": "void*\n_TIFFmalloc(tmsize_t s)\n{\n        if (s == 0)\n                return ((void *) NULL);\n\n\treturn (malloc((size_t) s));\n}"
+        }
+    },
+    "commit": {
+        "url": "https://gitlab.com/libtiff/libtiff/commit/371ad2658c189329d9b34707d36894dfda3905a0",
+        "changes": [
+            {
+                "before": ".gitignore",
+                "after": ".gitignore",
+                "changes": [
+                    "68,0^^69,1"
+                ]
+            },
+            {
+                "before": "CMakeLists.txt",
+                "after": "CMakeLists.txt",
+                "changes": [
+                    "626,1^^626,1"
+                ]
+            },
+            {
+                "before": "configure.ac",
+                "after": "configure.ac",
+                "changes": [
+                    "1073,2^^1073,1",
+                    "1079,1^^1078,1",
+                    "1083,1^^1082,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dir.c",
+                "after": "libtiff/tif_dir.c",
+                "changes": [
+                    "1021,1^^1021,1",
+                    "1026,1^^1026,1",
+                    "1285,2^^1285,3",
+                    "1299,1^^1299,0",
+                    "1302,1^^1301,0",
+                    "1389,0^^1389,1",
+                    "1390,0^^1391,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dir.h",
+                "after": "libtiff/tif_dir.h",
+                "changes": [
+                    "100,2^^100,4",
+                    "103,1^^105,1",
+                    "106,1^^107,0"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dirread.c",
+                "after": "libtiff/tif_dirread.c",
+                "changes": [
+                    "3538,0^^3539,35",
+                    "3873,1^^3907,0",
+                    "3876,2^^3910,1",
+                    "3879,5^^3912,10",
+                    "3885,3^^3922,0",
+                    "3891,1^^3925,0",
+                    "3894,2^^3928,1",
+                    "3897,5^^3930,10",
+                    "3903,3^^3940,0",
+                    "4133,21^^4167,0",
+                    "4157,3^^4171,1",
+                    "4171,2^^4183,2",
+                    "4175,3^^4187,3",
+                    "4192,1^^4203,0",
+                    "4206,0^^4218,2",
+                    "4212,2^^4225,1",
+                    "4218,2^^4230,2",
+                    "4225,2^^4237,2",
+                    "4245,5^^4257,3",
+                    "4259,2^^4268,0",
+                    "4505,3^^4513,3",
+                    "4510,1^^4518,1",
+                    "4555,1^^4563,1",
+                    "4564,2^^4572,2",
+                    "4570,1^^4578,1",
+                    "4575,1^^4583,1",
+                    "5747,3^^5755,3",
+                    "5766,4^^5774,5",
+                    "5770,0^^5780,2",
+                    "5792,1^^5803,1",
+                    "5798,1^^5809,1",
+                    "5873,1^^5884,1",
+                    "5893,1^^5904,1",
+                    "5901,1^^5912,1",
+                    "5905,2^^5916,2",
+                    "5929,3^^5940,3",
+                    "5938,0^^5950,48",
+                    "5939,0^^5999,38",
+                    "5941,3^^6038,48",
+                    "5946,1^^6088,4",
+                    "5948,8^^6093,24",
+                    "5956,0^^6118,60",
+                    "5958,2^^6179,3",
+                    "5961,1^^6183,2",
+                    "5962,0^^6186,4",
+                    "5964,3^^6191,14",
+                    "5968,1^^6206,6",
+                    "5969,0^^6213,18",
+                    "5971,2^^6232,5",
+                    "5974,2^^6238,8",
+                    "5977,9^^6247,14",
+                    "5987,4^^6262,13",
+                    "5992,1^^6276,52"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dirwrite.c",
+                "after": "libtiff/tif_dirwrite.c",
+                "changes": [
+                    "195,1^^195,1",
+                    "530,1^^530,1",
+                    "535,1^^535,1",
+                    "543,1^^543,1",
+                    "554,2^^554,2",
+                    "560,1^^560,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_jpeg.c",
+                "after": "libtiff/tif_jpeg.c",
+                "changes": [
+                    "782,0^^783,1",
+                    "784,5^^785,1",
+                    "807,1^^804,1",
+                    "809,1^^806,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_ojpeg.c",
+                "after": "libtiff/tif_ojpeg.c",
+                "changes": [
+                    "993,1^^992,0",
+                    "1992,5^^1990,0",
+                    "2001,1^^1995,1",
+                    "2003,0^^1998,1",
+                    "2006,1^^2001,1",
+                    "2010,5^^2005,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_open.c",
+                "after": "libtiff/tif_open.c",
+                "changes": [
+                    "183,0^^184,2",
+                    "264,0^^267,7",
+                    "265,0^^275,8"
+                ]
+            },
+            {
+                "before": "libtiff/tif_print.c",
+                "after": "libtiff/tif_print.c",
+                "changes": [
+                    "655,2^^654,0",
+                    "668,2^^666,2",
+                    "673,2^^671,2"
+                ]
+            },
+            {
+                "before": "libtiff/tif_read.c",
+                "after": "libtiff/tif_read.c",
+                "changes": [
+                    "178,4^^178,1",
+                    "188,1^^185,1",
+                    "232,1^^229,1",
+                    "249,1^^246,1",
+                    "252,1^^249,1",
+                    "291,1^^288,1",
+                    "350,3^^347,1",
+                    "405,1^^400,1",
+                    "602,5^^596,0",
+                    "611,1^^601,1",
+                    "637,2^^627,2",
+                    "682,2^^671,0",
+                    "687,1^^675,1",
+                    "741,1^^729,1",
+                    "776,3^^763,0",
+                    "781,1^^766,1",
+                    "834,1^^819,1",
+                    "840,1^^825,1",
+                    "852,1^^837,1",
+                    "860,1^^845,1",
+                    "889,1^^874,1",
+                    "1104,5^^1088,0",
+                    "1113,1^^1093,1",
+                    "1143,1^^1123,1",
+                    "1145,1^^1125,1",
+                    "1201,1^^1181,1",
+                    "1223,3^^1202,0",
+                    "1228,1^^1205,1",
+                    "1281,1^^1258,1",
+                    "1287,1^^1264,1",
+                    "1316,1^^1293,1",
+                    "1443,3^^1419,0",
+                    "1466,1^^1440,1",
+                    "1483,3^^1456,0",
+                    "1516,1^^1487,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_strip.c",
+                "after": "libtiff/tif_strip.c",
+                "changes": [
+                    "150,2^^150,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_write.c",
+                "after": "libtiff/tif_write.c",
+                "changes": [
+                    "131,1^^131,1",
+                    "134,1^^134,1",
+                    "186,1^^186,1",
+                    "190,1^^190,1",
+                    "538,1^^538,1",
+                    "541,1^^541,1",
+                    "544,1^^544,1",
+                    "550,2^^550,2",
+                    "611,1^^611,1",
+                    "685,1^^685,1",
+                    "687,1^^687,1",
+                    "698,3^^698,3",
+                    "702,1^^702,1",
+                    "721,1^^721,1",
+                    "724,3^^724,3",
+                    "735,1^^735,1",
+                    "748,1^^748,1",
+                    "752,1^^752,1",
+                    "757,2^^757,2",
+                    "775,1^^775,1",
+                    "777,1^^777,1"
+                ]
+            },
+            {
+                "before": "libtiff/tiffio.h",
+                "after": "libtiff/tiffio.h",
+                "changes": [
+                    "490,0^^491,5"
+                ]
+            },
+            {
+                "before": "libtiff/tiffiop.h",
+                "after": "libtiff/tiffiop.h",
+                "changes": [
+                    "129,0^^130,2"
+                ]
+            },
+            {
+                "before": "man/TIFFOpen.3tiff",
+                "after": "man/TIFFOpen.3tiff",
+                "changes": [
+                    "209,0^^210,15"
+                ]
+            },
+            {
+                "before": "test/CMakeLists.txt",
+                "after": "test/CMakeLists.txt",
+                "changes": [
+                    "190,0^^191,3"
+                ]
+            },
+            {
+                "before": "test/Makefile.am",
+                "after": "test/Makefile.am",
+                "changes": [
+                    "66,1^^66,1",
+                    "204,0^^205,2"
+                ]
+            },
+            {
+                "before": "test/defer_strile_loading.c",
+                "after": "test/defer_strile_loading.c",
+                "changes": [
+                    "0,0^^1,256"
+                ]
+            }
+        ]
+    },
+    "compiler_args": {
+        "tools/tiffgt.c": "-DHAVE_CONFIG_H -I<$repo$>/tools -I<$repo$>/libtiff",
+        "libtiff/tif_unix.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC",
+        "libtiff/tif_open.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC"
+    },
+    "zipped_bug_report": "H4sIAHBjQ18C/+2W32/bNhDHn6W/4pZhheTYjin/jNIEaI0EGBDURZaiD0HrKBJlC5DEgKLaZF32utf9jftLdkf9sOzYSYsNQx+mF4mnI+97H5JH/jicDEwlRJwdqCgMF6rru8544AKXUkgXXudhyCXMPmE7T+F8YALMwjDjyoUr1pv02rAvxAew/vrjT6A27MNVabThl+hXXvix0u/mHnwvjkEJuL78+exsdsvT6665TQIbujBFX9MZO12onigEC91stPZX1uqhIaexyLj2OUKnwcoJTXAMVVQrjGIeR5m6oo8oDfjdhzbsyT3sBo+fjzjW8JEMOD6GN+/Oz0nO6LEcyVUuU+iwI9OMoxtKj3Kc52l0R1k6jstceOtJL+EKMV+n+NE5yZSMEQvKcJwejtoCEgye1g4kF0IhcXQvOPgsIxWli652ZuR8oD8RGXm3zFo/WfvdVf6+SDMF/tKTLaC4bWhaEhFwW/dBgl+2yx9M3Ek5R+g4QADGg/4ad0G/J2hZUT8LdFwrSpUdBu0yqA60iVyrHRxi9yi0ftDzjYYhwjAMX89vGNg7oPaeg4oj9XZgDXjmy+hWId1thKlnzZgam5QL5fSnJF3mjCkDpfx1zKn/buq9wwZ1ckXaRhjMvWy+9NIg5uQp0jlFXB6VPhPts+yGAU5GGFTmw7UJmsYRT5UWvJqbtvl4K+jOjGaDvmjcZbs0stI4J90XyO+tFH67aL5Hkly31zMTGBEzG/do4l4W5QWU9Hx+Yo5Q+YM5QqHmuNek/dEcs+6mbJNKhfE85acEPLlyAApB5fehXuj0rItrgsJ/W4SWf/653JfnPF2o5f+8npXL2Nhlo8bWAWBsqGsMWAmV8g6z6x9UzYyFwIPqxguco9o+rreMpetGy57TO8FBhW9ZKsnw0Jsr26K3CAsvG4/FAoveWdRk9vaDZoMFY5NSYfO4wdpQ/aYtbFCMUzqxT++U5Wtsgac8vYPzGAnt/ZS5MMsVoKKEJ0Lel/JRVe7jKcXtvaIi7yirfYZldezCqyyLFmmCAWrxfaoEXxpNtn5OZiS7ZzccnJ1HpWV9ElGAUIs8nyLUgERj9uulRS0sn0Y1ZDU15cRAZm/m2FggzpYUv6dV8t2si4qZ09/OjC4jxkPdoo1bIOAJlndS3Qa8KFb5t+iQr3NldFMhgJ0TikXxCSXtcERJGe/DGrkdkOjyYmAq/u29tTZanVPlOGzGoxqC8RJ48TtYs/n04vTV5W+z+eXFuzfTnRwGmoOU3j14vs8zAvtv35Thv+b51QQ3wX8Lz6rPqNnHz2UQSVKZ4+2JjWy6RhvGAdZ8kXb4Hd7ccbUB+nBf0brFS9nfcLvvJ84MAAA="
+}

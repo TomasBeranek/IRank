@@ -1,0 +1,379 @@
+{
+    "label_source": "auto_labeler",
+    "bug_type": "INTEGER_OVERFLOW_U5",
+    "project": "libtiff",
+    "bug_info": {
+        "qualifier": "([-oo, +oo] - `*tif->tif_dir.td_stripoffset`):unsigned64.",
+        "file": "libtiff/tif_dirread.c",
+        "procedure": "ChopUpSingleUncompressedStrip",
+        "line": 5836,
+        "column": 14,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_dirread.c/#L5836"
+    },
+    "adjusted_bug_loc": null,
+    "bug_loc_trace_index": 4,
+    "versions": {
+        "before": "b9b93f661ed56fda222ce686a6e6ef03ee84bc3d",
+        "after": "371ad2658c189329d9b34707d36894dfda3905a0"
+    },
+    "sample_type": "before_fix",
+    "trace": [
+        {
+            "idx": 0,
+            "level": 0,
+            "description": "<LHS trace>",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "5836:28",
+            "func_name": "ChopUpSingleUncompressedStrip",
+            "func_key": "libtiff/tif_dirread.c@5780:1-5842:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_dirread.c/#L5836"
+        },
+        {
+            "idx": 1,
+            "level": 0,
+            "description": "Unknown value from: non-const function",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "5836:28",
+            "func_name": "ChopUpSingleUncompressedStrip",
+            "func_key": "libtiff/tif_dirread.c@5780:1-5842:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_dirread.c/#L5836"
+        },
+        {
+            "idx": 2,
+            "level": 0,
+            "description": "<RHS trace>",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "5835:24",
+            "func_name": "ChopUpSingleUncompressedStrip",
+            "func_key": "libtiff/tif_dirread.c@5780:1-5842:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_dirread.c/#L5835"
+        },
+        {
+            "idx": 3,
+            "level": 0,
+            "description": "Unknown value from: non-const function",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "5835:24",
+            "func_name": "ChopUpSingleUncompressedStrip",
+            "func_key": "libtiff/tif_dirread.c@5780:1-5842:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_dirread.c/#L5835"
+        },
+        {
+            "idx": 4,
+            "level": 0,
+            "description": "Binary operation: ([-oo, +oo] - *tif->tif_dir.td_stripoffset):unsigned64",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dirread.c",
+            "loc": "5836:14",
+            "func_name": "ChopUpSingleUncompressedStrip",
+            "func_key": "libtiff/tif_dirread.c@5780:1-5842:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b9b93f661ed56fda222ce686a6e6ef03ee84bc3d/libtiff/tif_dirread.c/#L5836"
+        }
+    ],
+    "functions": {
+        "libtiff/tif_dirread.c@5780:1-5842:2": {
+            "file": "libtiff/tif_dirread.c",
+            "loc": "5780:1-5842:2",
+            "name": "ChopUpSingleUncompressedStrip",
+            "touched_by_commit": true,
+            "code": "static void\nChopUpSingleUncompressedStrip(TIFF* tif)\n{\n\tregister TIFFDirectory *td = &tif->tif_dir;\n\tuint64 bytecount;\n\tuint64 offset;\n\tuint32 rowblock;\n\tuint64 rowblockbytes;\n\tuint64 stripbytes;\n\tuint32 nstrips;\n\tuint32 rowsperstrip;\n\n\tbytecount = td->td_stripbytecount[0];\n        /* On a newly created file, just re-opened to be filled, we */\n        /* don't want strip chop to trigger as it is going to cause issues */\n        /* later ( StripOffsets and StripByteCounts improperly filled) . */\n        if( bytecount == 0 && tif->tif_mode != O_RDONLY )\n            return;\n\toffset = td->td_stripoffset[0];\n\tassert(td->td_planarconfig == PLANARCONFIG_CONTIG);\n\tif ((td->td_photometric == PHOTOMETRIC_YCBCR)&&\n\t    (!isUpSampled(tif)))\n\t\trowblock = td->td_ycbcrsubsampling[1];\n\telse\n\t\trowblock = 1;\n\trowblockbytes = TIFFVTileSize64(tif, rowblock);\n\t/*\n\t * Make the rows hold at least one scanline, but fill specified amount\n\t * of data if possible.\n\t */\n\tif (rowblockbytes > STRIP_SIZE_DEFAULT) {\n\t\tstripbytes = rowblockbytes;\n\t\trowsperstrip = rowblock;\n\t} else if (rowblockbytes > 0 ) {\n\t\tuint32 rowblocksperstrip;\n\t\trowblocksperstrip = (uint32) (STRIP_SIZE_DEFAULT / rowblockbytes);\n\t\trowsperstrip = rowblocksperstrip * rowblock;\n\t\tstripbytes = rowblocksperstrip * rowblockbytes;\n\t}\n\telse\n\t    return;\n\n\t/*\n\t * never increase the number of rows per strip\n\t */\n\tif (rowsperstrip >= td->td_rowsperstrip)\n\t\treturn;\n        nstrips = TIFFhowmany_32(td->td_imagelength, rowsperstrip);\n        if( nstrips == 0 )\n            return;\n\n        /* If we are going to allocate a lot of memory, make sure that the */\n        /* file is as big as needed */\n        if( tif->tif_mode == O_RDONLY &&\n            nstrips > 1000000 &&\n            (offset >= TIFFGetFileSize(tif) ||\n             stripbytes > (TIFFGetFileSize(tif) - offset) / (nstrips - 1)) )\n        {\n            return;\n        }\n\n        allocChoppedUpStripArrays(tif, nstrips, stripbytes, rowsperstrip);\n}"
+        }
+    },
+    "commit": {
+        "url": "https://gitlab.com/libtiff/libtiff/commit/371ad2658c189329d9b34707d36894dfda3905a0",
+        "changes": [
+            {
+                "before": ".gitignore",
+                "after": ".gitignore",
+                "changes": [
+                    "68,0^^69,1"
+                ]
+            },
+            {
+                "before": "CMakeLists.txt",
+                "after": "CMakeLists.txt",
+                "changes": [
+                    "626,1^^626,1"
+                ]
+            },
+            {
+                "before": "configure.ac",
+                "after": "configure.ac",
+                "changes": [
+                    "1073,2^^1073,1",
+                    "1079,1^^1078,1",
+                    "1083,1^^1082,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dir.c",
+                "after": "libtiff/tif_dir.c",
+                "changes": [
+                    "1021,1^^1021,1",
+                    "1026,1^^1026,1",
+                    "1285,2^^1285,3",
+                    "1299,1^^1299,0",
+                    "1302,1^^1301,0",
+                    "1389,0^^1389,1",
+                    "1390,0^^1391,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dir.h",
+                "after": "libtiff/tif_dir.h",
+                "changes": [
+                    "100,2^^100,4",
+                    "103,1^^105,1",
+                    "106,1^^107,0"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dirread.c",
+                "after": "libtiff/tif_dirread.c",
+                "changes": [
+                    "3538,0^^3539,35",
+                    "3873,1^^3907,0",
+                    "3876,2^^3910,1",
+                    "3879,5^^3912,10",
+                    "3885,3^^3922,0",
+                    "3891,1^^3925,0",
+                    "3894,2^^3928,1",
+                    "3897,5^^3930,10",
+                    "3903,3^^3940,0",
+                    "4133,21^^4167,0",
+                    "4157,3^^4171,1",
+                    "4171,2^^4183,2",
+                    "4175,3^^4187,3",
+                    "4192,1^^4203,0",
+                    "4206,0^^4218,2",
+                    "4212,2^^4225,1",
+                    "4218,2^^4230,2",
+                    "4225,2^^4237,2",
+                    "4245,5^^4257,3",
+                    "4259,2^^4268,0",
+                    "4505,3^^4513,3",
+                    "4510,1^^4518,1",
+                    "4555,1^^4563,1",
+                    "4564,2^^4572,2",
+                    "4570,1^^4578,1",
+                    "4575,1^^4583,1",
+                    "5747,3^^5755,3",
+                    "5766,4^^5774,5",
+                    "5770,0^^5780,2",
+                    "5792,1^^5803,1",
+                    "5798,1^^5809,1",
+                    "5873,1^^5884,1",
+                    "5893,1^^5904,1",
+                    "5901,1^^5912,1",
+                    "5905,2^^5916,2",
+                    "5929,3^^5940,3",
+                    "5938,0^^5950,48",
+                    "5939,0^^5999,38",
+                    "5941,3^^6038,48",
+                    "5946,1^^6088,4",
+                    "5948,8^^6093,24",
+                    "5956,0^^6118,60",
+                    "5958,2^^6179,3",
+                    "5961,1^^6183,2",
+                    "5962,0^^6186,4",
+                    "5964,3^^6191,14",
+                    "5968,1^^6206,6",
+                    "5969,0^^6213,18",
+                    "5971,2^^6232,5",
+                    "5974,2^^6238,8",
+                    "5977,9^^6247,14",
+                    "5987,4^^6262,13",
+                    "5992,1^^6276,52"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dirwrite.c",
+                "after": "libtiff/tif_dirwrite.c",
+                "changes": [
+                    "195,1^^195,1",
+                    "530,1^^530,1",
+                    "535,1^^535,1",
+                    "543,1^^543,1",
+                    "554,2^^554,2",
+                    "560,1^^560,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_jpeg.c",
+                "after": "libtiff/tif_jpeg.c",
+                "changes": [
+                    "782,0^^783,1",
+                    "784,5^^785,1",
+                    "807,1^^804,1",
+                    "809,1^^806,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_ojpeg.c",
+                "after": "libtiff/tif_ojpeg.c",
+                "changes": [
+                    "993,1^^992,0",
+                    "1992,5^^1990,0",
+                    "2001,1^^1995,1",
+                    "2003,0^^1998,1",
+                    "2006,1^^2001,1",
+                    "2010,5^^2005,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_open.c",
+                "after": "libtiff/tif_open.c",
+                "changes": [
+                    "183,0^^184,2",
+                    "264,0^^267,7",
+                    "265,0^^275,8"
+                ]
+            },
+            {
+                "before": "libtiff/tif_print.c",
+                "after": "libtiff/tif_print.c",
+                "changes": [
+                    "655,2^^654,0",
+                    "668,2^^666,2",
+                    "673,2^^671,2"
+                ]
+            },
+            {
+                "before": "libtiff/tif_read.c",
+                "after": "libtiff/tif_read.c",
+                "changes": [
+                    "178,4^^178,1",
+                    "188,1^^185,1",
+                    "232,1^^229,1",
+                    "249,1^^246,1",
+                    "252,1^^249,1",
+                    "291,1^^288,1",
+                    "350,3^^347,1",
+                    "405,1^^400,1",
+                    "602,5^^596,0",
+                    "611,1^^601,1",
+                    "637,2^^627,2",
+                    "682,2^^671,0",
+                    "687,1^^675,1",
+                    "741,1^^729,1",
+                    "776,3^^763,0",
+                    "781,1^^766,1",
+                    "834,1^^819,1",
+                    "840,1^^825,1",
+                    "852,1^^837,1",
+                    "860,1^^845,1",
+                    "889,1^^874,1",
+                    "1104,5^^1088,0",
+                    "1113,1^^1093,1",
+                    "1143,1^^1123,1",
+                    "1145,1^^1125,1",
+                    "1201,1^^1181,1",
+                    "1223,3^^1202,0",
+                    "1228,1^^1205,1",
+                    "1281,1^^1258,1",
+                    "1287,1^^1264,1",
+                    "1316,1^^1293,1",
+                    "1443,3^^1419,0",
+                    "1466,1^^1440,1",
+                    "1483,3^^1456,0",
+                    "1516,1^^1487,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_strip.c",
+                "after": "libtiff/tif_strip.c",
+                "changes": [
+                    "150,2^^150,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_write.c",
+                "after": "libtiff/tif_write.c",
+                "changes": [
+                    "131,1^^131,1",
+                    "134,1^^134,1",
+                    "186,1^^186,1",
+                    "190,1^^190,1",
+                    "538,1^^538,1",
+                    "541,1^^541,1",
+                    "544,1^^544,1",
+                    "550,2^^550,2",
+                    "611,1^^611,1",
+                    "685,1^^685,1",
+                    "687,1^^687,1",
+                    "698,3^^698,3",
+                    "702,1^^702,1",
+                    "721,1^^721,1",
+                    "724,3^^724,3",
+                    "735,1^^735,1",
+                    "748,1^^748,1",
+                    "752,1^^752,1",
+                    "757,2^^757,2",
+                    "775,1^^775,1",
+                    "777,1^^777,1"
+                ]
+            },
+            {
+                "before": "libtiff/tiffio.h",
+                "after": "libtiff/tiffio.h",
+                "changes": [
+                    "490,0^^491,5"
+                ]
+            },
+            {
+                "before": "libtiff/tiffiop.h",
+                "after": "libtiff/tiffiop.h",
+                "changes": [
+                    "129,0^^130,2"
+                ]
+            },
+            {
+                "before": "man/TIFFOpen.3tiff",
+                "after": "man/TIFFOpen.3tiff",
+                "changes": [
+                    "209,0^^210,15"
+                ]
+            },
+            {
+                "before": "test/CMakeLists.txt",
+                "after": "test/CMakeLists.txt",
+                "changes": [
+                    "190,0^^191,3"
+                ]
+            },
+            {
+                "before": "test/Makefile.am",
+                "after": "test/Makefile.am",
+                "changes": [
+                    "66,1^^66,1",
+                    "204,0^^205,2"
+                ]
+            },
+            {
+                "before": "test/defer_strile_loading.c",
+                "after": "test/defer_strile_loading.c",
+                "changes": [
+                    "0,0^^1,256"
+                ]
+            }
+        ]
+    },
+    "compiler_args": {
+        "libtiff/tif_dirread.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC"
+    },
+    "zipped_bug_report": "H4sIAHBjQ18C/+2UXU/CMBSG7/cr3sSEbOqGfGySKrswBiUhkoBcGKMwto40jtZ0BYLy490A5SOEaaI3hnPRpE3P+54+OT1HpWLJ0SLWVywM88nSDZiU1Assn9iVkkNApRSSoM4VHVCJ5pjKMBITdGwN0B9NIU5xIsQTTPSOEwHTXapYKujGSrJXEYYxVT2DjHjMBpwGTtnS9nkWKwSXjds2lPR86mrJYdnCevC5cAwXhbN5IJdLr9mb1/SFNdwq7uu12g1VNRbRNnujemJrYDZLk5zNJMy1+1NFU319Z6KJhbKBPPTPYkwUDAOGhqx4Tl3PV67v6b6yWYWkaiT5RSanDn/hYsIx9qIRRSjFkIALbvoiKQvhiPuKCX5AuBOhTYrlpNVaG61WWqmwUMdXSw9FQFGtotltXTfvGg9LXn+GNfv9v019G2kWuO/33oFpNlOHFBKmV4x7cgrxSqWX0iNbM3bfiF2fsP/gx//kj38AnWvqGsgGAAA="
+}

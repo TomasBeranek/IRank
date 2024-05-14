@@ -1,0 +1,461 @@
+{
+    "label_source": "auto_labeler",
+    "bug_type": "NULL_DEREFERENCE",
+    "project": "libtiff",
+    "bug_info": {
+        "qualifier": "pointer `crop_buff` last assigned on line 7464 could be null and is dereferenced by call to `_TIFFmemset()` at line 7466, column 5.",
+        "file": "tools/tiffcrop.c",
+        "procedure": "createCroppedImage",
+        "line": 7466,
+        "column": 5,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7466"
+    },
+    "adjusted_bug_loc": null,
+    "bug_loc_trace_index": -1,
+    "versions": {
+        "before": "b69a1998bedfabc32cd541408bffdef05bd01e45",
+        "after": "519b72700430b84c99db73a832c4c58f3e52ebcd"
+    },
+    "sample_type": "before_fix",
+    "trace": [
+        {
+            "idx": 0,
+            "level": 0,
+            "description": "start of procedure createCroppedImage()",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7442:1",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7442"
+        },
+        {
+            "idx": 1,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7447:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7447"
+        },
+        {
+            "idx": 2,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7448:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7448"
+        },
+        {
+            "idx": 3,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7449:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7449"
+        },
+        {
+            "idx": 4,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7450:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7450"
+        },
+        {
+            "idx": 5,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7452:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7452"
+        },
+        {
+            "idx": 6,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7455:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7455"
+        },
+        {
+            "idx": 7,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7456:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7456"
+        },
+        {
+            "idx": 8,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7457:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7457"
+        },
+        {
+            "idx": 9,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7458:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7458"
+        },
+        {
+            "idx": 10,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7460:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7460"
+        },
+        {
+            "idx": 11,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7461:3",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7461"
+        },
+        {
+            "idx": 12,
+            "level": 0,
+            "description": "Taking true branch",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7462:8",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7462"
+        },
+        {
+            "idx": 13,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7464:5",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7464"
+        },
+        {
+            "idx": 14,
+            "level": 1,
+            "description": "start of procedure _TIFFmalloc()",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "253:1",
+            "func_name": "_TIFFmalloc",
+            "func_key": "libtiff/tif_unix.c@253:1-257:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L253"
+        },
+        {
+            "idx": 15,
+            "level": 1,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "256:2",
+            "func_name": "_TIFFmalloc",
+            "func_key": "libtiff/tif_unix.c@253:1-257:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L256"
+        },
+        {
+            "idx": 16,
+            "level": 1,
+            "description": "return from a call to _TIFFmalloc",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "257:1",
+            "func_name": "_TIFFmalloc",
+            "func_key": "libtiff/tif_unix.c@253:1-257:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L257"
+        },
+        {
+            "idx": 17,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7465:5",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7465"
+        },
+        {
+            "idx": 18,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiffcrop.c",
+            "loc": "7466:5",
+            "func_name": "createCroppedImage",
+            "func_key": "tools/tiffcrop.c@7442:1-7555:4",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiffcrop.c/#L7466"
+        },
+        {
+            "idx": 19,
+            "level": 1,
+            "description": "start of procedure _TIFFmemset()",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "271:1",
+            "func_name": "_TIFFmemset",
+            "func_key": "libtiff/tif_unix.c@271:1-275:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L271"
+        },
+        {
+            "idx": 20,
+            "level": 1,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "274:2",
+            "func_name": "_TIFFmemset",
+            "func_key": "libtiff/tif_unix.c@271:1-275:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L274"
+        },
+        {
+            "idx": 21,
+            "level": 1,
+            "description": "return from a call to _TIFFmemset",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_unix.c",
+            "loc": "275:1",
+            "func_name": "_TIFFmemset",
+            "func_key": "libtiff/tif_unix.c@271:1-275:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_unix.c/#L275"
+        }
+    ],
+    "functions": {
+        "tools/tiffcrop.c@7442:1-7555:4": {
+            "file": "tools/tiffcrop.c",
+            "loc": "7442:1-7555:4",
+            "name": "createCroppedImage",
+            "touched_by_commit": false,
+            "code": "static int\ncreateCroppedImage(struct image_data *image, struct crop_mask *crop, \n                   unsigned char **read_buff_ptr, unsigned char **crop_buff_ptr)\n  {\n  tsize_t   cropsize;\n  unsigned  char *read_buff = NULL;\n  unsigned  char *crop_buff = NULL;\n  unsigned  char *new_buff  = NULL;\n  static    tsize_t  prev_cropsize = 0;\n\n  read_buff = *read_buff_ptr;\n\n  /* process full image, no crop buffer needed */\n  crop_buff = read_buff;\n  *crop_buff_ptr = read_buff;\n  crop->combined_width = image->width;\n  crop->combined_length = image->length;\n\n  cropsize = crop->bufftotal;\n  crop_buff = *crop_buff_ptr;\n  if (!crop_buff)\n    {\n    crop_buff = (unsigned char *)_TIFFmalloc(cropsize);\n    *crop_buff_ptr = crop_buff;\n    _TIFFmemset(crop_buff, 0, cropsize);\n    prev_cropsize = cropsize;\n    }\n  else\n    {\n    if (prev_cropsize < cropsize)\n      {\n      new_buff = _TIFFrealloc(crop_buff, cropsize);\n      if (!new_buff)\n        {\n\tfree (crop_buff);\n        crop_buff = (unsigned char *)_TIFFmalloc(cropsize);\n        }\n      else\n        crop_buff = new_buff;\n      _TIFFmemset(crop_buff, 0, cropsize);\n      }\n    }\n\n  if (!crop_buff)\n    {\n    TIFFError(\"createCroppedImage\", \"Unable to allocate/reallocate crop buffer\");\n    return (-1);\n    }\n  *crop_buff_ptr = crop_buff;\n\n  if (crop->crop_mode & CROP_INVERT)\n    {\n    switch (crop->photometric)\n      {\n      /* Just change the interpretation */\n      case PHOTOMETRIC_MINISWHITE:\n      case PHOTOMETRIC_MINISBLACK:\n\t   image->photometric = crop->photometric;\n\t   break;\n      case INVERT_DATA_ONLY:\n      case INVERT_DATA_AND_TAG:\n           if (invertImage(image->photometric, image->spp, image->bps, \n                           crop->combined_width, crop->combined_length, crop_buff))\n             {\n             TIFFError(\"createCroppedImage\", \n                       \"Failed to invert colorspace for image or cropped selection\");\n             return (-1);\n             }\n           if (crop->photometric == INVERT_DATA_AND_TAG)\n             {\n             switch (image->photometric)\n               {\n               case PHOTOMETRIC_MINISWHITE:\n \t            image->photometric = PHOTOMETRIC_MINISBLACK;\n\t            break;\n               case PHOTOMETRIC_MINISBLACK:\n \t            image->photometric = PHOTOMETRIC_MINISWHITE;\n\t            break;\n               default:\n\t            break;\n\t       }\n\t     }\n           break;\n      default: break;\n      }\n    }\n\n  if (crop->crop_mode & CROP_MIRROR)\n    {\n    if (mirrorImage(image->spp, image->bps, crop->mirror, \n                    crop->combined_width, crop->combined_length, crop_buff))\n      {\n      TIFFError(\"createCroppedImage\", \"Failed to mirror image or cropped selection %s\", \n\t       (crop->rotation == MIRROR_HORIZ) ? \"horizontally\" : \"vertically\");\n      return (-1);\n      }\n    }\n\n  if (crop->crop_mode & CROP_ROTATE) /* rotate should be last as it can reallocate the buffer */\n    {\n    if (rotateImage(crop->rotation, image, &crop->combined_width, \n                    &crop->combined_length, crop_buff_ptr))\n      {\n      TIFFError(\"createCroppedImage\", \n                \"Failed to rotate image or cropped selection by %d degrees\", crop->rotation);\n      return (-1);\n      }\n    }\n\n  if (crop_buff == read_buff) /* we used the read buffer for the crop buffer */\n    *read_buff_ptr = NULL;    /* so we don't try to free it later */\n\n  return (0);\n  }"
+        },
+        "libtiff/tif_unix.c@253:1-257:2": {
+            "file": "libtiff/tif_unix.c",
+            "loc": "253:1-257:2",
+            "name": "_TIFFmalloc",
+            "touched_by_commit": false,
+            "code": "void*\n_TIFFmalloc(tmsize_t s)\n{\n\treturn (malloc((size_t) s));\n}"
+        },
+        "libtiff/tif_unix.c@271:1-275:2": {
+            "file": "libtiff/tif_unix.c",
+            "loc": "271:1-275:2",
+            "name": "_TIFFmemset",
+            "touched_by_commit": false,
+            "code": "void\n_TIFFmemset(void* p, int v, tmsize_t c)\n{\n\tmemset(p, v, (size_t) c);\n}"
+        }
+    },
+    "commit": {
+        "url": "https://gitlab.com/libtiff/libtiff/commit/519b72700430b84c99db73a832c4c58f3e52ebcd",
+        "changes": [
+            {
+                "before": "ChangeLog",
+                "after": "ChangeLog",
+                "changes": [
+                    "2,0^^3,13"
+                ]
+            },
+            {
+                "before": "configure",
+                "after": "configure",
+                "changes": [
+                    "787,1^^786,0",
+                    "834,1^^832,0",
+                    "837,3^^834,0",
+                    "16927,1^^16921,0",
+                    "16928,0^^16923,9",
+                    "16929,0^^16933,2",
+                    "16954,1^^16959,9"
+                ]
+            },
+            {
+                "before": "configure.ac",
+                "after": "configure.ac",
+                "changes": [
+                    "251,1^^250,0",
+                    "252,0^^252,9",
+                    "253,0^^262,2",
+                    "268,1^^278,9"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dumpmode.c",
+                "after": "libtiff/tif_dumpmode.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "83,1^^83,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_luv.c",
+                "after": "libtiff/tif_luv.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "227,1^^227,1",
+                    "285,1^^285,1",
+                    "350,1^^350,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_lzw.c",
+                "after": "libtiff/tif_lzw.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "552,1^^552,1",
+                    "756,1^^756,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_print.c",
+                "after": "libtiff/tif_print.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "96,1^^96,1",
+                    "104,1^^104,1",
+                    "110,1^^110,1",
+                    "215,1^^215,1",
+                    "521,1^^521,1",
+                    "634,1^^634,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_read.c",
+                "after": "libtiff/tif_read.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "125,1^^125,1",
+                    "377,1^^377,1",
+                    "404,1^^404,1",
+                    "455,1^^455,1",
+                    "494,1^^494,1",
+                    "540,1^^540,1",
+                    "673,1^^673,1",
+                    "702,1^^702,1",
+                    "779,1^^779,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_strip.c",
+                "after": "libtiff/tif_strip.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "155,1^^155,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_thunder.c",
+                "after": "libtiff/tif_thunder.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "146,1^^146,1"
+                ]
+            },
+            {
+                "before": "tools/tiff2pdf.c",
+                "after": "tools/tiff2pdf.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "3681,1^^3681,1"
+                ]
+            },
+            {
+                "before": "tools/tiffdump.c",
+                "after": "tools/tiffdump.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "83,1^^83,1",
+                    "339,1^^339,1",
+                    "386,1^^386,1"
+                ]
+            }
+        ]
+    },
+    "compiler_args": {
+        "tools/tiffcrop.c": "-DHAVE_CONFIG_H -I<$repo$>/tools -I<$repo$>/libtiff",
+        "libtiff/tif_unix.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC"
+    },
+    "zipped_bug_report": "H4sIAHFjQ18C/7VXTY/bNhA9x79iilxsw9HasiXZCpJLiwABghyK9NJDvLJE2UQk0qGo3baL/PfO6CuSQ2WlXceAYcp8nHlvODMiX67XW2+ipUyyG83jOFTybIW+t3FdH5hSUvnwMU8S+IMpFuNXhGwCcJZcaKbglvD7Qx7Ht5AEmYYgy/hRsAikgIQLBmhpA6HMkwgODASZCkQEPIPou0Wc+xfCAOe0hNv9p/fv3qUszZiezm4h0I0ld4GmkjwV4FgTE+uN7a98yHSgNMgYzkqi8VwxCBULNPsdcWcWvU+DI5vOJohfWgBz0CcGqUT68qx5yv9DQudAn+D+xAQICX9LwTKQCv5kRy5FBgGaVOxrzhWLLLKzIjs3NLIt8q95CBgiDBV9PtPE2jKxyLTKQw2cHvZRoAOYF+MFVDNFhNMg+wJzGi6AbG0sMHxyUQU/PAUK5nP0FhWbsz9rtfhhutk7mp6Z4+n5a7/w6JDHBxq5NNIZRmmvcURYenhNc57VplE5amjAG/j414cPryc14SIuW9OahluzBpE7E1Kw+xLYII1CtrWQK9AfTrojdCB9b+NQVtZZ1GZ7VuxuXzPGBcsesbta7NUFDZfRlj5GEKKxmIy6nGWt6+psx3HsaCO2+GPT8nZou+Vn3inHrhQ9IUJDfHaIrstFRe+4mZfNMcsgpp5c9RzsdeQLyAK2d8FYhFHDxmYk79Tkn2OZ7FhVIdYyGhUXCora7fatLhoxXm3s1dtQpgd8c0T7ex5hN39Tcnn1tnjs2RC31vQrxAyR0BE8XAyCtwZwwsSxjS6fe7TXzf7ZGkYx7wgeowHhu75OUbf7K3MdybAjbVcUibu0Wm8dXFKaIi5a6iAxb41bd76nBGiI0zZTd3W5/d34kWG3aD08hulvzZz5COGuaupDuQxh0OFr5IL/r8tT0oOZl+1vffgUfOHiCHjUYnBQgQhPV6PYR6xzZPvc4UmH5XLcNjy9OLjNygMyHpdlOK1ZznoSZ+M7RfQfD9LznF9IckpLPxRe81zExy1R7QN/A1jAcgFtdQk/kDTSt88F/wf12c6657zfZkkht+mV+ZKJiMfFE0aj+EX1d5JH80lDnv7FOLQN6LR6G2elKRT30MPH9W0fBtugAcbghWI6VwKmFXZaQmeInbVTneDYq74Vgy21PiMHj2JSmYyVTCFo7lYtRqNZNL5bbLZVGHdlGM0p6NQpeKVUG5ZeFwk5JtUQ7pXwy9PX99tCz525UvrL1Y1UdBGMR9UhZltivpmTzFv9tPCqyzvlhrurMtZblsnirapkaWeSZ1udpUVRAt528RINdwtoyicsjHrr3hL0NnUJPskmDXD3XlRrEI3IphTCy3r0nFqd21ePnvNYPRauxlFoHLeouFV8vSq+/wOQWitc3BEAAA=="
+}

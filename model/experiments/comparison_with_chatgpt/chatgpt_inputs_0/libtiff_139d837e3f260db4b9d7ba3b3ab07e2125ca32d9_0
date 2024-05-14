@@ -1,0 +1,376 @@
+{
+    "label_source": "auto_labeler",
+    "bug_type": "NULL_DEREFERENCE",
+    "project": "libtiff",
+    "bug_info": {
+        "qualifier": "pointer `sbc` last assigned on line 1774 could be null and is dereferenced at line 1788, column 33.",
+        "file": "tools/tiff2pdf.c",
+        "procedure": "t2p_read_tiff_size",
+        "line": 1788,
+        "column": 33,
+        "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1788"
+    },
+    "adjusted_bug_loc": null,
+    "bug_loc_trace_index": -1,
+    "versions": {
+        "before": "b69a1998bedfabc32cd541408bffdef05bd01e45",
+        "after": "519b72700430b84c99db73a832c4c58f3e52ebcd"
+    },
+    "sample_type": "before_fix",
+    "trace": [
+        {
+            "idx": 0,
+            "level": 0,
+            "description": "start of procedure t2p_read_tiff_size()",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1772:1",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1772"
+        },
+        {
+            "idx": 1,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1774:2",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1774"
+        },
+        {
+            "idx": 2,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1776:2",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1776"
+        },
+        {
+            "idx": 3,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1777:2",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1777"
+        },
+        {
+            "idx": 4,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1778:2",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1778"
+        },
+        {
+            "idx": 5,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1781:9",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1781"
+        },
+        {
+            "idx": 6,
+            "level": 0,
+            "description": "Taking true branch",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1784:5",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1784"
+        },
+        {
+            "idx": 7,
+            "level": 0,
+            "description": "Taking true branch",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1786:6",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1786"
+        },
+        {
+            "idx": 8,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1787:4",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1787"
+        },
+        {
+            "idx": 9,
+            "level": 1,
+            "description": "start of procedure TIFFGetField()",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dir.c",
+            "loc": "1100:1",
+            "func_name": "TIFFGetField",
+            "func_key": "libtiff/tif_dir.c@1100:1-1110:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_dir.c/#L1100"
+        },
+        {
+            "idx": 10,
+            "level": 1,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dir.c",
+            "loc": "1106:2",
+            "func_name": "TIFFGetField",
+            "func_key": "libtiff/tif_dir.c@1100:1-1110:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_dir.c/#L1106"
+        },
+        {
+            "idx": 11,
+            "level": 1,
+            "description": "Skipping TIFFVGetField(): empty list of specs",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dir.c",
+            "loc": "1107:2",
+            "func_name": "TIFFGetField",
+            "func_key": "libtiff/tif_dir.c@1100:1-1110:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_dir.c/#L1107"
+        },
+        {
+            "idx": 12,
+            "level": 1,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dir.c",
+            "loc": "1108:2",
+            "func_name": "TIFFGetField",
+            "func_key": "libtiff/tif_dir.c@1100:1-1110:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_dir.c/#L1108"
+        },
+        {
+            "idx": 13,
+            "level": 1,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dir.c",
+            "loc": "1109:2",
+            "func_name": "TIFFGetField",
+            "func_key": "libtiff/tif_dir.c@1100:1-1110:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_dir.c/#L1109"
+        },
+        {
+            "idx": 14,
+            "level": 1,
+            "description": "return from a call to TIFFGetField",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "libtiff/tif_dir.c",
+            "loc": "1110:1",
+            "func_name": "TIFFGetField",
+            "func_key": "libtiff/tif_dir.c@1100:1-1110:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/libtiff/tif_dir.c/#L1110"
+        },
+        {
+            "idx": 15,
+            "level": 0,
+            "description": "",
+            "func_removed": null,
+            "file_removed": null,
+            "file": "tools/tiff2pdf.c",
+            "loc": "1788:4",
+            "func_name": "t2p_read_tiff_size",
+            "func_key": "tools/tiff2pdf.c@1772:1-1876:2",
+            "is_func_definition": true,
+            "url": "https://gitlab.com/libtiff/libtiff/blob/b69a1998bedfabc32cd541408bffdef05bd01e45/tools/tiff2pdf.c/#L1788"
+        }
+    ],
+    "functions": {
+        "tools/tiff2pdf.c@1772:1-1876:2": {
+            "file": "tools/tiff2pdf.c",
+            "loc": "1772:1-1876:2",
+            "name": "t2p_read_tiff_size",
+            "touched_by_commit": false,
+            "code": "void t2p_read_tiff_size(T2P* t2p, TIFF* input){\n\n\tuint64* sbc=NULL;\n#if defined(JPEG_SUPPORT) || defined (OJPEG_SUPPORT)\n\tunsigned char* jpt=NULL;\n\ttstrip_t i=0;\n\ttstrip_t stripcount=0;\n#endif\n#ifdef OJPEG_SUPPORT\n        tsize_t k = 0;\n#endif\n\n\tif(t2p->pdf_transcode == T2P_TRANSCODE_RAW){\n#ifdef CCITT_SUPPORT\n\t\tif(t2p->pdf_compression == T2P_COMPRESS_G4 ){\n\t\t\tTIFFGetField(input, TIFFTAG_STRIPBYTECOUNTS, &sbc);\n\t\t\tt2p->tiff_datasize=(tmsize_t)sbc[0];\n\t\t\treturn;\n\t\t}\n#endif\n#ifdef ZIP_SUPPORT\n\t\tif(t2p->pdf_compression == T2P_COMPRESS_ZIP){\n\t\t\tTIFFGetField(input, TIFFTAG_STRIPBYTECOUNTS, &sbc);\n\t\t\tt2p->tiff_datasize=(tmsize_t)sbc[0];\n\t\t\treturn;\n\t\t}\n#endif\n#ifdef OJPEG_SUPPORT\n\t\tif(t2p->tiff_compression == COMPRESSION_OJPEG){\n\t\t\tif(!TIFFGetField(input, TIFFTAG_STRIPBYTECOUNTS, &sbc)){\n\t\t\t\tTIFFError(TIFF2PDF_MODULE, \n\t\t\t\t\t\"Input file %s missing field: TIFFTAG_STRIPBYTECOUNTS\",\n\t\t\t\t\tTIFFFileName(input));\n\t\t\t\tt2p->t2p_error = T2P_ERR_ERROR;\n\t\t\t\treturn;\n\t\t\t}\n\t\t\tstripcount=TIFFNumberOfStrips(input);\n\t\t\tfor(i=0;i<stripcount;i++){\n\t\t\t\tk += sbc[i];\n\t\t\t}\n\t\t\tif(TIFFGetField(input, TIFFTAG_JPEGIFOFFSET, &(t2p->tiff_dataoffset))){\n\t\t\t\tif(t2p->tiff_dataoffset != 0){\n\t\t\t\t\tif(TIFFGetField(input, TIFFTAG_JPEGIFBYTECOUNT, &(t2p->tiff_datasize))!=0){\n\t\t\t\t\t\tif(t2p->tiff_datasize < k) {\n\t\t\t\t\t\t\tt2p->pdf_ojpegiflength=t2p->tiff_datasize;\n\t\t\t\t\t\t\tt2p->tiff_datasize+=k;\n\t\t\t\t\t\t\tt2p->tiff_datasize+=6;\n\t\t\t\t\t\t\tt2p->tiff_datasize+=2*stripcount;\n\t\t\t\t\t\t\tTIFFWarning(TIFF2PDF_MODULE, \n\t\t\t\t\t\t\t\t\"Input file %s has short JPEG interchange file byte count\", \n\t\t\t\t\t\t\t\tTIFFFileName(input));\n\t\t\t\t\t\t\treturn;\n\t\t\t\t\t\t}\n\t\t\t\t\t\treturn;\n\t\t\t\t\t}else {\n\t\t\t\t\t\tTIFFError(TIFF2PDF_MODULE, \n\t\t\t\t\t\t\t\"Input file %s missing field: TIFFTAG_JPEGIFBYTECOUNT\",\n\t\t\t\t\t\t\tTIFFFileName(input));\n\t\t\t\t\t\t\tt2p->t2p_error = T2P_ERR_ERROR;\n\t\t\t\t\t\t\treturn;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t\tt2p->tiff_datasize+=k;\n\t\t\tt2p->tiff_datasize+=2*stripcount;\n\t\t\tt2p->tiff_datasize+=2048;\n\t\t\treturn;\n\t\t}\n#endif\n#ifdef JPEG_SUPPORT\n\t\tif(t2p->tiff_compression == COMPRESSION_JPEG) {\n\t\t\tuint32 count = 0;\n\t\t\tif(TIFFGetField(input, TIFFTAG_JPEGTABLES, &count, &jpt) != 0 ){\n\t\t\t\tif(count > 4){\n\t\t\t\t\tt2p->tiff_datasize += count;\n\t\t\t\t\tt2p->tiff_datasize -= 2; /* don't use EOI of header */\n\t\t\t\t}\n\t\t\t} else {\n\t\t\t\tt2p->tiff_datasize = 2; /* SOI for first strip */\n\t\t\t}\n\t\t\tstripcount=TIFFNumberOfStrips(input);\n\t\t\tif(!TIFFGetField(input, TIFFTAG_STRIPBYTECOUNTS, &sbc)){\n\t\t\t\tTIFFError(TIFF2PDF_MODULE, \n\t\t\t\t\t\"Input file %s missing field: TIFFTAG_STRIPBYTECOUNTS\",\n\t\t\t\t\tTIFFFileName(input));\n\t\t\t\tt2p->t2p_error = T2P_ERR_ERROR;\n\t\t\t\treturn;\n\t\t\t}\n\t\t\tfor(i=0;i<stripcount;i++){\n\t\t\t\tt2p->tiff_datasize += sbc[i];\n\t\t\t\tt2p->tiff_datasize -=4; /* don't use SOI or EOI of strip */\n\t\t\t}\n\t\t\tt2p->tiff_datasize +=2; /* use EOI of last strip */\n\t\t\treturn;\n\t\t}\n#endif\n\t\t(void) 0;\n\t}\n\tt2p->tiff_datasize=TIFFScanlineSize(input) * t2p->tiff_length;\n\tif(t2p->tiff_planar==PLANARCONFIG_SEPARATE){\n\t\tt2p->tiff_datasize*= t2p->tiff_samplesperpixel;\n\t}\n\n\treturn;\n}"
+        },
+        "libtiff/tif_dir.c@1100:1-1110:2": {
+            "file": "libtiff/tif_dir.c",
+            "loc": "1100:1-1110:2",
+            "name": "TIFFGetField",
+            "touched_by_commit": false,
+            "code": "int\nTIFFGetField(TIFF* tif, uint32 tag, ...)\n{\n\tint status;\n\tva_list ap;\n\n\tva_start(ap, tag);\n\tstatus = TIFFVGetField(tif, tag, ap);\n\tva_end(ap);\n\treturn (status);\n}"
+        }
+    },
+    "commit": {
+        "url": "https://gitlab.com/libtiff/libtiff/commit/519b72700430b84c99db73a832c4c58f3e52ebcd",
+        "changes": [
+            {
+                "before": "ChangeLog",
+                "after": "ChangeLog",
+                "changes": [
+                    "2,0^^3,13"
+                ]
+            },
+            {
+                "before": "configure",
+                "after": "configure",
+                "changes": [
+                    "787,1^^786,0",
+                    "834,1^^832,0",
+                    "837,3^^834,0",
+                    "16927,1^^16921,0",
+                    "16928,0^^16923,9",
+                    "16929,0^^16933,2",
+                    "16954,1^^16959,9"
+                ]
+            },
+            {
+                "before": "configure.ac",
+                "after": "configure.ac",
+                "changes": [
+                    "251,1^^250,0",
+                    "252,0^^252,9",
+                    "253,0^^262,2",
+                    "268,1^^278,9"
+                ]
+            },
+            {
+                "before": "libtiff/tif_dumpmode.c",
+                "after": "libtiff/tif_dumpmode.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "83,1^^83,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_luv.c",
+                "after": "libtiff/tif_luv.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "227,1^^227,1",
+                    "285,1^^285,1",
+                    "350,1^^350,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_lzw.c",
+                "after": "libtiff/tif_lzw.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "552,1^^552,1",
+                    "756,1^^756,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_print.c",
+                "after": "libtiff/tif_print.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "96,1^^96,1",
+                    "104,1^^104,1",
+                    "110,1^^110,1",
+                    "215,1^^215,1",
+                    "521,1^^521,1",
+                    "634,1^^634,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_read.c",
+                "after": "libtiff/tif_read.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "125,1^^125,1",
+                    "377,1^^377,1",
+                    "404,1^^404,1",
+                    "455,1^^455,1",
+                    "494,1^^494,1",
+                    "540,1^^540,1",
+                    "673,1^^673,1",
+                    "702,1^^702,1",
+                    "779,1^^779,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_strip.c",
+                "after": "libtiff/tif_strip.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "155,1^^155,1"
+                ]
+            },
+            {
+                "before": "libtiff/tif_thunder.c",
+                "after": "libtiff/tif_thunder.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "146,1^^146,1"
+                ]
+            },
+            {
+                "before": "tools/tiff2pdf.c",
+                "after": "tools/tiff2pdf.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "3681,1^^3681,1"
+                ]
+            },
+            {
+                "before": "tools/tiffdump.c",
+                "after": "tools/tiffdump.c",
+                "changes": [
+                    "1,1^^1,1",
+                    "83,1^^83,1",
+                    "339,1^^339,1",
+                    "386,1^^386,1"
+                ]
+            }
+        ]
+    },
+    "compiler_args": {
+        "tools/tiff2pdf.c": "-DHAVE_CONFIG_H -I<$repo$>/tools -I<$repo$>/libtiff",
+        "libtiff/tif_dir.c": "-DHAVE_CONFIG_H -I<$repo$>/libtiff -DPIC"
+    },
+    "zipped_bug_report": "H4sIAHFjQ18C/72WYW/aSBCGP4dfMVKlk42ogw0B44pKOZpEqdqAwOnpdGrdjb1O92Jsa72O1Db5751ZQ8CVyZVrWksIa3d25nlnd2b9zOk5bktlWVIcKhHHTh7FVujZQ9f1gEuZSQ8uyiSBV1zyGH9pyFsAeSZSxSV8LK7Cj5CwQgErCnGd8giyFBKRcrCHwz6EWZlEcMUhJScsjUAUEG18RcDU2tx1O2iflMsUej2r1UQ1dDzbg0IxqSCLIZcZuiglB+XkgeQsCsg8KMQXbpgttO9a0D6kF9sC+nMsuM1E1GTvO7M2jXfAPz89bYNI81KZX1EtPR9oda9y0rfgoMQEDPptwASMLy7fvHnRzNv3HO//Bv6vgLBFdmTBMxFjZmPMZWS8np2cBYvL2Ww69024u1tPgDGtTdHSATlPV5sXfmKyDf/m6jFRg7WoZq5fiLMteYiGqlBS5IECMe7qwO72oP7HE5gqmm2UMlxL+VXEjaDbMh4hxtkRYvE0EnEzvrvG35/h8dDbhBsGrNGuzhNmA2qJaMRzbW9U4f2QC1pgwfpRVBvIdQNj2ABtcbnOtlOqlEaGvnfkgc9uRHoNSpYcriRLw0+NDsgccyJiA8vx+Uv0ESi0LsIs4jAeA1Zq4M+PLxaT6auTYH7810N7eIA6ehA3mZz7/rY42qOa7zBb5pJj38SWufI+mb6dzU8Wi+CsD+i8UdHAG+xStDf9kxN/v0l08A4OqLGdcXUqeBIZur9Vzc4/xu335+ezP//2TybTywt/0YE/sJWYdEBdVy/W0XW7jJhidCzGhlpWx8NE23+675ur2x16fX3+nljjT8mqp2cPhWg90taSq1KmKDkRV7SIRAeRkKTZ7nZ33JA1VhMx7O4IowPdN3iVpywB9MFDlcnP1AzKEKNwqzIckeEhvWMAi1a0NjL0KFZuLUJ1lSFZB+iG6Dmg2HUHLMsyqwVYfF93SKjuF21FB/qWBYmgL4z8RTWIu1m9DKpZrdZgeIFijHqKtRltFtqossBeQmDvHjA1oCZjubly71ZesTMYerAZUt8cixuR51SHda8mfjstc/UZNDduQ5HzsPhR+D2J61q/h9eDdG6qUwNG5XanLHeT+6cCbKSqUzcC0oyNp+1+B+pog/rTOLsZaqAVjn6jD8pGLltX4MpTLLMlMAgZfv2qrFYi+6Ns4teY7NWJsrGkDtutHV/zq074u9vdfj2u3hzr7c4ejro0cN/6BlvljEu1DAAA"
+}
