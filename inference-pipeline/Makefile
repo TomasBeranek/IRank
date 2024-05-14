@@ -6,8 +6,6 @@
 #  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
 # ***************************************************************************
 
-# TODO https://www.gnu.org/software/make/manual/html_node/Standard-Targets.html
-# TODO Comment each target
 
 COMPILERS = 8cc 9cc ack c++ ccomp chibicc clang clang++ cproc g++ gcc icc icpc lacc lcc openCC opencc pcc scc sdcc tcc vc x86_64-redhat-linux-c++ x86_64-redhat-linux-g++ x86_64-redhat-linux-gcc x86_64-redhat-linux-gcc-10
 COMPILERS_PATHS = $(addprefix /usr/bin/, $(COMPILERS))
@@ -17,9 +15,6 @@ ORIGINAL_COMPILERS_PATHS = $(addsuffix -original, $(COMPILERS_PATHS))
 .PHONY : all install-dependencies install-wrappers uninstall-wrappers install-pipeline $(COMPILERS_PATHS) $(ORIGINAL_COMPILERS_PATHS)
 
 all: install-dependencies install-wrapper
-
-install-dependencies:
-	@>&2 echo 'TBD'
 
 install-wrappers: $(COMPILERS_PATHS)
 
@@ -57,4 +52,4 @@ experiment-run:
 # Delete leftovers from previous runs
 clean-experiment:
 	@cd example && make clean
-	@rm -rf /tmp/infer-out /tmp/infer.lockdir
+	@rm -rf /tmp/infer-out /tmp/infer.lockdir /tmp/construction_phase_d2a/
