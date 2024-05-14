@@ -11,6 +11,7 @@
 %              Edited by Adam Herout for FIT thesis template: 31.7.2019
 %              Edited by Jaroslav Dytrych to achieve conformance with
 %                standard for FIT thesis template: 10.10.2019
+%              Edited by Petr Veigend to conform with ISO 690:2022 03.04.2024
 % Description: English bibliographic style.
 % Use:
 % Encoding:    UTF-8
@@ -42,7 +43,8 @@ FUNCTION {opt.ae} { #5 }
 % -- Separator for the list of authors.
 % Used to join names in the list. An exception to this are the last two names, 
 % that are joined by a string specified in option opt.sep.ln.
-FUNCTION {opt.sep.bn} { ", " }
+FUNCTION {opt.sep.bn} { "; " } % ČSN 690:2022
+% FUNCTION {opt.sep.bn} { ", " }
 % FUNCTION {opt.sep.bn} { " -- " }
 
 
@@ -54,6 +56,8 @@ FUNCTION {opt.sep.ln} { " and~" }
 % Used if the number of authors exceeds the limit set by options opt.aa or opt.ae.
 % It is also used, if the keyword "others" is used instead of the last author.
 FUNCTION {opt.etal} { "et~al." }
+% FUNCTION {opt.etal} { "aj." }
+% FUNCTION {opt.etal} { "a kol." }
 
 % -- Signify editor (redactor).
 % Names of editors are distinguished from authors with this option.
@@ -84,10 +88,6 @@ FUNCTION {opt.sep.p} { ": " }
 FUNCTION {opt.sep.t} { ": " }
 % FUNCTION {opt.sep.t} { " : " }
 
-% -- Oznaceni rozsahu u akademickych praci.
-% U akademickych praci mate pomoci teto volby moznost urcit, zda-li bude rozsah
-% techto praci udavan ve stranach nebo v listech.
-
 % -- Specifies number of pages of a theses.
 % Used for theses, you can choose between number of pages and number of sheets.
 FUNCTION {opt.pages} { "p." }    % number of pages
@@ -101,6 +101,8 @@ FUNCTION {opt.url} { "Available at: " }
 % FUNCTION {opt.url} { "Available from: " }
 
 FUNCTION {opt.path} { "Path: " }
+
+FUNCTION {opt.doi} { opt.url }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%% DECLARATION OF ENTRIES AND VARIABLES %%%%%%%%%%%%%%%%%%%%%
@@ -1405,7 +1407,7 @@ FUNCTION {format.from.btitle}
 %         push(howpublished);
 %       }
 %     }
-%     return "[" * pop() * "]";
+%     return "" * pop() * "";
 %   }
 % }
 FUNCTION {format.howpublished}
@@ -1419,7 +1421,7 @@ FUNCTION {format.howpublished}
       if$
     }
     if$
-    "[" swap$ * "]" *
+    "" swap$ * "" *
   }
   if$
 }
@@ -1809,7 +1811,7 @@ FUNCTION {format.cvolume}
   }
   if$
   number empty$
-  { 
+  {
     "" comma.connect
   }
   { number is.ord
@@ -2066,7 +2068,7 @@ FUNCTION {format.issn}
   if$
 }
 
-% DOI formatting.
+% DOI formatting
 %
 % string format.doi ()
 % {
@@ -2075,13 +2077,13 @@ FUNCTION {format.issn}
 %     return "";
 %   } else
 %   {
-%     return "DOI: " * doi;
+%     return "DOI: " * \url(https://doi.org/ doi);
 %   }
 % }
 FUNCTION {format.doi}
 { doi empty$
   { "" }
-  { "DOI: " doi * }
+  { opt.doi "{\small\url{https://doi.org/"  doi * "}}" * tie.or.connect }
   if$
 }
 
@@ -2535,22 +2537,23 @@ FUNCTION {article}
   new.block %% contributory (optional)
   format.publish.info output
   new.block
-  format.journal.issue
+  format.journal.issue comma.connect
   format.pages comma.connect
-  format.revised comma.connect
-  format.cited comma.connect output
+  format.revised output
   new.block %% location in source document (required)
   format.cseries output
   new.block
-  format.doi output
-  new.block
   format.issn output %% standard number ISSN (optional)
   new.block
-  note output
-  new.block %% poznamky (volitelne)
   howpublished empty$
   { format.url output }
-  { format.url "url" output.check
+  {
+    doi empty$
+    {format.url "url" output.check}
+    {format.doi output}
+    if$
+    new.block
+    format.cited output
     year empty$
     revised empty$
     and
@@ -2559,7 +2562,10 @@ FUNCTION {article}
     if$
   }
   if$
-  fin.entry 
+  new.block
+  note capitalize output
+  new.block
+  fin.entry
 }% @Article
 
 % Processes @Book type record.
@@ -2584,7 +2590,6 @@ FUNCTION {book}
   format.publish.info
   format.date comma.connect
   format.revised comma.connect
-  format.cited tie.or.connect
   capitalize output
   new.block %% publisher information (optional), date of publication (required),
             %% date of revision/update and citation (required for el. doc.)
@@ -2593,12 +2598,13 @@ FUNCTION {book}
   format.cseries output
   new.block %% series (optional)
   format.isbn "isbn" output.check
-  new.block
-  note capitalize output
   new.block %% notes (optional)
   howpublished empty$
   { format.url output }
-  { format.url "url" output.check
+  {
+    format.url "url" output.check
+    new.block
+    format.cited output
     year empty$
     revised empty$
     and
@@ -2607,6 +2613,9 @@ FUNCTION {book}
     if$
   }
   if$
+  new.block
+  note capitalize output
+  new.block
   fin.entry %% standard number ISBN (required)
 }% @Book
 
@@ -2642,13 +2651,10 @@ FUNCTION {conference}
   format.chapter comma.connect
   format.pages comma.connect
   format.revised comma.connect
-  format.cited tie.or.connect
   capitalize output
   new.block %% publisher information, date of publication, revision/update and citation
   format.cseries output
   new.block %% series (if numbered, include number or volume)
-  format.doi output
-  new.block
   isbn empty$
     { issn empty$
         { "empty isbn and issn in " cite$ * warning$ }
@@ -2658,11 +2664,15 @@ FUNCTION {conference}
     { format.isbn output }
   if$
   new.block %% standard numbers ISBN or ISSN (required)
-  note capitalize output
-  new.block %% notes
   howpublished empty$
     { format.url output }
-    { format.url "url" output.check
+    {
+      doi empty$
+      {format.url "url" output.check}
+      {format.doi output}
+      if$
+      new.block
+      format.cited output
       year empty$
       revised empty$
       and
@@ -2671,6 +2681,9 @@ FUNCTION {conference}
       if$
     }
   if$
+  new.block
+  note capitalize output
+  new.block
   fin.entry
 } % @Conference and @InProceedings, @InCollection and @InBook
 
@@ -2706,13 +2719,10 @@ FUNCTION {proceedings}
   format.chapter comma.connect
   format.pages comma.connect
   format.revised comma.connect
-  format.cited tie.or.connect
   capitalize output
   new.block %% publishing information, date of publication, revision/update and citation
   format.cseries output
   new.block %% series (if numbered, then include it's number or volume)
-  format.doi output
-  new.block
   isbn empty$
     { issn empty$
         { "empty isbn and issn in " cite$ * warning$ }
@@ -2722,11 +2732,15 @@ FUNCTION {proceedings}
     { format.isbn output }
   if$
   new.block %% ISBN or ISSN (required)
-  note capitalize output
-  new.block %% notes
   howpublished empty$
     { format.url output }
-    { format.url "url" output.check
+    {
+      doi empty$
+      {format.url "url" output.check}
+      {format.doi output}
+      if$
+      new.block
+      format.cited output
       year empty$
       revised empty$
       and
@@ -2735,6 +2749,9 @@ FUNCTION {proceedings}
       if$
     }
   if$
+  new.block
+  note capitalize output
+  new.block
   fin.entry
 } % @Proceedings
 
@@ -2772,14 +2789,14 @@ FUNCTION {misc}
     publisher empty$
     and
     and
-      { 
+      {
         output
         day empty$
         { format.date capitalize output }
-        { day ". " * format.date * comma.connect output }
+        { day ". " * format.date * output }
         if$
       }
-      { 
+      {
         day empty$
         { format.date comma.connect output }
         { day ". " * format.date * comma.connect output }
@@ -2789,22 +2806,23 @@ FUNCTION {misc}
     time output
     revised empty$
       'skip$
-      { 
+      {
         new.block
         format.revised output
       }
     if$
-    format.cited makesmall output
-    new.block
-    format.doi output
     new.block
     format.issn output %% standardni cislo ISSN (volitelne)
     new.block
-    note capitalize makesmall output
-    new.block
     howpublished empty$
     { format.url output }
-    { format.url "url" output.check
+    {
+      doi empty$
+      {format.url "url" output.check}
+      {format.doi output}
+      if$
+      new.block
+      format.cited output
       year empty$
       revised empty$
       and
@@ -2815,6 +2833,9 @@ FUNCTION {misc}
     if$
     new.block
     format.path output
+    new.block
+    note capitalize output
+    new.block
     fin.entry
   }
   if$
@@ -2846,15 +2867,16 @@ FUNCTION {techreport}
   format.report.details
   format.date comma.connect
   format.revised comma.connect
-  format.cited tie.or.connect
   capitalize output
   new.block %% publishing institution information (optional) and date of publication (required)
   format.range output
-  new.block %% number of pages (optional)
-  note capitalize output
   new.block %% notes (optional)
   format.url output
   new.block %% availability (optional)
+  format.cited output
+  new.block
+  note capitalize output
+  new.block %% poznamka (volitelna)  
   fin.entry
 }%@Manual, @TechReport and @Unpublished
 FUNCTION {manual} { techreport }
@@ -2882,8 +2904,7 @@ FUNCTION {thesis}
   new.block %% title (required)
   format.thesis.info capitalize output
   new.block %% school and year (required)
-  format.cited makesmall output
-  new.block %% cited
+  %new.block %% cited
   format.thesis.range output
   new.block %% number of pages and appendices (optional)
   type$ "l" change.case$
@@ -2902,9 +2923,12 @@ FUNCTION {thesis}
   format.isbn output
   new.block
   format.supervisor output
-  note capitalize output
   new.block
   format.url output
+  new.block %% cited
+  format.cited output
+  new.block
+  note capitalize output
   fin.entry %% standard number ISBN (optional)
 }%@BachelorsThesis, @MastersThesis a @PhdThesis
 
@@ -2999,6 +3023,7 @@ FUNCTION {author.sort}
     { key sortify }
   if$
 }
+
 % Dytrych: Původní funkce upřednostní jméno před klíčem a ten pak nelze použít k opravě českého řazení.
 % FUNCTION {author.sort}
 % { author empty$

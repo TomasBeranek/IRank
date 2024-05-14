@@ -9,8 +9,9 @@
 % Datum:       Vytvoren 31. cervence 2019.
 %              Posledni uprava 10. kveten 2009, 16:55.
 %              Adam Herout upravil pro šablonu BP/DP FIT: 31.7.2019
-%              Jaroslav Dytrych uvedl do souladu s normou 
+%              Jaroslav Dytrych uvedl do souladu s normou
 %                pro šablonu BP/DP FIT: 10.10.2019
+%              Petr Veigend provedl úpravy pro normu ISO 690:2022 03.04.2024
 % Popis:       Slovenský bibliograficky styl.
 % Pouziti:
 % Kodovani:    UTF-8
@@ -40,7 +41,8 @@ FUNCTION {opt.ae} { #5 }
 % -- Oddelovac mezi jednotlivymi jmeny ve vyctu.
 % Pouziva se pro spojeni jmen ve vyctu. Vyjimkou jsou posledni dve jmena, ktera
 % jsou spojena pomoci retezce urceneho volbou opt.sep.ln.
-FUNCTION {opt.sep.bn} { ", " }
+FUNCTION {opt.sep.bn} { "; " } % ČSN 690:2022
+% FUNCTION {opt.sep.bn} { ", " }
 % FUNCTION {opt.sep.bn} { " -- " }
 
 % -- Oddelovac mezi poslednimi dvema jmeny ve vyctu.
@@ -98,6 +100,8 @@ FUNCTION {opt.url} { "Dostupn{\'{e}} z: " }
 
 FUNCTION {opt.path} { "Path: " }
 
+FUNCTION {opt.doi} { opt.url }
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%% DEKLARACE POLOZEK A PROMENNYCH %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -135,7 +139,7 @@ ENTRY
     revised         % datum revize/aktualizace
     secondarytitle  % nazev vedlejsi webove stranky
     school
-    series          % nazev edice
+    series          % název edice
     subtitle        % podtitul
     supervisor      % vedoucí (u akademické práce)
     time            % čas publikování
@@ -1376,7 +1380,7 @@ FUNCTION {format.title}
 %%FUNCTION {format.title}
 %%{ subtitle empty$
 %%    { title "t" change.case$ }
-%%    { title "t" change.case$ 
+%%    { title "t" change.case$
 %%      opt.sep.t * subtitle "t" change.case$ *
 %%    }
 %%  if$
@@ -1456,7 +1460,7 @@ FUNCTION {format.from.btitle}
 %         push(howpublished);
 %       }
 %     }
-%     return "[" * pop() * "]";
+%     return "" * pop() * "";
 %   }
 % }
 FUNCTION {format.howpublished}
@@ -1470,7 +1474,7 @@ FUNCTION {format.howpublished}
       if$
     }
     if$
-    "[" swap$ * "]" *
+    "" swap$ * "" *
   }
   if$
 }
@@ -1552,13 +1556,13 @@ FUNCTION {format.edition}
 FUNCTION {format.date}
 { month empty$
     { year empty$
-        { "" 
+        { ""
           "empty year in " cite$ * warning$ }
         { year }
       if$
     }
   { year empty$
-      { "" 
+      { ""
         "just month (empty year) in " cite$ * warning$ }
       { month duplicate$ is.ord
           { str.to.int get.month.n " " * year * }
@@ -1574,13 +1578,13 @@ FUNCTION {format.date}
 FUNCTION {format.date.g}
 { month empty$
     { year empty$
-        { "" 
+        { ""
           "empty year in " cite$ * warning$ }
         { year }
       if$
     }
   { year empty$
-      { "" 
+      { ""
         "just month (empty year) in " cite$ * warning$ }
       { month duplicate$ is.ord
           { str.to.int get.month.g " " * year * }
@@ -1596,14 +1600,14 @@ FUNCTION {format.date.g}
 FUNCTION {format.u.date}
 { month empty$
     { year empty$
-        { "" 
+        { ""
           "empty year in " cite$ * warning$ }
         { year }
       if$
     }
     { year empty$
-        { "" 
-          "just month (empty year) in " cite$ * warning$ 
+        { ""
+          "just month (empty year) in " cite$ * warning$
         }
         { month duplicate$ is.ord
             { str.to.int get.u.month.n " " * year * }
@@ -1842,7 +1846,7 @@ FUNCTION {format.range}
 % string format.cvolume ()
 % {
 %   if (empty$(volume))
-%   { 
+%   {
 %     push("");
 %   } else
 %   {
@@ -1878,7 +1882,7 @@ FUNCTION {format.cvolume}
   }
   if$
   number empty$
-  { 
+  {
     "" comma.connect
   }
   { number is.ord
@@ -1890,7 +1894,7 @@ FUNCTION {format.cvolume}
 }
 
 
-% Formatovani edice a cisla edice knihy ci sborníku konference.
+% Formatovani edice a čísla edice knihy ci sborníku konference.
 %
 % string format.cseries ()
 % {
@@ -2083,7 +2087,7 @@ FUNCTION {format.chapter}
 %   }
 % }
 FUNCTION {format.journal.issue}
-{ format.u.date 
+{ format.u.date
   duplicate$ empty$
   { pop$ "" 's := }
   { 's := }
@@ -2144,13 +2148,13 @@ FUNCTION {format.issn}
 %     return "";
 %   } else
 %   {
-%     return "DOI: " * doi;
+%     return "DOI: " * \url(https://doi.org/ doi);
 %   }
 % }
 FUNCTION {format.doi}
 { doi empty$
   { "" }
-  { "DOI: " doi * }
+  { opt.doi "{\small\url{https://doi.org/"  doi * "}}" * tie.or.connect }
   if$
 }
 
@@ -2604,22 +2608,23 @@ FUNCTION {article}
   new.block %% podrizena odpovednost (volitelna)
   format.publish.info output
   new.block
-  format.journal.issue
+  format.journal.issue comma.connect
   format.pages comma.connect
-  format.revised comma.connect
-  format.cited comma.connect output
+  format.revised output
   new.block %% lokace ve zdrojovem dokumentu (povinna)
   format.cseries output
   new.block
-  format.doi output
-  new.block
   format.issn output %% standardni cislo ISSN (volitelne)
-  new.block
-  note output
   new.block %% poznamky (volitelne)
   howpublished empty$
   { format.url output }
-  { format.url "url" output.check
+  {
+    doi empty$
+    {format.url "url" output.check}
+    {format.doi output}
+    if$
+    new.block
+    format.cited output
     year empty$
     revised empty$
     and
@@ -2628,6 +2633,9 @@ FUNCTION {article}
     if$
   }
   if$
+  new.block
+  note capitalize output
+  new.block
   fin.entry
 }% @Article
 
@@ -2653,7 +2661,6 @@ FUNCTION {book}
   format.publish.info
   format.date comma.connect
   format.revised comma.connect
-  format.cited tie.or.connect
   capitalize output
   new.block %% nakladatelske udaje (volitelne), datum vydani (povinne),
             %% datum revize/aktualizace a citace (povinne u el. dok.)
@@ -2663,11 +2670,12 @@ FUNCTION {book}
   new.block %% edice (volitelna)
   format.isbn "isbn" output.check
   new.block
-  note capitalize output
-  new.block %% poznamky (volitelne)
   howpublished empty$
   { format.url output }
-  { format.url "url" output.check
+  {
+    format.url "url" output.check
+    new.block
+    format.cited output
     year empty$
     revised empty$
     and
@@ -2676,18 +2684,21 @@ FUNCTION {book}
     if$
   }
   if$
+  new.block
+  note capitalize output
+  new.block
   fin.entry %% standardni cislo ISBN (povinne)
 }% @Book
 
 % @Booklet je pouhy odkaz na @Book.
 FUNCTION {booklet} { book }
 
-% Zpracuje zaznamy typu @Conference a @InProceedings, @InCollection a @InBook
+% Zpracuje zaznamy typu @Conference, @InProceedings, @InCollection a @InBook.
 % Bibliograficke citace monografickych publikaci (knih).
 %
 % Povinne polozky:   author, title, editor nebo organization, booktitle,
 %       edition, address, publisher, year, pages, isbn or issn.
-% Volitelne polozky: subtitle, booksubtitle, contributory, month, series, editionnumber, number nebo volume, chapter, note, doi url*.
+% Volitelne polozky: subtitle, booksubtitle, contributory, month, series, editionnumber, number nebo volume, chapter, note, doi, url*.
 % Polozky el. dok.:  howpublished*, revised*, cited*, version.
 %
 % * Povinna polozka pro el. dok.
@@ -2711,13 +2722,10 @@ FUNCTION {conference}
   format.chapter comma.connect
   format.pages comma.connect
   format.revised comma.connect
-  format.cited tie.or.connect
   capitalize output
   new.block %% nakladatelske udaje, datum vydani, revize/aktualizace a citace
   format.cseries output
   new.block %% edice (pokud je cislovana, tak i jeji cislo nebo svazek)
-  format.doi output
-  new.block
   isbn empty$
     { issn empty$
         { "empty isbn and issn in " cite$ * warning$ }
@@ -2727,11 +2735,15 @@ FUNCTION {conference}
     { format.isbn output }
   if$
   new.block %% standardni cislo ISBN nebo ISSN (povinne)
-  note capitalize output
-  new.block %% poznamky
   howpublished empty$
     { format.url output }
-    { format.url "url" output.check
+    {
+      doi empty$
+      {format.url "url" output.check}
+      {format.doi output}
+      if$
+      new.block
+      format.cited output
       year empty$
       revised empty$
       and
@@ -2740,6 +2752,9 @@ FUNCTION {conference}
       if$
     }
   if$
+  new.block
+  note capitalize output
+  new.block
   fin.entry
 } % @Conference a @InProceedings, @InCollection a @InBook
 
@@ -2749,7 +2764,7 @@ FUNCTION {incollection} { conference }
 FUNCTION {inbook} { conference }
 
 % Zpracuje zaznamy typu @Proceedings.
-% 
+%
 % Bibliograficke citace monografickych publikaci (knih).
 %
 % Povinne polozky:   author nebo editor, title, edition, year, isbn or issn.
@@ -2775,13 +2790,10 @@ FUNCTION {proceedings}
   format.chapter comma.connect
   format.pages comma.connect
   format.revised comma.connect
-  format.cited tie.or.connect
   capitalize output
   new.block %% nakladatelske udaje, datum vydani, revize/aktualizace a citace
   format.cseries output
   new.block %% edice (pokud je cislovana, tak i jeji cislo nebo svazek)
-  format.doi output
-  new.block
   isbn empty$
     { issn empty$
         { "empty isbn and issn in " cite$ * warning$ }
@@ -2791,11 +2803,15 @@ FUNCTION {proceedings}
     { format.isbn output }
   if$
   new.block %% standardni cislo ISBN nebo ISSN (povinne)
-  note capitalize output
-  new.block %% poznamky
   howpublished empty$
     { format.url output }
-    { format.url "url" output.check
+    {
+      doi empty$
+      {format.url "url" output.check}
+      {format.doi output}
+      if$
+      new.block
+      format.cited output
       year empty$
       revised empty$
       and
@@ -2804,6 +2820,9 @@ FUNCTION {proceedings}
       if$
     }
   if$
+  new.block
+  note capitalize output
+  new.block
   fin.entry
 } % @Proceedings
 
@@ -2840,14 +2859,14 @@ FUNCTION {misc}
     publisher empty$
     and
     and
-      { 
+      {
         output
         day empty$
         { format.u.date capitalize output }
-        { day ". " * format.date.g * comma.connect output }
+        { day ". " * format.date.g * output }
         if$
       }
-      { 
+      {
         day empty$
         { format.date comma.connect output }
         { day ". " * format.date.g * comma.connect output }
@@ -2857,22 +2876,23 @@ FUNCTION {misc}
     time output
     revised empty$
       'skip$
-      { 
+      {
         new.block
         format.revised output
       }
     if$
-    format.cited makesmall output
-    new.block
-    format.doi output
     new.block
     format.issn output %% standardni cislo ISSN (volitelne)
     new.block
-    note capitalize makesmall output
-    new.block
     howpublished empty$
     { format.url output }
-    { format.url "url" output.check
+    {
+      doi empty$
+      {format.url "url" output.check}
+      {format.doi output}
+      if$
+      new.block
+      format.cited output
       year empty$
       revised empty$
       and
@@ -2883,6 +2903,9 @@ FUNCTION {misc}
     if$
     new.block
     format.path output
+    new.block
+    note capitalize output
+    new.block
     fin.entry
   }
   if$
@@ -2912,15 +2935,16 @@ FUNCTION {techreport}
   format.report.details
   format.date comma.connect
   format.revised comma.connect
-  format.cited tie.or.connect
   capitalize output
   new.block %% udeja o vydavajici instituci (volitelne) a datum vydani (povinne)
   format.range output
   new.block %% rozsah (volitelny)
-  note capitalize output
-  new.block %% poznamka (volitelna)
   format.url output
   new.block %% dostupnost (volitelna)
+  format.cited output
+  new.block
+  note capitalize output
+  new.block %% poznamka (volitelna)
   fin.entry
 }%@Manual, @TechReport a @Unpublished
 FUNCTION {manual} { techreport }
@@ -2932,7 +2956,7 @@ FUNCTION {unpublished} { techreport }
 %
 % Zakladni verze -- v choose.thesis ma hodnotu #0.
 %
-% Povinne polozky:   author, title, address or location, school, year, type
+% Povinne polozky:   author, title, address nebo location, school, year, type
 % Volitelne polozky: subtitle, pages, inserts, note, url, isbn, howpublished
 FUNCTION {thesis}
 { output.bibitem
@@ -2949,8 +2973,7 @@ FUNCTION {thesis}
   new.block %% titul (povinny)
   format.thesis.info capitalize output
   new.block %% misto a rok {povinne)
-  format.cited makesmall output
-  new.block %% cited
+  %new.block %% cited
   format.thesis.range output
   new.block %% rozsah akademicke prace a jejich priloh (volitelne)
   type$ "l" change.case$
@@ -2969,9 +2992,12 @@ FUNCTION {thesis}
   format.isbn output
   new.block
   format.supervisor output
-  note capitalize output
   new.block
   format.url output
+  new.block %% cited
+  format.cited output
+  new.block
+  note capitalize output
   fin.entry %% standardni cislo ISBN (volitelne)
 }%@BachelorsThesis, @MastersThesis a @PhdThesis
 

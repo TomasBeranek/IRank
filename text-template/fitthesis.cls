@@ -280,9 +280,12 @@
  \ifEqString{#1}{PP}{Vedoucí}{\@supervisor@CS}%
  \ifEqString{#1}{PP}{Vedúcí}{\@supervisor@SK}%
  \ifEqString{#1}{PP}{Supervisor}{\@supervisor@EN}%
+ \ifEqString{#1}{YP}{Ročníkový projekt}{\@projecttype@CS}%
+ \ifEqString{#1}{YP}{Ročníkový projekt}{\@projecttype@SK}%
+ \ifEqString{#1}{YP}{Year project}{\@projecttype@EN}%
  \ifnasel
  \else
-   \typeout{Spatny typ projektu! Moznosti: BP, SP, DP, DR, DT, DA, PP}\set@project{BP}
+   \typeout{Spatny typ projektu! Moznosti: BP, SP, DP, DR, DT, DA, PP, YP}\set@project{BP}
  \fi
 }
 

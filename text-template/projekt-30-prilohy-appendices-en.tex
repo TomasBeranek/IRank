@@ -119,7 +119,7 @@ A lot of people write their technical reports in english (which is good!), but t
 \begin{itemize}
   \item{Before you jump into it head first, I suggest you read a handful of technical articles written in english and try to remember or preferably understand how you should approach writing one yourself.}
   \item{Always use a spell checking tools -- built in tools in Word, or in OpenOffice. If you work on Linux, I suggest you use ISPELL. Some spell checking (I think it's the one in PSPad) are not very good and ignore a lot of mistakes.}
-  \item{Use grammer checking tools. I'm not entirely sure if there is one available for Linux, but the one in Word is fairly decent and if it underlines anything with green color, it's probably wrong. You can even copy and paste Latex source code here, fix any and all grammar errors and save it as a clean text again. If you use vim, there's a~built in grammar checking tool too, and it's capable of detecting typos and errors in basic grammar. Write this in the first line of your thesis tex file:
+  \item{Use grammar checking tools. I'm not entirely sure if there is one available for Linux, but the one in Word is fairly decent and if it underlines anything with green color, it's probably wrong. You can even copy and paste Latex source code here, fix any and all grammar errors and save it as a clean text again. If you use vim, there's a~built in grammar checking tool too, and it's capable of detecting typos and errors in basic grammar. Write this in the first line of your thesis tex file:
   \begin{verbatim}
     % vim:spelllang=en_us:spell
   \end{verbatim}
@@ -137,7 +137,7 @@ A lot of people write their technical reports in english (which is good!), but t
        
 \section*{SVOMPT and concord}
 
-The structure of an english sentence is SVOPMT: SUBJECT VERB OBJECT MANNER PLACE TIME and there's no other way around it. It is not a flexible structure. There are possibly exceptions in things like a theater play, where something needs to be emphasized. Subject must be present in every single single sentence, people tend to forget as some languages have a sentence structure where the subject can be implicit and not mentioned. SVOMPT applies to dependent clauses too!
+The structure of an english sentence is SVOPMT: SUBJECT VERB OBJECT MANNER PLACE TIME and there's no other way around it. It is not a flexible structure. There are possibly exceptions in things like a theater play, where something needs to be emphasized. Subject must be present in every single sentence, people tend to forget as some languages have a sentence structure where the subject can be implicit and not mentioned. SVOMPT applies to dependent clauses too!
 \begin{verbatim}
   BAD: We have shown that is faster than the other function. 
   GOOD: We have shown that it is faster than the other function. 
@@ -550,8 +550,12 @@ The bibliography file contains records in the following form:
     \textcolor{magenta}{Digital object identifier} & \textcolor{magenta}{doi} & \textcolor{magenta}{10.1000/BC1.0}\\
     Standard number & issn & 1234-5678\\
     \textcolor{red}{Notes} & \textcolor{red}{note} & \textcolor{red}{This is a made up citation}\\
-    \textcolor{magenta}{Availability} & \textcolor{magenta}{url} & \textcolor{magenta}{https://merlin.fit.vutbr.cz}
+    \textcolor{magenta}{Availability*} & \textcolor{magenta}{url} & \textcolor{magenta}{https://merlin.fit.vutbr.cz}
 \end{tabularx}
+
+\bigskip
+\textcolor{magenta}{*} If doi is specified, url is not printed.
+\bigskip
 
 \bigskip
 
@@ -559,7 +563,7 @@ The bibliography file contains records in the following form:
 
 \medskip
 
-\noindent \textsc{Doe}, J. How to cite: Article citation. \textit{Writing theses and dissertations: Formal aspects} [online]. 1st ed., version 1.0. Translated by Jan NOVÁK. Brno: Brno University of Technology, Faculty of information technology. February 2020, vol. 4, num. 24, p. 8–21, revised 12. 2. 2020, [cit. 2020-02-12]. Guidelines for writing theses and dissertations, no. 42. DOI: 10.1000/BC1.0. ISSN 1234-5678. This is a made up citation. Available at: \url{https://merlin.fit.vutbr.cz}
+\noindent \textsc{Doe}, J. How to cite: Article citation. \textit{Writing theses and dissertations: Formal aspects} online. 1st ed., version 1.0. Translated by Jan NOVÁK. Brno: Brno University of Technology, Faculty of information technology. February 2020, vol. 4, num. 24, p. 8–21, revised 12. 2. 2020. Guidelines for writing theses and dissertations, no. 42. ISSN 1234-5678. Available at: \url{https://doi.org/10.1000/BC1.0} [cit. 2020-02-12]. This is a made up citation.
 
 %-------------------------------------------------------------------------------
 \newpage
@@ -598,7 +602,7 @@ The bibliography file contains records in the following form:
 \medskip
 
 \noindent \textsc{von Doe}, J. \textit{How to cite: Monographic publication citation} [online]. 1st ed. Translated by Jan NOVÁK.
-Brno: Brno University of Technology, Faculty of information technology, February 2020, revised 12. 2. 2020 [cit. 2020-02-12]. 220 p. Guidelines for writing theses an dissertations, no. 2. ISBN 01-234-5678-9. This is a made up citation. Available at: \url{https://merlin.fit.vutbr.cz}
+Brno: Brno University of Technology, Faculty of information technology, February 2020, revised 12. 2. 2020.  220 p. Guidelines for writing theses an dissertations, no. 2. ISBN 01-234-5678-9. Available at: \url{https://merlin.fit.vutbr.cz}. [cit. 2020-02-12]. This is a made up citation.
 %-------------------------------------------------------------------------------
 \newpage
 \section*{Conference proceedings -- @Proceedings}
@@ -630,10 +634,14 @@ Brno: Brno University of Technology, Faculty of information technology, February
     \textcolor{magenta}{Digital object identifier} & \textcolor{magenta}{doi} & \textcolor{magenta}{10.1000/BC1.0}\\
     Standard number & isbn or issn & 01-234-5678-9\\
     \textcolor{red}{Notes} & \textcolor{red}{note} & \textcolor{red}{This is a made up citation}\\
-    \textcolor{magenta}{Availability} & \textcolor{magenta}{url} & \textcolor{magenta}{https://merlin.fit.vutbr.cz}
+    \textcolor{magenta}{Availability*} & \textcolor{magenta}{url} & \textcolor{magenta}{https://merlin.fit.vutbr.cz}
 \end{tabularx}
 
-*Either author or editor is stated.
+\bigskip
+\noindent \textcolor{red}{*} Either author or editor is stated. \\
+\noindent \textcolor{magenta}{*} If doi is specified, url is not printed.
+
+\bigskip
 
 \bigskip
 
@@ -642,7 +650,7 @@ Brno: Brno University of Technology, Faculty of information technology, February
 \medskip
 
 \noindent \textsc{Čechmánek}, J. \textit{How to cite: Conference proceedings citation} [online]. 1st ed. Translated by Jan NOVÁK.
-Brno: Brno University of Technology, Faculty of information technology, February 2020, vol. 4, num. 24, p. 8–21, revised 12. 2. 2020 [cit. 2020-02-12]. Guidelines for writing theses and dissertations, no. 2. DOI: 10.1000/BC1.0. ISBN 01-234-5678-9. This is a made up citation. Available at: \url{https://merlin.fit.vutbr.cz}
+Brno: Brno University of Technology, Faculty of information technology, February 2020, vol. 4, num. 24, p. 8–21, revised 12. 2. 2020. Guidelines for writing theses and dissertations, no. 2. ISBN 01-234-5678-9.  Available at: \url{https://doi.org/10.1000/BC1.0}. [cit. 2020-02-12]. This is a made up citation.
 %-------------------------------------------------------------------------------
 \newpage
 \section*{Conference proceedings entry or book chapter -- @InProceedings, @InCollection, @Conference, @InBook}
@@ -687,7 +695,7 @@ Brno: Brno University of Technology, Faculty of information technology, February
 \medskip
 
 \noindent \textsc{Doe}, J. How to cite: Article citation.
-In: \textsc{Smith}, P., ed. \textit{Conference proceedings on writing theses and dissertations: Formal aspects} [online]. 1st ed., version 1.0. Translated by Jan NOVÁK. Brno: Brno University of Technology, Faculty of information technology, February 2020, vol. 4, num. 24, chap. 5, p. 8–21, revised 12. 2. 2020 [cit. 2020-02-12]. Guidelines for writing theses and dissertations, no. 2. ISSN 1234-5678. This is a made up citation. Available at: \url{https://merlin.fit.vutbr.cz}
+In: \textsc{Smith}, P., ed. \textit{Conference proceedings on writing theses and dissertations: Formal aspects} online. 1st ed., version 1.0. Translated by Jan NOVÁK. Brno: Brno University of Technology, Faculty of information technology, February 2020, vol. 4, num. 24, chap. 5, p. 8–21, revised 12. 2. 2020. Guidelines for writing theses and dissertations, no. 2. ISSN 1234-5678. Available at: \url{https://merlin.fit.vutbr.cz}. [cit. 2020-02-12].  This is a made up citation. 
 %-------------------------------------------------------------------------------
 \newpage
 \section*{Manual, documentation, technical report and unpublished \\materials -- @Manual, @TechReport, @Unpublished}
@@ -723,8 +731,8 @@ In: \textsc{Smith}, P., ed. \textit{Conference proceedings on writing theses and
 
 \medskip
 
-\noindent \textsc{Brno University of Technology, Faculty of information technology}. \textit{Manual for writing theses and dissertations: Manual citation} [online]. User manual 3, 1st ed. Edited by Jan NOVÁK.
-Brno: Brno University of Technology, Faculty of information technology, February 2020, revised 12. 2. 2020 [cit. 2020-02-12]. 220 p. This is a made up citation. Available at: \url{https://merlin.fit.vutbr.cz}
+\noindent \textsc{Brno University of Technology, Faculty of information technology}. \textit{Manual for writing theses and dissertations: Manual citation} online. User manual 3, 1st ed. Edited by Jan NOVÁK.
+Brno: Brno University of Technology, Faculty of information technology, February 2020, revised 12. 2. 2020. 220 p. Available at: \url{https://merlin.fit.vutbr.cz}. [cit. 2020-02-12]. This is a made up citation.
 %-------------------------------------------------------------------------------
 \newpage
 \section*{Academic work -- @BachelorsThesis, @MastersThesis, \\@PhdThesis, @Thesis}
@@ -758,7 +766,7 @@ Brno: Brno University of Technology, Faculty of information technology, February
 
 \medskip
 
-\noindent \textsc{Novák}, J. \textit{BiBTeX style for ČSN ISO 690 and ČSN ISO 690-2} [online]. Brno, CZ, 2020. [cit. 2020-02-12]. 80 p., 20. p. apps. Dissertation. Brno University of Technology, Faculty of information technology. ISBN 01-2345-678-9. Supervisor \textsc{Dytrych}, J. This is a made up citation. Available at: \url{https://www.fit.vut.cz/study/theses}
+\noindent \textsc{Novák}, J. \textit{BiBTeX style for ČSN ISO 690 and ČSN ISO 690-2} online. Brno, CZ, 2020. 80 p., 20. p. apps. Dissertation. Brno University of Technology, Faculty of information technology. ISBN 01-2345-678-9. Supervisor \textsc{Dytrych}, J. Available at: \url{https://www.fit.vut.cz/study/theses}. [cit. 2020-02-12]. This is a made up citation.
 %-------------------------------------------------------------------------------
 \newpage
 \section*{Web page -- @Webpage}
@@ -786,9 +794,12 @@ Brno: Brno University of Technology, Faculty of information technology, February
     \textcolor{magenta}{Digital object identifier} & \textcolor{magenta}{doi} & \textcolor{magenta}{10.1000/BC1.0}\\
     Standard number & issn & 1234-5678\\
     \textcolor{red}{Notes} & \textcolor{red}{note} & \textcolor{red}{This is a made up citation}\\
-    Availability & url & https://merlin.fit.vutbr.cz\\
+    Availability* & url & https://merlin.fit.vutbr.cz\\
     Path & path & Home; Art; The art of citation
 \end{tabularx}
+
+\bigskip
+*  If doi is specified, url is not printed.
 
 \bigskip
 
@@ -796,7 +807,7 @@ Brno: Brno University of Technology, Faculty of information technology, February
 
 \medskip
 
-\noindent \textsc{Nováková}, J. Post citation. \textit{Web on writing theses and dissertations} [online]. Edited by Jan NOVÁK. version 1.0. Brno: Brno University of Technology, Faculty of information technology, 2. february 1998 14:10. revised 12. 2. 2020 [cit. 2020-02-12]. DOI: 10.1000/BC1.0. ISSN 1234-5678. This is a made up citation. Available at: \url{https://merlin.fit.vutbr.cz} Path: Home; Art; The Art of Citation.
+\noindent \textsc{Nováková}, J. Post citation. \textit{Web on writing theses and dissertations} online. Edited by Jan NOVÁK. version 1.0. Brno: Brno University of Technology, Faculty of information technology, 2. February 1998 14:10. revised 12. 2. 2020. ISSN 1234-5678. Available at: \url{https://doi.org/10.1000/BC1.0}. [cit. 2020-02-12]. This is a made up citation.  Path: Home; Art; The Art of Citation.
 %-------------------------------------------------------------------------------
 \newpage
 \section*{Web site -- @Website}
@@ -824,8 +835,11 @@ Brno: Brno University of Technology, Faculty of information technology, February
     \textcolor{magenta}{Digital object identifier} & \textcolor{magenta}{doi} & \textcolor{magenta}{10.1000/BC1.0}\\
     Standard number & issn & 1234-5678\\
     \textcolor{red}{Notes} & \textcolor{red}{note} & \textcolor{red}{This is a made up citation}\\
-    Availability & url & https://merlin.fit.vutbr.cz
+    Availability* & url & https://merlin.fit.vutbr.cz
 \end{tabularx}
+
+\bigskip
+*  If doi is specified, url is not printed.
 
 \bigskip
 
@@ -833,7 +847,7 @@ Brno: Brno University of Technology, Faculty of information technology, February
 
 \medskip
 
-\noindent \textsc{Nováková}, J. \textit{Web on writing theses and dissertations} [online]. Edited by Jan NOVÁK. version 1.0. Brno: Brno University of Technology, Faculty of information technology, 2. february 1998 14:10. revised 12. 2. 2020 [cit. 2020-02-12]. DOI: 10.1000/BC1.0. ISSN 1234-5678. This is a made up citation. Available at: \url{https://merlin.fit.vutbr.cz}.
+\noindent \textsc{Nováková}, J. \textit{Web on writing theses and dissertations} online. Edited by Jan NOVÁK. version 1.0. Brno: Brno University of Technology, Faculty of information technology, 2. February 1998 14:10. revised 12. 2. 2020. ISSN 1234-5678. Available at: \url{https://doi.org/10.1000/BC1.0}. [cit. 2020-02-12]. This is a made up citation.
 
 % For compilation piecewise (see projekt.tex), it is necessary to uncomment it
 %\end{document}
