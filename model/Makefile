@@ -33,4 +33,4 @@ scenario-cross-analysis:
 	python3 src/evaluate_model.py $(SCHEMA_PATH) $(DATASET_DIR) $(MODELS_DIR) libav test
 
 scenario-chatgpt:
-	python3 src/evaluate_model.py $(SCHEMA_PATH) experiments/comparison_with_chatgpt/ $(MODELS_DIR) chatgpt test
+	python3 src/evaluate_model.py $(SCHEMA_PATH) ../experiments/comparison-with-chatgpt/ $(MODELS_DIR) chatgpt test
