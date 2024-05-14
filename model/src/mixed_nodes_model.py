@@ -1,12 +1,9 @@
 import tensorflow as tf
 import tensorflow_gnn as tfgnn
 import sys
-from tensorflow_gnn import runner
 from tensorflow_gnn.models import mt_albis
-import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras import backend as K
-import numpy as np
 import json
 import os
 import re
