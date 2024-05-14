@@ -37,20 +37,6 @@ transform-libav-1:
 transform-libav-0:
 	find $(GRAPH_DIR)/libav_0 -mindepth 1 -type d | python3 feature_engineering.py mixed_nodes/extended_cpg.pbtxt $(TFRECORDS_DIR)/libav_0.tfrecords libav 0 ../../dataset/d2a/splits.csv ../../dataset/d2a/libav_labeler_0.pickle.gz ../../dataset/slicing-info/libav_labeler_0.csv
 
-clean-example-struct-alias:
-	rm -rf $(EXAMPLE_STRUCT_ALIAS_DIR)/main.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/point.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.cpg.bin.zip $(EXAMPLE_STRUCT_ALIAS_DIR)/graph $(EXAMPLE_STRUCT_ALIAS_DIR)/workspace $(EXAMPLE_STRUCT_ALIAS_DIR)/out $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.ll
-
-# This target visualizes graph of custom code in 'model/schemas/examples/struct-alias'
-example1: example-struct-alias
-example-struct-alias: clean-example-struct-alias
-	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_STRUCT_ALIAS_DIR)/main.c -o $(EXAMPLE_STRUCT_ALIAS_DIR)/main.bc
-	clang -c -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -O0 $(EXAMPLE_STRUCT_ALIAS_DIR)/point.c -o $(EXAMPLE_STRUCT_ALIAS_DIR)/point.bc
-	llvm-link $(EXAMPLE_STRUCT_ALIAS_DIR)/main.bc $(EXAMPLE_STRUCT_ALIAS_DIR)/point.bc -o $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.bc
-	llvm2cpg $(EXAMPLE_STRUCT_ALIAS_DIR)/combined.bc --output=$(EXAMPLE_STRUCT_ALIAS_DIR)/combined.cpg.bin.zip
-	cd $(EXAMPLE_STRUCT_ALIAS_DIR) && joern --script joern_script && llvm-dis combined.bc
-	joern-export --repr all --format neo4jcsv -o $(EXAMPLE_STRUCT_ALIAS_DIR)/graph $(EXAMPLE_STRUCT_ALIAS_DIR)/workspace/combined.cpg.bin.zip/cpg.bin
-	python3 feature_engineering.py $(EXAMPLE_STRUCT_ALIAS_DIR)/graph
-
 clean-example-arg-passing:
 	rm -rf $(EXAMPLE_ARG_PASSING_DIR)/main.bc $(EXAMPLE_ARG_PASSING_DIR)/add.bc $(EXAMPLE_ARG_PASSING_DIR)/combined.bc $(EXAMPLE_ARG_PASSING_DIR)/combined.cpg.bin.zip $(EXAMPLE_ARG_PASSING_DIR)/graph $(EXAMPLE_ARG_PASSING_DIR)/workspace $(EXAMPLE_ARG_PASSING_DIR)/out $(EXAMPLE_ARG_PASSING_DIR)/combined.ll
 
