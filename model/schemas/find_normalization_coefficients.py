@@ -14,7 +14,6 @@ import csv
 from collections import defaultdict
 import pandas as pd
 from pprint import pprint
-from tqdm import tqdm
 
 
 AST_NODES = ['nodes_UNKNOWN_header.csv',
@@ -76,11 +75,11 @@ def extract_operators(full_name_list):
     return OPERATORS
 
 
-def find_normalization_coefficients(directory, num_samples, normalization_coefficients, train_ids):
+def find_normalization_coefficients(directory, normalization_coefficients, train_ids):
     first_dir = True
 
     # Iterate over samples
-    for subdir, _, files in tqdm(os.walk(directory), total=num_samples):
+    for subdir, _, files in os.walk(directory):
         # Skipt first dir - its the parent dir itself
         if first_dir:
             first_dir = False
@@ -169,9 +168,6 @@ if __name__ == '__main__':
     # We need to increase possible size of CSV cell - for array literals, array types etc.
     csv.field_size_limit(sys.maxsize)
 
-    # For progress bar
-    num_samples = {'libtiff_1': 459, 'libtiff_0': 9276}
-
     # Load splits and determine which data are for training (we don't want to extract coefficients from val nor test data)
     df = pd.read_csv(splits_path, header=None)
     project_df = df[df[0].apply(lambda x: x.startswith(project))] # Filter only current project
@@ -183,10 +179,10 @@ if __name__ == '__main__':
     normalization_coefficients['OPERATORS'] = set()
 
     # FP
-    normalization_coefficients = find_normalization_coefficients(path_to_project_FP, num_samples['libtiff_0'], normalization_coefficients, train_ids)
+    normalization_coefficients = find_normalization_coefficients(path_to_project_FP, normalization_coefficients, train_ids)
 
     # TP
-    normalization_coefficients = find_normalization_coefficients(path_to_project_TP, num_samples['libtiff_1'], normalization_coefficients, train_ids)
+    normalization_coefficients = find_normalization_coefficients(path_to_project_TP, normalization_coefficients, train_ids)
 
     # Load D2A and extract context info - only LINE for now
     normalization_coefficients = find_context_normalization_coefficients(train_ids, slicing_info_TP_file, slicing_info_FP_file, normalization_coefficients)
