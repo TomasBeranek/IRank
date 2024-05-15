@@ -16,7 +16,10 @@ D2A_FILTERED_DIR = d2a-filtered
 D2A_DIR = d2a
 PROJECTS_DIR = projects
 
-all: slicing-info
+all: filter-d2a
+
+filter-d2a:
+	python3 filter.py -d $(D2A_DIR) -o $(BITCODE_DIR)
 
 clean-slicing-info:
 	rm -rf $(SLICING_INFO_DIR)
@@ -36,40 +39,48 @@ slicing-info: clean-slicing-info
 	python3 ../inference-pipeline/slicing_criteria_extraction.py --d2a $(D2A_FILTERED_DIR)/openssl_labeler_0.pickle.gz > $(SLICING_INFO_DIR)/openssl_labeler_0.csv
 	python3 ../inference-pipeline/slicing_criteria_extraction.py --d2a $(D2A_FILTERED_DIR)/openssl_labeler_1.pickle.gz > $(SLICING_INFO_DIR)/openssl_labeler_1.csv
 
-httpd-1:
+download-repos:
+	cd projects && git clone https://github.com/openssl/openssl
+	cd projects && git clone https://github.com/libav/libav
+	cd projects && git clone https://github.com/nginx/nginx
+	cd projects && git clone https://gitlab.com/libtiff/libtiff
+	cd projects && git clone https://github.com/apache/httpd
+	cd projects && git clone https://github.com/FFmpeg/FFmpeg
+	
+bitcode-httpd-1:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/httpd_labeler_1.pickle.gz  -r $(PROJECTS_DIR)/httpd/ --project httpd -o $(BITCODE_DIR)/httpd_1
 
-httpd-0:
+bitcode-httpd-0:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/httpd_labeler_0.pickle.gz  -r $(PROJECTS_DIR)/httpd/ --project httpd -o $(BITCODE_DIR)/httpd_0
 
-nginx-1:
+bitcode-nginx-1:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/nginx_labeler_1.pickle.gz  -r $(PROJECTS_DIR)/nginx/ --project nginx -o $(BITCODE_DIR)/nginx_1
 
-nginx-0:
+bitcode-nginx-0:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/nginx_labeler_0.pickle.gz  -r $(PROJECTS_DIR)/nginx/ --project nginx -o $(BITCODE_DIR)/nginx_0
 
-libtiff-1:
+bitcode-libtiff-1:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/libtiff_labeler_1.pickle.gz  -r $(PROJECTS_DIR)/libtiff/ --project libtiff -o $(BITCODE_DIR)/libtiff_1
 
-libtiff-0:
+bitcode-libtiff-0:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/libtiff_labeler_0.pickle.gz  -r $(PROJECTS_DIR)/libtiff/ --project libtiff -o $(BITCODE_DIR)/libtiff_0
 
-libav-1:
+bitcode-libav-1:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/libav_labeler_1.pickle.gz  -r $(PROJECTS_DIR)/libav/ --project libav -o $(BITCODE_DIR)/libav_1
 
-libav-0:
+bitcode-libav-0:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/libav_labeler_0.pickle.gz  -r $(PROJECTS_DIR)/libav/ --project libav -o $(BITCODE_DIR)/libav_0
 
-openssl-1:
+bitcode-openssl-1:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/openssl_labeler_1.pickle.gz  -r $(PROJECTS_DIR)/openssl/ --project openssl -o $(BITCODE_DIR)/openssl_1
 
-openssl-0:
+bitcode-openssl-0:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/openssl_labeler_0.pickle.gz  -r $(PROJECTS_DIR)/openssl/ --project openssl -o $(BITCODE_DIR)/openssl_0
 
-ffmpeg-1:
+bitcode-ffmpeg-1:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/ffmpeg_labeler_1.pickle.gz  -r $(PROJECTS_DIR)/FFmpeg/ --project ffmpeg -o $(BITCODE_DIR)/ffmpeg_1
 
-ffmpeg-0:
+bitcode-ffmpeg-0:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/ffmpeg_labeler_0.pickle.gz  -r $(PROJECTS_DIR)/FFmpeg/ --project ffmpeg -o $(BITCODE_DIR)/ffmpeg_0
 
 graph-httpd-1:
