@@ -1,3 +1,13 @@
+# ******************************************************************************
+#  File:            Makefile
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Part of the joern-batch-processing experiment.
+# ******************************************************************************
+
 # The experiment demonstrates the use of the Joern tool in "batch" mode, which
 # eliminates the need to restart/shutdown the tool for each sample. At the same
 # time, there is no need to reset the workspace. The 'save' command in

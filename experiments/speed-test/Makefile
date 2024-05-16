@@ -1,3 +1,13 @@
+# ******************************************************************************
+#  File:            Makefile
+#  Master's Thesis: Evaluating Reliability of Static Analysis Results
+#                   Using Machine Learning
+#  Author:          Beranek Tomas (xberan46)
+#  Date:            14.5.2024
+#  Up2date sources: https://github.com/TomasBeranek/but-masters-thesis
+#  Description:     Part of the speed-test experiment.
+# ******************************************************************************
+
 # This experiment shows a comparison of the speed of recursively searching a project
 # versus just searching the current folder. This search is necessary to find all
 # the bitcode files created for each sample. On the FFmpeg project, the speedup
