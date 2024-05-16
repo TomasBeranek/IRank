@@ -19,7 +19,7 @@ PROJECTS_DIR = projects
 all: filter-d2a
 
 filter-d2a:
-	python3 filter.py -d $(D2A_DIR) -o $(BITCODE_DIR)
+	python3 filter.py -d $(D2A_DIR) -o $(D2A_FILTERED_DIR)
 
 clean-slicing-info:
 	rm -rf $(SLICING_INFO_DIR)
@@ -46,7 +46,7 @@ download-repos:
 	cd projects && git clone https://gitlab.com/libtiff/libtiff
 	cd projects && git clone https://github.com/apache/httpd
 	cd projects && git clone https://github.com/FFmpeg/FFmpeg
-	
+
 bitcode-httpd-1:
 	python3 generate_bitcode.py -f $(D2A_FILTERED_DIR)/httpd_labeler_1.pickle.gz  -r $(PROJECTS_DIR)/httpd/ --project httpd -o $(BITCODE_DIR)/httpd_1
 

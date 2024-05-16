@@ -21,7 +21,7 @@
 # View .dot graphs e.g. here: https://dreampuf.github.io/GraphvizOnline/ or use
 # created .svg files
 
-all: slice
+all: dot
 
 line_slicing_criteria.bc:
 	clang -emit-llvm -g -grecord-command-line -fno-inline-functions -fno-builtin -c line_slicing_criteria.c
