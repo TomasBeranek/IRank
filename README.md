@@ -26,3 +26,7 @@
  - [Facebook Infer](https://fbinfer.com/)
  - Cao, Sicong, et al. "Bgnn4vd: constructing bidirectional graph neural-network for vulnerability detection." Information and Software Technology 136 (2021): 106576.
  - Y. Zheng et al., "D2A: A Dataset Built for AI-Based Vulnerability Detection Methods Using Differential Analysis," 2021 IEEE/ACM 43rd International Conference on Software Engineering: Software Engineering in Practice (ICSE-SEIP), 2021, pp. 111-120.
+
+## Installation and User Manual
+For the installation and user manual, please refer to [xberan46-2024.pdf](./xberan46-2024.pdf) in Appendix B -- Installation and User Manual.
+
