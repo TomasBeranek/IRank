@@ -58,7 +58,7 @@ grep -Fxvf ${old_bitcode_files_list} ${new_bitcode_files_list} > ${added_bitcode
 llvm-link $(< ${added_bitcode_files_list}) -o ${bc_combined}
 
 # extract slicing criteria for all the bugs
-python3 ${criteria_extraction_script} ${infer_dir}/report.json > ${slicing_info_file}
+python3.8 ${criteria_extraction_script} ${infer_dir}/report.json > ${slicing_info_file}
 rc=$?
 
 # if slicing_criteria_extraction.py exited with return code 0, it means that
@@ -87,7 +87,7 @@ cd ${script_dir}
 ../dataset/construction_phase_d2a ${raw_expg_dir} ${slicing_info_file} ${bitcode_dir}
 
 # create tfrecords from raw ECPGs
-find ${raw_expg_dir} -mindepth 1 -type d | python3 ../model/schemas/feature_engineering.py  ${tfgnn_schema} ${tfrecord_file} ${infer_dir}/report.json ${slicing_info_file}
+find ${raw_expg_dir} -mindepth 1 -type d | python3.8 ../model/schemas/feature_engineering.py  ${tfgnn_schema} ${tfrecord_file} ${infer_dir}/report.json ${slicing_info_file}
 
 # do the inference
-python3 model_inference.py ${tfgnn_schema} ${tfrecord_file} ${model_dir} ${infer_dir}/report.json ${output_dir}/ranked_report.json
+python3.8 model_inference.py ${tfgnn_schema} ${tfrecord_file} ${model_dir} ${infer_dir}/report.json ${output_dir}/ranked_report.json

@@ -8,7 +8,7 @@
 #  Description:     Script for concatenation of TFRecords files.
 # ******************************************************************************
 
-# Usage: python3 concat_tfrecords.py concatenated.tfrecords part1.tfrecords part2.tfrecords ...
+# Usage: python3.8 concat_tfrecords.py concatenated.tfrecords part1.tfrecords part2.tfrecords ...
 
 import tensorflow as tf
 import sys

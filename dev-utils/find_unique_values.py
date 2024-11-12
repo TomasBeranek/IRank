@@ -8,8 +8,8 @@
 #  Description:     Script for finding unique attribute values for node sets.
 # ******************************************************************************
 
-# Usage: python3 find_unique_values.py nodes_BLOCK
-#        python3 find_unique_values.py nodes_METHOD_PARAMETER_IN
+# Usage: python3.8 find_unique_values.py nodes_BLOCK
+#        python3.8 find_unique_values.py nodes_METHOD_PARAMETER_IN
 
 import os
 import sys

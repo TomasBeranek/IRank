@@ -110,13 +110,13 @@ def print_debug_report(report, bug_format_type):
 
 # NULLPTR_DEREFERENCE: three types were found:
 #   1) "call to `put_bits()` eventually accesses memory that is the null pointer on line 543 indirectly during the call to `init_put_bits()`."
-#       e.g. python3 extract_sample.py -d d2a/ -b NULLPTR_DEREFERENCE --bug-info-only -n 2
+#       e.g. python3.8 extract_sample.py -d d2a/ -b NULLPTR_DEREFERENCE --bug-info-only -n 2
 #           ID: ffmpeg_8e48b53d696b53cef2814548e4d0693387e875ea_1
 #   2) "accessing memory that is the null pointer on line 3191 indirectly during the call to `av_malloc()`."
-#       e.g. python3 extract_sample.py -d d2a/ -b NULLPTR_DEREFERENCE --bug-info-only -n 3
+#       e.g. python3.8 extract_sample.py -d d2a/ -b NULLPTR_DEREFERENCE --bug-info-only -n 3
 #           ID: ffmpeg_6a30264054cc320fe610c072c71d008f7e3c3efb_1
 #   3) "accessing memory that is the null pointer on line 315."
-#       e.g. python3 extract_sample.py -d d2a/ -b NULLPTR_DEREFERENCE --bug-info-only -n 30
+#       e.g. python3.8 extract_sample.py -d d2a/ -b NULLPTR_DEREFERENCE --bug-info-only -n 30
 #           ID: ffmpeg_9c908a4c99e0498dd26bd1de84ff085ac8e73e4a_1
 #
 # It is not possible to get the variable name from the descriptions, so it is
@@ -144,10 +144,10 @@ INTEGER_OVERFLOW = [ 'INTEGER_OVERFLOW_L1',
                      'INTEGER_OVERFLOW_L2' ]
 # INTEGER_OVERFLOW: two types were found:
 #   1) "([0, 8] - [0, 8]):unsigned32."
-#       e.g. python3 extract_sample.py -d d2a/ -b INTEGER_OVERFLOW_L2 --bug-info-only -n 1
+#       e.g. python3.8 extract_sample.py -d d2a/ -b INTEGER_OVERFLOW_L2 --bug-info-only -n 1
 #           ID: ffmpeg_1542087b54ddf682fb6177f999c6f9f79bd5613f_1
 #   2) "([0, 1] - 1):unsigned32 by call to `avfilter_unref_buffer`."
-#       e.g. python3 extract_sample.py -d d2a/ -b INTEGER_OVERFLOW_L2 --bug-info-only -n 3
+#       e.g. python3.8 extract_sample.py -d d2a/ -b INTEGER_OVERFLOW_L2 --bug-info-only -n 3
 #           ID: ffmpeg_ca5973f0bfac4560342605f8a52efc88b4f4dbd3_1
 #
 # This case is almost identical to BUFFER_OVERRUN_L2 -- there is no information
@@ -182,7 +182,7 @@ def extract_INTEGER_OVERFLOW(report, id):
 
 # INFERBO_ALLOC_MAY_BE_BIG: only one type found:
 #   1) "Length: [0, 2147483631] by call to `av_dup_packet`."
-#       e.g. python3 extract_sample.py -d d2a/ -b INFERBO_ALLOC_MAY_BE_BIG --bug-info-only -n 1
+#       e.g. python3.8 extract_sample.py -d d2a/ -b INFERBO_ALLOC_MAY_BE_BIG --bug-info-only -n 1
 #           ID: ffmpeg_c36d9fb10c31c6835d01232fddff6932a3ce347f_1
 #
 # For this type of error, as with NULL_DEREFERENCE, only the location of the
@@ -214,10 +214,10 @@ def extract_INFERBO_ALLOC_MAY_BE_BIG(report, id):
 
 # UNINITIALIZED_VALUE: two types were found:
 #   1) "The value read from ret was never initialized."
-#       e.g. python3 extract_sample.py -d d2a/ -b UNINITIALIZED_VALUE --bug-info-only -n 1
+#       e.g. python3.8 extract_sample.py -d d2a/ -b UNINITIALIZED_VALUE --bug-info-only -n 1
 #           ID: ffmpeg_ed80423e6bcfe18cca832b74dcc877427f8cf346_1
 #   2) "The value read from pix[_] was never initialized."
-#       e.g. python3 extract_sample.py -d d2a/ -b UNINITIALIZED_VALUE --bug-info-only -n 6
+#       e.g. python3.8 extract_sample.py -d d2a/ -b UNINITIALIZED_VALUE --bug-info-only -n 6
 #       ID: ffmpeg_1f62bae77d6ced3b79deaa8ce5ba3381fd4a541d_1
 #
 # There is no additional information in the bug trace, everything can be
@@ -262,10 +262,10 @@ BUFFER_OVERRUN = [ 'BUFFER_OVERRUN_L1',
                    'BUFFER_OVERRUN_L2' ]
 # BUFFER_OVERRUN: two types were found (see NULL_DEREFERENCE):
 #   1) "Offset: [0, 15] Size: 4."
-#       e.g. python3 extract_sample.py -d d2a/ -b BUFFER_OVERRUN_L2 --bug-info-only -n 2
+#       e.g. python3.8 extract_sample.py -d d2a/ -b BUFFER_OVERRUN_L2 --bug-info-only -n 2
 #           ID: ffmpeg_61d490455ade68a02dfdcfdb172ba3ded2fe0f9d_1
 #   2) "Offset: [1, 4] Size: 4 by call to `filter_mb_mbaff_edgecv`."
-#       e.g. python3 extract_sample.py -d d2a/ -b BUFFER_OVERRUN_L2 --bug-info-only -n 3
+#       e.g. python3.8 extract_sample.py -d d2a/ -b BUFFER_OVERRUN_L2 --bug-info-only -n 3
 #       ID: ffmpeg_0f5e5ecc888af015015f2ce1211a066350fbe377_1
 #
 # For these types of errors, Infer does not list the names of the arrays or the
@@ -307,11 +307,11 @@ def extract_BUFFER_OVERRUN(report, id):
 
 # NULL_DEREFERENCE: two types were found:
 #   1) "pointer `filter` last assigned on line 3191 could be null and is dereferenced at line 3194, column 9."
-#       e.g. python3 extract_sample.py -d d2a/ -b NULL_DEREFERENCE --bug-info-only -n 1
+#       e.g. python3.8 extract_sample.py -d d2a/ -b NULL_DEREFERENCE --bug-info-only -n 1
 #           ID: ffmpeg_15ae526d6763d8e21833feb78680ee3571080017_1
 #   2) "pointer `null` is dereferenced by call to `ff_sdp_write_media()` at line 2538, column 5."
 #       this happens in experiments/entry-function/scenario1.c type
-#       e.g. python3 extract_sample.py -d d2a/ -b NULL_DEREFERENCE --bug-info-only -n 13
+#       e.g. python3.8 extract_sample.py -d d2a/ -b NULL_DEREFERENCE --bug-info-only -n 13
 #           ID: ffmpeg_a94ada4250ff1d9e6101c910fe71dde6c3b5e485_1
 #
 # These types can be easily distinguished using the Infer message. In case 1)

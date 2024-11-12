@@ -26,4 +26,4 @@ run: clean
 	joern --script joern_script
 	llvm-dis combined.bc
 	joern-export --repr all --format neo4jcsv -o graph workspace/combined.cpg.bin.zip/cpg.bin
-	python3 ../../model/schemas/feature_engineering.py graph
+	python3.8 ../../model/schemas/feature_engineering.py graph
